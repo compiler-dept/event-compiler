@@ -11,7 +11,12 @@
     fprintf(stderr, "%s\n", "Error parsing input.");
 }
 
-translation_unit ::= error.
-{
-    fprintf(stderr, "%s\n", "Translation Unit");
-}
+translation_unit ::= declaration_sequence.
+
+declaration_sequence ::= declaration_sequence declaration.
+
+declaration ::= input RARROW vector SEMIC.
+
+input ::= LBRACE LPAREN event_sequence RPAREN COMMA predicate_sequence LBRACKET.
+
+// vector ...
