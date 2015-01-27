@@ -14,6 +14,10 @@
 [a-zA-Z][a-zA-Z0-9]* return IDENTIFIER;
 [0-9]+(\.[0-9]+)?    return NUMBER;
 [ \t\n]+             ;
+"->"                 return RARROW;
+"!"                  return NOT;
+"&"                  return AND;
+"|"                  return OR;
 "["                  return LBRACKET;
 "]"                  return RBRACKET;
 "("                  return LPAREN;
