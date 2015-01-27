@@ -36,6 +36,9 @@ identifier_sequence ::= IDENTIFIER.
 
 function_definition ::= TYPE IDENTIFIER LPAREN parameter_list RPAREN DEF expression SEMIC.
 
+parameter_list ::= parameter_list COMMA parameter.
+parameter_list ::= TYPE IDENTIFIER.
+
 
 // function_call
 
@@ -61,7 +64,7 @@ component_sequence ::= expression_sequence.
 
 
 // expression_sequence
-component_sequence ::= expression_sequence COMMA expression.
+expression_sequence ::= expression_sequence COMMA expression.
 
 expression_sequence ::= expression.
 
@@ -94,8 +97,6 @@ primary_expression ::= LPAREN expression RPAREN.
 primary_expression ::= atomic.
 
 atomic ::= TYPE DOT IDENTIFIER.
-
-atomic ::= IDENTIFIER.
 
 atomic ::= NUMBER.
 
