@@ -27,3 +27,11 @@
 *.i*86
 *.x86_64
 *.hex
+
+compiler
+
+# Generated Lexer & Parser sources
+src/lexer.c
+src/lexer.h
+src/parser.c
+src/parser.h
