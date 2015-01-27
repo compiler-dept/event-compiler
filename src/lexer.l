@@ -11,8 +11,8 @@
 
 %%
 
-[A_Z][a-zA-Z0-9]*    return TYPE;
-[a-z][a-zA-Z0-9]*    return IDENTIFIER;
+[A_Z][a-zA-Z0-9_]*   return TYPE;
+[a-z][a-zA-Z0-9_]*   return IDENTIFIER;
 [0-9]+(\.[0-9]+)?    return NUMBER;
 [ \t\n]+             ;
 "->"                 return RARROW;
@@ -21,11 +21,13 @@
 ":"                  return COLON;
 ","                  return COMMA;
 ";"                  return SEMIC;
+"{"                  return LBRACE;
+"}"                  return RBRACE;
 "["                  return LBRACKET;
 "]"                  return RBRACKET;
 "("                  return LPAREN;
 ")"                  return RPAREN;
-"="                  return EQ;
+"="                  return ASSIGN;
 "+"                  return ADD;
 "-"                  return SUB;
 "*"                  return MULT;
