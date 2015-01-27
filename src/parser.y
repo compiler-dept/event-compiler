@@ -37,7 +37,9 @@ identifier_sequence ::= IDENTIFIER.
 function_definition ::= TYPE IDENTIFIER LPAREN parameter_list RPAREN DEF expression SEMIC.
 
 parameter_list ::= parameter_list COMMA parameter.
-parameter_list ::= TYPE IDENTIFIER.
+parameter_list ::= parameter.
+
+parameter ::= TYPE IDENTIFIER.
 
 
 // function_call
@@ -51,9 +53,9 @@ argument_sequence ::= expression_sequence.
 
 event_definition ::= LBRACE initializer_sequence RBRACE.
 
-initializer_sequence ::= initializer_sequence initializer.
+initializer_sequence ::= initializer_sequence COMMA initializer.
 
-initializer ::= IDENTIFIER ASSIGN expression COMMA
+initializer ::= IDENTIFIER ASSIGN expression.
 
 
 // vector definition
