@@ -1,0 +1,6 @@
+[submodule "lemon"]
+	path = lemon
+	url = git@github.com:compiler-dept/lemon.git
+[submodule "libcollect"]
+	path = libcollect
+	url = git@github.com:compiler-dept/libcollect.git
