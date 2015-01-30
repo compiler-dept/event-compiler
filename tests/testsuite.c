@@ -2,7 +2,7 @@
 #include <stdio.h>
 
 /* Test includes */
-#include "example_tests.h"
+#include "parser_tests.h"
 
 #define TEXTIFY(x) #x
 #define ADD_TEST(x) !CU_add_test(suite, TEXTIFY(x), x)
@@ -33,7 +33,7 @@ int main(void)
     }
 
     if (
-        ADD_TEST(test_example)
+        ADD_TEST(test_event_inheritance)
     ) {
         CU_cleanup_registry();
 

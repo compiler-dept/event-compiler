@@ -2,9 +2,11 @@
 {
     #include <stdio.h>
     #include <assert.h>
+    #include "parser_state.h"
 }
 
 %type translation_unit { char * }
+%extra_argument { struct parser_state *parser_state }
 
 %syntax_error
 {
@@ -12,6 +14,9 @@
 }
 
 translation_unit ::= declaration_sequence.
+{
+    parser_state->state = OK;
+}
 
 declaration_sequence ::= declaration_sequence declaration.
 declaration_sequence ::= declaration.
