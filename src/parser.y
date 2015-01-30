@@ -25,6 +25,7 @@ declaration ::= function_definition SEMIC.
 
 event_inheritance ::= TYPE EXTENDS TYPE.
 
+
 // rule_declaration
 
 rule_declaration ::= IDENTIFIER COLON rule_signature  RARROW IDENTIFIER.
