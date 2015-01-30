@@ -11,11 +11,11 @@
 
 %%
 
+"extends"            return EXTENDS;
 [A_Z][a-zA-Z0-9_]*   return TYPE;
 [a-z][a-zA-Z0-9_]*   return IDENTIFIER;
 [0-9]+(\.[0-9]+)?    return NUMBER;
 [ \t\n]+             ;
-"extends"            return EXTENDS;
 "->"                 return RARROW;
 ":="                 return DEF;
 "."                  return DOT;
