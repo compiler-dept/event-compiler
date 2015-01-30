@@ -29,6 +29,7 @@
 *.hex
 
 compiler
+tests/testsuite
 
 # Generated Lexer & Parser sources
 src/lexer.c
