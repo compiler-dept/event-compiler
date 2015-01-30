@@ -16,20 +16,28 @@ translation_unit ::= declaration_sequence.
 declaration_sequence ::= declaration_sequence declaration.
 declaration_sequence ::= declaration.
 
+declaration ::= event_inheritance SEMIC.
 declaration ::= rule_declaration SEMIC.
 declaration ::= function_definition SEMIC.
 
 
+// event_inheritance
+
+event_inheritance ::= TYPE EXTENDS TYPE.
+
 // rule_declaration
 
-rule_declaration ::= IDENTIFIER COLON predicate_sequence RARROW function_sequence.
+rule_declaration ::= IDENTIFIER COLON rule_signature  RARROW IDENTIFIER.
 
-predicate_sequence ::= identifier_sequence.
+rule_signature ::= LBRACKET event_sequence COLON predicate_sequence RBRACKET.
+rule_signature ::= LBRACKET predicate_sequence RBRACKET.
+rule_signature ::= LBRACKET RBRACKET.
 
-function_sequence ::= identifier_sequence.
+event_sequence ::= event_sequence COMMA TYPE.
+event_sequence ::= TYPE.
 
-identifier_sequence ::= identifier_sequence COMMA IDENTIFIER.
-identifier_sequence ::= IDENTIFIER.
+predicate_sequence ::= predicate_sequence COMMA IDENTIFIER.
+predicate_sequence ::= IDENTIFIER.
 
 
 // function_definition
