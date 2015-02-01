@@ -33,7 +33,10 @@ int main(void)
     }
 
     if (
-        ADD_TEST(test_event_inheritance)
+        ADD_TEST(test_event_inheritance) ||
+        ADD_TEST(test_constant_function_definition) ||
+        ADD_TEST(test_function_definition) ||
+        ADD_TEST(test_function_definition_function)
     ) {
         CU_cleanup_registry();
 
