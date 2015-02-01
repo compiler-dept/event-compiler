@@ -48,7 +48,8 @@ predicate_sequence ::= IDENTIFIER.
 
 // function_definition
 
-function_definition ::= TYPE IDENTIFIER LPAREN parameter_list RPAREN DEF expression SEMIC.
+function_definition ::= TYPE IDENTIFIER LPAREN RPAREN DEF expression.
+function_definition ::= TYPE IDENTIFIER LPAREN parameter_list RPAREN DEF expression.
 
 parameter_list ::= parameter_list COMMA parameter.
 parameter_list ::= parameter.
