@@ -28,7 +28,7 @@ src/parser.c: src/parser.y lemon
 
 TEST_DEPS=$(filter-out src/%.l, $(filter-out src/%.y, $(filter-out src/compiler.c, $(SOURCES)))) src/lexer.c src/parser.c
 tests/testsuite: tests/testsuite.c $(TEST_DEPS)
-	$(CC) -Isrc -L. $(CFLAGS) `pkg-config --cflags --libs-only-L cunit` -o $@ $^ `pkg-config --libs-only-l cunit`
+	$(CC) -Isrc -L. $(CFLAGS) -o $@ $^ -lcunit
 
 test: tests/testsuite
 	tests/testsuite
