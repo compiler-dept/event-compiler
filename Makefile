@@ -6,7 +6,7 @@ LDLIBS=-lcollect
 YACC=lemon/lemon
 LEX=flex
 
-SOURCES=src/compiler.c src/lexer.l src/parser.y
+SOURCES=src/compiler.c src/lexer.l src/parser.y src/ast.c
 COBJECTS=$(patsubst %.c, %.o, $(SOURCES))
 LOBJECTS=$(patsubst %.l, %.o, $(COBJECTS))
 OBJECTS=$(patsubst %.y, %.o, $(LOBJECTS))
@@ -28,7 +28,7 @@ src/parser.c: src/parser.y lemon
 
 TEST_DEPS=$(filter-out src/%.l, $(filter-out src/%.y, $(filter-out src/compiler.c, $(SOURCES)))) src/lexer.c src/parser.c
 tests/testsuite: tests/testsuite.c $(TEST_DEPS)
-	$(CC) -Isrc -L. $(CFLAGS) -o $@ $^ -lcunit
+	$(CC) -Isrc -L. $(CFLAGS) $(LDFLAGS) -o $@ $^ $(LDLIBS) -lcunit
 
 test: tests/testsuite
 	tests/testsuite
