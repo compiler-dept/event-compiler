@@ -1,9 +1,13 @@
 %include
 {
     #include <stdio.h>
+    #include <stdlib.h>
     #include <assert.h>
     #include "parser_state.h"
 }
+
+%token_type { const char * }
+%token_destructor { free((char *)$$); }
 
 %type translation_unit { char * }
 %extra_argument { struct parser_state *parser_state }
