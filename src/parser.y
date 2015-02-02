@@ -17,6 +17,10 @@ translation_unit ::= declaration_sequence.
 {
     parser_state->state = OK;
 }
+translation_unit ::= error.
+{
+    parser_state->state = ERROR;
+}
 
 declaration_sequence ::= declaration_sequence declaration.
 declaration_sequence ::= declaration.
@@ -69,6 +73,7 @@ argument_sequence ::= expression_sequence.
 event_definition ::= LBRACE initializer_sequence RBRACE.
 
 initializer_sequence ::= initializer_sequence COMMA initializer.
+initializer_sequence ::= initializer.
 
 initializer ::= IDENTIFIER ASSIGN expression.
 
@@ -113,7 +118,9 @@ primary_expression ::= LPAREN expression RPAREN.
 
 primary_expression ::= atomic.
 
-atomic ::= TYPE DOT IDENTIFIER.
+atomic ::= IDENTIFIER DOT IDENTIFIER.
+
+atomic ::= IDENTIFIER.
 
 atomic ::= NUMBER.
 
