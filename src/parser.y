@@ -33,15 +33,11 @@ declaration ::= event_inheritance SEMIC.
 declaration ::= rule_declaration SEMIC.
 declaration ::= function_definition SEMIC.
 
-
 // event_inheritance
-
 event_inheritance ::= TYPE EXTENDS TYPE.
 
-
 // rule_declaration
-
-rule_declaration ::= IDENTIFIER COLON rule_signature  RARROW IDENTIFIER.
+rule_declaration ::= TYPE COLON rule_signature RARROW IDENTIFIER.
 
 rule_signature ::= LBRACKET event_sequence COLON predicate_sequence RBRACKET.
 rule_signature ::= LBRACKET predicate_sequence RBRACKET.
@@ -53,9 +49,7 @@ event_sequence ::= TYPE.
 predicate_sequence ::= predicate_sequence COMMA IDENTIFIER.
 predicate_sequence ::= IDENTIFIER.
 
-
 // function_definition
-
 function_definition ::= TYPE IDENTIFIER LPAREN RPAREN DEF expression.
 function_definition ::= TYPE IDENTIFIER LPAREN parameter_list RPAREN DEF expression.
 
@@ -64,16 +58,12 @@ parameter_list ::= parameter.
 
 parameter ::= TYPE IDENTIFIER.
 
-
 // function_call
-
 function_call ::= IDENTIFIER LPAREN argument_sequence RPAREN.
 
 argument_sequence ::= expression_sequence.
 
-
 // event_definition
-
 event_definition ::= LBRACE initializer_sequence RBRACE.
 
 initializer_sequence ::= initializer_sequence COMMA initializer.
@@ -81,19 +71,15 @@ initializer_sequence ::= initializer.
 
 initializer ::= IDENTIFIER ASSIGN expression.
 
-
 // vector definition
-
 vector ::= LBRACKET component_sequence RBRACKET.
 
 component_sequence ::= expression_sequence.
-
 
 // expression_sequence
 expression_sequence ::= expression_sequence COMMA expression.
 
 expression_sequence ::= expression.
-
 
 // expressions
 expression ::= additive_expression.
