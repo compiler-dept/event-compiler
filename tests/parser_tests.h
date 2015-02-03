@@ -2,6 +2,8 @@
 #include <parser_signatures.h>
 #include <parser_state.h>
 #include <stdlib.h>
+#include <tree.h>
+#include <ast.h>
 
 void test_event_inheritance(void)
 {
@@ -22,6 +24,8 @@ void test_event_inheritance(void)
     ParseFree(parser, free);
 
     CU_ASSERT_EQUAL(parser_state.state, OK);
+
+    tree_free(&(parser_state.root), payload_free);
 }
 
 void test_constant_function_definition(void)
@@ -54,6 +58,8 @@ void test_constant_function_definition(void)
     ParseFree(parser, free);
 
     CU_ASSERT_EQUAL(parser_state.state, OK);
+
+    tree_free(&(parser_state.root), payload_free);
 }
 
 void test_function_definition(void)
@@ -90,6 +96,8 @@ void test_function_definition(void)
     ParseFree(parser, free);
 
     CU_ASSERT_EQUAL(parser_state.state, OK);
+
+    tree_free(&(parser_state.root), payload_free);
 }
 
 void test_function_definition_function(void)
@@ -117,6 +125,8 @@ void test_function_definition_function(void)
     ParseFree(parser, free);
 
     CU_ASSERT_EQUAL(parser_state.state, OK);
+
+    tree_free(&(parser_state.root), payload_free);
 }
 
 void test_rule_declaration(void)
@@ -141,4 +151,6 @@ void test_rule_declaration(void)
     ParseFree(parser, free);
 
     CU_ASSERT_EQUAL(parser_state.state, OK);
+
+    tree_free(&(parser_state.root), payload_free);
 }

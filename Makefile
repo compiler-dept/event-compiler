@@ -1,6 +1,7 @@
 BIN=compiler
 
-CFLAGS=-g -Wall -std=gnu99 -Ilibcollect
+DISABLED_WARNINGS=switch
+CFLAGS=-g -Wall -std=gnu99 -Ilibcollect $(patsubst %, -Wno-%, $(DISABLED_WARNINGS))
 LDFLAGS=-Llibcollect
 LDLIBS=-lcollect
 YACC=lemon/lemon

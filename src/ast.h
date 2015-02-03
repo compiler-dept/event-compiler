@@ -75,40 +75,40 @@ struct payload {
     union {
         struct {
             double number;
-            const char *identifier[2];
+            char *identifier[2];
         } atomic;
         struct {
-            const char *identifier;
+            char *identifier;
         } initializer;
         struct {
-            const char *identifier;
+            char *identifier;
         } function_call;
         struct {
-            const char *type;
-            const char *identifier;
+            char *type;
+            char *identifier;
         } function_definition;
         struct {
-            const char *type;
-            const char *identifier;
+            char *type;
+            char *identifier;
         } parameter;
         struct {
-            const char *type;
-            const char *identifier;
+            char *type;
+            char *identifier;
         } rule_declaration;
         struct {
-            const char *type[2];
+            char *type[2];
         } event_inheritance;
         struct {
             int count;
-            const char **identifier;
+            char **identifier;
         } predicate_sequence;
         struct {
             int count;
-            const char **type;
+            char **type;
         } event_sequence;
     };
 };
 
-void payload_free(struct payload *payload);
+void payload_free(void *payload);
 
 #endif

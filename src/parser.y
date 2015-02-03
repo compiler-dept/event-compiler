@@ -247,6 +247,7 @@ function_definition(NODE) ::= TYPE(T) IDENTIFIER(I) LPAREN RPAREN DEF expression
     strcpy((char *)(payload->function_definition.identifier), I);
     NODE = tree_create_node(payload, 1, E);
     stack_push(&allocated_nodes, NODE);
+    free((char *)T);
     free((char *)I);
 }
 function_definition(NODE) ::= TYPE(T) IDENTIFIER(I) LPAREN parameter_list(PL) RPAREN DEF expression(E).
@@ -260,6 +261,7 @@ function_definition(NODE) ::= TYPE(T) IDENTIFIER(I) LPAREN parameter_list(PL) RP
     strcpy((char *)(payload->function_definition.identifier), I);
     NODE = tree_create_node(payload, 2, PL, E);
     stack_push(&allocated_nodes, NODE);
+    free((char *)T);
     free((char *)I);
 }
 
@@ -299,6 +301,7 @@ parameter(NODE) ::= TYPE(T) IDENTIFIER(I).
     strcpy((char *)(payload->parameter.identifier), I);
     NODE = tree_create_node(payload, 0);
     stack_push(&allocated_nodes, NODE);
+    free((char *)T);
     free((char *)I);
 }
 
