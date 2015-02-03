@@ -1,12 +1,12 @@
 BIN=compiler
 
-CFLAGS=-g -Wall -std=gnu11 -Ilibcollect
+CFLAGS=-g -Wall -std=gnu99 -Ilibcollect
 LDFLAGS=-Llibcollect
 LDLIBS=-lcollect
 YACC=lemon/lemon
 LEX=flex
 
-SOURCES=src/compiler.c src/lexer.l src/parser.y
+SOURCES=src/compiler.c src/lexer.l src/parser.y src/ast.c
 COBJECTS=$(patsubst %.c, %.o, $(SOURCES))
 LOBJECTS=$(patsubst %.l, %.o, $(COBJECTS))
 OBJECTS=$(patsubst %.y, %.o, $(LOBJECTS))
@@ -16,7 +16,7 @@ OBJECTS=$(patsubst %.y, %.o, $(LOBJECTS))
 all: $(BIN)
 
 $(BIN): $(OBJECTS) src/lexer.c libcollect
-	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ $(OBJECTS) $(LDLIBS)
+	$(CC) $(CFLAGS) -o $@ $(OBJECTS) $(LDFLAGS) $(LDLIBS)
 
 src/compiler.o: src/compiler.c src/lexer.c
 
@@ -27,8 +27,8 @@ src/parser.c: src/parser.y lemon
 	$(YACC) $<
 
 TEST_DEPS=$(filter-out src/%.l, $(filter-out src/%.y, $(filter-out src/compiler.c, $(SOURCES)))) src/lexer.c src/parser.c
-tests/testsuite: tests/testsuite.c $(TEST_DEPS)
-	$(CC) -Isrc -L. $(CFLAGS) -o $@ $^ -lcunit
+tests/testsuite: tests/testsuite.c $(TEST_DEPS) libcollect
+	$(CC) -Isrc -L. $(CFLAGS) -o $@ $< $(TEST_DEPS) $(LDFLAGS) $(LDLIBS) -lcunit
 
 test: tests/testsuite
 	tests/testsuite
@@ -36,7 +36,6 @@ test: tests/testsuite
 clean:
 	rm -f $(BIN) $(OBJECTS) src/lexer.c src/lexer.h src/parser.c src/parser.h src/parser.out tests/testsuite
 	rm -rf tests/testsuite.dSYM
-
 
 libcollect:
 	@- make -C libcollect

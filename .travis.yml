@@ -6,5 +6,7 @@ before_install:
   - sudo apt-get install -qq git libcunit1 libcunit1-dev
 install:
   - make getexternals
+  - make -C libcollect
+  - make -C lemon
 script:
   - make test
