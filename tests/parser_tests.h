@@ -33,21 +33,21 @@ void test_constant_function_definition(void)
     Parse(parser, IDENTIFIER, strdup("fName"), &parser_state);
     Parse(parser, LPAREN, strdup("("), &parser_state);
     Parse(parser, RPAREN, strdup(")"), &parser_state);
-    
+
     Parse(parser, DEF, strdup(":="), &parser_state);
 
     Parse(parser, LBRACE, strdup("{"), &parser_state);
     Parse(parser, IDENTIFIER, strdup("a"), &parser_state);
     Parse(parser, ASSIGN, strdup("="), &parser_state);
     Parse(parser, NUMBER, strdup("1"), &parser_state);
-    
+
     Parse(parser, COMMA, strdup(","), &parser_state);
-    
+
     Parse(parser, IDENTIFIER, strdup("b"), &parser_state);
     Parse(parser, ASSIGN, strdup("="), &parser_state);
     Parse(parser, NUMBER, strdup("1+2"), &parser_state);
     Parse(parser, RBRACE, strdup("}"), &parser_state);
-    
+
     Parse(parser, SEMIC, strdup(";"), &parser_state);
 
     Parse(parser, 0, 0, &parser_state);
@@ -67,7 +67,7 @@ void test_function_definition(void)
     Parse(parser, TYPE, strdup("PType"), &parser_state);
     Parse(parser, IDENTIFIER, strdup("pName"), &parser_state);
     Parse(parser, RPAREN, strdup(")"), &parser_state);
- 
+
     Parse(parser, DEF, strdup(":="), &parser_state);
 
     Parse(parser, LBRACE, strdup("{"), &parser_state);
@@ -76,9 +76,9 @@ void test_function_definition(void)
     Parse(parser, IDENTIFIER, strdup("pName"), &parser_state);
     Parse(parser, DOT, strdup("."), &parser_state);
     Parse(parser, IDENTIFIER, strdup("a"), &parser_state);
-    
+
     Parse(parser, COMMA, strdup(","), &parser_state);
-    
+
     Parse(parser, IDENTIFIER, strdup("b"), &parser_state);
     Parse(parser, ASSIGN, strdup("="), &parser_state);
     Parse(parser, NUMBER, strdup("1+2"), &parser_state);
@@ -111,6 +111,30 @@ void test_function_definition_function(void)
     Parse(parser, IDENTIFIER, strdup("pName"), &parser_state);
     Parse(parser, RPAREN, strdup(")"), &parser_state);
 
+    Parse(parser, SEMIC, strdup(";"), &parser_state);
+
+    Parse(parser, 0, 0, &parser_state);
+    ParseFree(parser, free);
+
+    CU_ASSERT_EQUAL(parser_state.state, OK);
+}
+
+void test_rule_declaration(void)
+{
+    struct parser_state parser_state;
+    void *parser = ParseAlloc(malloc);
+
+    Parse(parser, TYPE, strdup("A"), &parser_state);
+    Parse(parser, COLON, strdup(":"), &parser_state);
+    Parse(parser, LBRACKET, strdup("["), &parser_state);
+    Parse(parser, TYPE, strdup("SampleEvent"), &parser_state);
+    Parse(parser, COLON, strdup(":"), &parser_state);
+    Parse(parser, IDENTIFIER, strdup("p1"), &parser_state);
+    Parse(parser, COMMA, strdup(","), &parser_state);
+    Parse(parser, IDENTIFIER, strdup("p2"), &parser_state);
+    Parse(parser, RBRACKET, strdup("]"), &parser_state);
+    Parse(parser, RARROW, strdup("->"), &parser_state);
+    Parse(parser, IDENTIFIER, strdup("test"), &parser_state);
     Parse(parser, SEMIC, strdup(";"), &parser_state);
 
     Parse(parser, 0, 0, &parser_state);

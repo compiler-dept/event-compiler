@@ -32,7 +32,6 @@ tests/testsuite: tests/testsuite.c $(TEST_DEPS)
 
 test: tests/testsuite
 	tests/testsuite
-	@- make clean
 
 clean:
 	rm -f $(BIN) $(OBJECTS) src/lexer.c src/lexer.h src/parser.c src/parser.h src/parser.out tests/testsuite

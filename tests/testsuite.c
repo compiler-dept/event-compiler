@@ -36,7 +36,8 @@ int main(void)
         ADD_TEST(test_event_inheritance) ||
         ADD_TEST(test_constant_function_definition) ||
         ADD_TEST(test_function_definition) ||
-        ADD_TEST(test_function_definition_function)
+        ADD_TEST(test_function_definition_function) ||
+        ADD_TEST(test_rule_declaration)
     ) {
         CU_cleanup_registry();
 
