@@ -30,6 +30,8 @@
 
 event-compiler
 tests/testsuite
+tests/.clarcache
+tests/clar.suite
 
 # Generated Lexer & Parser sources
 src/lexer.c

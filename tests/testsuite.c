@@ -1,62 +1,27 @@
-#include <CUnit/Basic.h>
-#include <stdio.h>
+/*
+ * Copyright (c) Vicent Marti. All rights reserved.
+ *
+ * This file is part of clar, distributed under the ISC license.
+ * For full terms see the included COPYING file.
+ */
 
-/* Test includes */
-#include "parser_tests.h"
-#include "integration_tests.h"
+#include "clar_test.h"
 
-#define TEXTIFY(x) #x
-#define ADD_TEST(x) !CU_add_test(suite, TEXTIFY(x), x)
+/*
+ * Minimal main() for clar tests.
+ *
+ * Modify this with any application specific setup or teardown that you need.
+ * The only required line is the call to `clar_test(argc, argv)`, which will
+ * execute the test suite.  If you want to check the return value of the test
+ * application, main() should return the same value returned by clar_test().
+ */
 
-int init_suite(void)
+#ifdef _WIN32
+int __cdecl main(int argc, char *argv[])
+#else
+int main(int argc, char *argv[])
+#endif
 {
-	return 0;
-}
-
-int clean_suite(void)
-{
-	return 0;
-}
-
-int main(void)
-{
-	CU_pSuite suite = NULL;
-
-	if (CUE_SUCCESS != CU_initialize_registry()) {
-		return CU_get_error();
-	}
-
-	suite =
-	    CU_add_suite("event-compiler testsuite", init_suite, clean_suite);
-	if (NULL == suite) {
-		CU_cleanup_registry();
-
-		return CU_get_error();
-	}
-
-	if (ADD_TEST(test_event_inheritance) ||
-	    ADD_TEST(test_constant_function_definition) ||
-	    ADD_TEST(test_function_definition) ||
-	    ADD_TEST(test_function_definition_function) ||
-	    ADD_TEST(test_rule_declaration) ||
-	    ADD_TEST(test_integration_event_inheritance)
-	    ) {
-		CU_cleanup_registry();
-
-		return CU_get_error();
-	}
-
-	CU_basic_set_mode(CU_BRM_VERBOSE);
-	CU_basic_run_tests();
-
-	int failures = CU_get_number_of_failures();
-
-	CU_cleanup_registry();
-
-	int ret = CU_get_error();
-	if (failures > 0) {
-		ret = -1;
-	}
-
-	return ret;
+	/* Run the test suite */
+	return clar_test(argc, argv);
 }

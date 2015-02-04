@@ -1,5 +1,6 @@
 #ifndef PARSER_SIGNATURES_H
 #define PARSER_SIGNATURES_H
+
 #include "parser_state.h"
 
 void *ParseAlloc(void *(*allocProc) (size_t));
