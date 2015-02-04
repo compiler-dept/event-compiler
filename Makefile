@@ -1,4 +1,4 @@
-BIN=compiler
+BIN=event-compiler
 
 DISABLED_WARNINGS=switch
 CFLAGS=-g -Wall -std=gnu99 -Ilibcollect $(patsubst %, -Wno-%, $(DISABLED_WARNINGS))
@@ -7,7 +7,7 @@ LDLIBS=-lcollect
 YACC=lemon/lemon
 LEX=flex
 
-SOURCES=src/compiler.c src/lexer.l src/parser.y src/ast.c
+SOURCES=src/event-compiler.c src/compiler.c src/lexer.l src/parser.y src/ast.c
 COBJECTS=$(patsubst %.c, %.o, $(SOURCES))
 LOBJECTS=$(patsubst %.l, %.o, $(COBJECTS))
 OBJECTS=$(patsubst %.y, %.o, $(LOBJECTS))
@@ -27,7 +27,7 @@ src/lexer.c: src/lexer.l src/parser.c
 src/parser.c: src/parser.y lemon
 	$(YACC) $<
 
-TEST_DEPS=$(filter-out src/%.l, $(filter-out src/%.y, $(filter-out src/compiler.c, $(SOURCES)))) src/lexer.c src/parser.c
+TEST_DEPS=$(filter-out src/%.l, $(filter-out src/%.y, $(filter-out src/event-compiler.c, $(SOURCES)))) src/lexer.c src/parser.c
 tests/testsuite: tests/testsuite.c $(TEST_DEPS) libcollect
 	$(CC) -Isrc -L. $(CFLAGS) -o $@ $< $(TEST_DEPS) $(LDFLAGS) $(LDLIBS) -lcunit
 

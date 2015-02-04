@@ -28,7 +28,7 @@
 *.x86_64
 *.hex
 
-compiler
+event-compiler
 tests/testsuite
 
 # Generated Lexer & Parser sources
