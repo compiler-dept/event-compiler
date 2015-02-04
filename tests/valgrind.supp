@@ -1,0 +1,15 @@
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Cond
+   fun:_platform_memchr$VARIANT$Haswell
+   fun:__sfvwrite
+   fun:__vfprintf
+   fun:__v2printf
+   fun:__xvprintf
+   fun:vfprintf_l
+   fun:printf
+   fun:clar_print_init
+   fun:clar_test_init
+   fun:clar_test
+   fun:main
+}

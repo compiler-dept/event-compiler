@@ -1,11 +1,13 @@
+#include "clar.h"
+
+#include <string.h>
+
 #include <parser.h>
-#include <parser_signatures.h>
 #include <parser_state.h>
-#include <stdlib.h>
-#include <tree.h>
+#include <parser_signatures.h>
 #include <ast.h>
 
-void test_event_inheritance(void)
+void test_parser__event_inheritance(void)
 {
     struct parser_state parser_state;
     void *parser = ParseAlloc(malloc);
@@ -23,12 +25,12 @@ void test_event_inheritance(void)
     Parse(parser, 0, 0, &parser_state);
     ParseFree(parser, free);
 
-    CU_ASSERT_EQUAL(parser_state.state, OK);
+    cl_assert_equal_i(parser_state.state, OK);
 
     tree_free(&(parser_state.root), payload_free);
 }
 
-void test_constant_function_definition(void)
+void test_parser__constant_function_definition(void)
 {
     struct parser_state parser_state;
     void *parser = ParseAlloc(malloc);
@@ -57,12 +59,12 @@ void test_constant_function_definition(void)
     Parse(parser, 0, 0, &parser_state);
     ParseFree(parser, free);
 
-    CU_ASSERT_EQUAL(parser_state.state, OK);
+    cl_assert_equal_i(parser_state.state, OK);
 
     tree_free(&(parser_state.root), payload_free);
 }
 
-void test_function_definition(void)
+void test_parser__function_definition(void)
 {
     struct parser_state parser_state;
     void *parser = ParseAlloc(malloc);
@@ -95,12 +97,12 @@ void test_function_definition(void)
     Parse(parser, 0, 0, &parser_state);
     ParseFree(parser, free);
 
-    CU_ASSERT_EQUAL(parser_state.state, OK);
+    cl_assert_equal_i(parser_state.state, OK);
 
     tree_free(&(parser_state.root), payload_free);
 }
 
-void test_function_definition_function(void)
+void test_parser__function_definition_function(void)
 {
     struct parser_state parser_state;
     void *parser = ParseAlloc(malloc);
@@ -124,12 +126,12 @@ void test_function_definition_function(void)
     Parse(parser, 0, 0, &parser_state);
     ParseFree(parser, free);
 
-    CU_ASSERT_EQUAL(parser_state.state, OK);
+    cl_assert_equal_i(parser_state.state, OK);
 
     tree_free(&(parser_state.root), payload_free);
 }
 
-void test_rule_declaration(void)
+void test_parser__rule_declaration(void)
 {
     struct parser_state parser_state;
     void *parser = ParseAlloc(malloc);
@@ -150,7 +152,7 @@ void test_rule_declaration(void)
     Parse(parser, 0, 0, &parser_state);
     ParseFree(parser, free);
 
-    CU_ASSERT_EQUAL(parser_state.state, OK);
+    cl_assert_equal_i(parser_state.state, OK);
 
     tree_free(&(parser_state.root), payload_free);
 }
