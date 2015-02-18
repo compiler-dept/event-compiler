@@ -12,10 +12,15 @@
 %%
 
 "extends"            return EXTENDS;
+"predicate"          return PREDICATE;
 [A-Z][a-zA-Z0-9_]*   return TYPE;
 [a-z][a-zA-Z0-9_]*   return IDENTIFIER;
 [0-9]+(\.[0-9]+)?    return NUMBER;
 [ \t\n]+             ;
+"=="                 return EQ;
+"!="                 return NEQ;
+">"                  return GT;
+"<"                  return LT;
 "->"                 return RARROW;
 ":="                 return DEF;
 "."                  return DOT;

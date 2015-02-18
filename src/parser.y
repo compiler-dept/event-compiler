@@ -25,6 +25,7 @@
 %type rule_signature { struct node * }
 %type event_sequence { struct node * }
 %type predicate_sequence { struct node * }
+%type predicate_definition { struct node * }
 %type function_definition { struct node * }
 %type parameter_list { struct node * }
 %type parameter { struct node * }
@@ -37,6 +38,7 @@
 %type component_sequence { struct node * }
 %type expression_sequence { struct node * }
 %type expression { struct node * }
+%type comparison_expression { struct node * }
 %type additive_expression { struct node * }
 %type addition { struct node * }
 %type multiplicative_expression { struct node * }
@@ -113,6 +115,14 @@ declaration(NODE) ::= rule_declaration(RD) SEMIC.
     payload->type = N_DECLARATION;
     payload->alternative = ALT_RULE_DECLARATION;
     NODE = tree_create_node(payload, 1, RD);
+    stack_push(&allocated_nodes, NODE);
+}
+declaration(NODE) ::= predicate_definition(PD) SEMIC.
+{
+    struct payload *payload = malloc(sizeof(struct payload));
+    payload->type = N_DECLARATION;
+    payload->alternative = ALT_PREDICATE_DEFINITION;
+    NODE = tree_create_node(payload, 1, PD);
     stack_push(&allocated_nodes, NODE);
 }
 declaration(NODE) ::= function_definition(FD) SEMIC.
@@ -231,6 +241,30 @@ predicate_sequence(NODE) ::= IDENTIFIER(I).
     payload->predicate_sequence.identifier[0] = malloc(strlen(I) + 1);
     strcpy((char *)(payload->predicate_sequence.identifier[0]), I);
     NODE = tree_create_node(payload, 0);
+    stack_push(&allocated_nodes, NODE);
+    free((char *)I);
+}
+
+// predicate_definiton
+predicate_definition(NODE) ::= PREDICATE IDENTIFIER(I) LPAREN RPAREN DEF expression(E).
+{
+    struct payload *payload = malloc(sizeof(struct payload));
+    payload->type = N_PREDICATE_DEFINITION;
+    payload->alternative = ALT_EXPRESSION;
+    payload->predicate_definition.identifier = malloc(strlen(I) + 1);
+    strcpy((char *)(payload->predicate_definition.identifier), I);
+    NODE = tree_create_node(payload, 1, E);
+    stack_push(&allocated_nodes, NODE);
+    free((char *)I);
+}
+predicate_definition(NODE) ::= PREDICATE IDENTIFIER(I) LPAREN parameter_list(PL) RPAREN DEF expression(E).
+{
+    struct payload *payload = malloc(sizeof(struct payload));
+    payload->type = N_PREDICATE_DEFINITION;
+    payload->alternative = ALT_PARAMETER_LIST;
+    payload->predicate_definition.identifier = malloc(strlen(I) + 1);
+    strcpy((char *)(payload->predicate_definition.identifier), I);
+    NODE = tree_create_node(payload, 2, PL, E);
     stack_push(&allocated_nodes, NODE);
     free((char *)I);
 }
@@ -420,10 +454,51 @@ expression_sequence(NODE) ::= expression(E).
 }
 
 // expressions
-expression(NODE) ::= additive_expression(AE).
+expression(NODE) ::= comparison_expression(CE).
 {
     struct payload *payload = malloc(sizeof(struct payload));
     payload->type = N_EXPRESSION;
+    payload->alternative = ALT_COMPARISON_EXPRESSION;
+    NODE = tree_create_node(payload, 1, CE);
+    stack_push(&allocated_nodes, NODE);
+}
+
+comparison_expression(NODE) ::= additive_expression(AEL) EQ additive_expression(AER).
+{
+    struct payload *payload = malloc(sizeof(struct payload));
+    payload->type = N_COMPARISON_EXPRESSION;
+    payload->alternative = ALT_EQ;
+    NODE = tree_create_node(payload, 2, AEL, AER);
+    stack_push(&allocated_nodes, NODE);
+}
+comparison_expression(NODE) ::= additive_expression(AEL) NEQ additive_expression(AER).
+{
+    struct payload *payload = malloc(sizeof(struct payload));
+    payload->type = N_COMPARISON_EXPRESSION;
+    payload->alternative = ALT_NEQ;
+    NODE = tree_create_node(payload, 2, AEL, AER);
+    stack_push(&allocated_nodes, NODE);
+}
+comparison_expression(NODE) ::= additive_expression(AEL) GT additive_expression(AER).
+{
+    struct payload *payload = malloc(sizeof(struct payload));
+    payload->type = N_COMPARISON_EXPRESSION;
+    payload->alternative = ALT_GT;
+    NODE = tree_create_node(payload, 2, AEL, AER);
+    stack_push(&allocated_nodes, NODE);
+}
+comparison_expression(NODE) ::= additive_expression(AEL) LT additive_expression(AER).
+{
+    struct payload *payload = malloc(sizeof(struct payload));
+    payload->type = N_COMPARISON_EXPRESSION;
+    payload->alternative = ALT_LT;
+    NODE = tree_create_node(payload, 2, AEL, AER);
+    stack_push(&allocated_nodes, NODE);
+}
+comparison_expression(NODE) ::= additive_expression(AE).
+{
+    struct payload *payload = malloc(sizeof(struct payload));
+    payload->type = N_COMPARISON_EXPRESSION;
     payload->alternative = ALT_ADDITIVE_EXPRESSION;
     NODE = tree_create_node(payload, 1, AE);
     stack_push(&allocated_nodes, NODE);

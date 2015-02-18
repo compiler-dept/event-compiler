@@ -10,6 +10,7 @@ enum type {
     N_RULE_SIGNATURE,
     N_EVENT_SEQUENCE,
     N_PREDICATE_SEQUENCE,
+    N_PREDICATE_DEFINITION,
     N_FUNCTION_DEFINITION,
     N_PARAMETER_LIST,
     N_PARAMETER,
@@ -21,6 +22,7 @@ enum type {
     N_VECTOR,
     N_COMPONENT_SEQUENCE,
     N_EXPRESSION_SEQUENCE,
+    N_COMPARISON_EXPRESSION,
     N_EXPRESSION,
     N_ADDITIVE_EXPRESSION,
     N_ADDITION,
@@ -36,6 +38,7 @@ enum alternative {
     ALT_DECLARATION,
     ALT_EVENT_INHERITANCE,
     ALT_RULE_DECLARATION,
+    ALT_PREDICATE_DEFINITION,
     ALT_FUNCTION_DEFINITION,
     ALT_RULE_SIGNATURE,
     ALT_VECTOR,
@@ -43,6 +46,7 @@ enum alternative {
     ALT_EVENT_DEFINITION,
     ALT_FUNCTION_CALL,
     ALT_EXPRESSION,
+    ALT_COMPARISON_EXPRESSION,
     ALT_ATOMIC,
     ALT_NEGATION,
     ALT_MULT,
@@ -50,6 +54,10 @@ enum alternative {
     ALT_MULTIPLICATION,
     ALT_ADD,
     ALT_SUB,
+    ALT_EQ,
+    ALT_NEQ,
+    ALT_GT,
+    ALT_LT,
     ALT_ADDITION,
     ALT_MULTIPLICATIVE_EXPRESSION,
     ALT_ADDITIVE_EXPRESSION,
@@ -87,6 +95,9 @@ struct payload {
             char *type;
             char *identifier;
         } function_definition;
+        struct {
+            char *identifier;
+        } predicate_definition;
         struct {
             char *type;
             char *identifier;
