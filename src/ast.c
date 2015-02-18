@@ -7,6 +7,8 @@ void payload_free(void *payload)
     struct payload *temp_payload = payload;
     if (temp_payload) {
         switch (temp_payload->type) {
+            case N_TRANSLATION_UNIT:
+                hashmap_free(temp_payload->translation_unit.scope, NULL);
             case N_EVENT_INHERITANCE:
                 if (temp_payload->alternative == ALT_TYPE) {
                     free(temp_payload->event_inheritance.type[0]);
@@ -31,6 +33,7 @@ void payload_free(void *payload)
                 if (temp_payload->alternative == ALT_EXPRESSION ||
                     temp_payload->alternative == ALT_PARAMETER_LIST) {
                     free(temp_payload->predicate_definition.identifier);
+                    hashmap_free(temp_payload->predicate_definition.scope, NULL);
                 }
                 break;
             case N_FUNCTION_DEFINITION:
@@ -38,6 +41,7 @@ void payload_free(void *payload)
                     temp_payload->alternative == ALT_PARAMETER_LIST) {
                     free(temp_payload->function_definition.type);
                     free(temp_payload->function_definition.identifier);
+                    hashmap_free(temp_payload->function_definition.scope, NULL);
                 }
                 break;
             case N_PARAMETER:

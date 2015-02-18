@@ -5,10 +5,14 @@
     #include <assert.h>
     #include <string.h>
     #include <tree.h>
+    #include <stack.h>
+    #include <hashmap.h>
     #include "ast.h"
     #include "parser_state.h"
 
     struct stack *allocated_nodes = NULL;
+    struct stack *current_scope = NULL;
+    struct stack *global_scope = NULL;
 }
 
 %token_type { const char * }
@@ -60,6 +64,13 @@ translation_unit(NODE) ::= declaration_sequence(DS).
     struct payload *payload = malloc(sizeof(struct payload));
     payload->type = N_TRANSLATION_UNIT;
     payload->alternative = ALT_DECLARATION_SEQUENCE;
+    payload->translation_unit.scope = NULL;
+    struct hashmap_entry *temp;
+    while ((temp = stack_pop(&global_scope)) != NULL){
+        hashmap_put(&(payload->translation_unit.scope), temp->key, temp->value);
+        free(temp->key);
+        free(temp);
+    }
     NODE = tree_create_node(payload, 1, DS);
     parser_state->root = NODE;
     parser_state->state = OK;
@@ -253,7 +264,12 @@ predicate_definition(NODE) ::= PREDICATE IDENTIFIER(I) LPAREN RPAREN DEF express
     payload->alternative = ALT_EXPRESSION;
     payload->predicate_definition.identifier = malloc(strlen(I) + 1);
     strcpy((char *)(payload->predicate_definition.identifier), I);
+    payload->predicate_definition.scope = NULL;
     NODE = tree_create_node(payload, 1, E);
+    struct hashmap_entry *temp = malloc(sizeof(struct hashmap_entry));
+    temp->key = strdup(I);
+    temp->value = NODE;
+    stack_push(&global_scope, temp);
     stack_push(&allocated_nodes, NODE);
     free((char *)I);
 }
@@ -264,7 +280,18 @@ predicate_definition(NODE) ::= PREDICATE IDENTIFIER(I) LPAREN parameter_list(PL)
     payload->alternative = ALT_PARAMETER_LIST;
     payload->predicate_definition.identifier = malloc(strlen(I) + 1);
     strcpy((char *)(payload->predicate_definition.identifier), I);
+    payload->predicate_definition.scope = NULL;
+    struct hashmap_entry *temp;
+    while ((temp = stack_pop(&current_scope)) != NULL){
+        hashmap_put(&(payload->predicate_definition.scope), temp->key, temp->value);
+        free(temp->key);
+        free(temp);
+    }
     NODE = tree_create_node(payload, 2, PL, E);
+    temp = malloc(sizeof(struct hashmap_entry));
+    temp->key = strdup(I);
+    temp->value = NODE;
+    stack_push(&global_scope, temp);
     stack_push(&allocated_nodes, NODE);
     free((char *)I);
 }
@@ -279,7 +306,12 @@ function_definition(NODE) ::= TYPE(T) IDENTIFIER(I) LPAREN RPAREN DEF expression
     strcpy((char *)(payload->function_definition.type), T);
     payload->function_definition.identifier = malloc(strlen(I) + 1);
     strcpy((char *)(payload->function_definition.identifier), I);
+    payload->function_definition.scope = NULL;
     NODE = tree_create_node(payload, 1, E);
+    struct hashmap_entry *temp = malloc(sizeof(struct hashmap_entry));
+    temp->key = strdup(I);
+    temp->value = NODE;
+    stack_push(&global_scope, temp);
     stack_push(&allocated_nodes, NODE);
     free((char *)T);
     free((char *)I);
@@ -293,7 +325,18 @@ function_definition(NODE) ::= TYPE(T) IDENTIFIER(I) LPAREN parameter_list(PL) RP
     strcpy((char *)(payload->function_definition.type), T);
     payload->function_definition.identifier = malloc(strlen(I) + 1);
     strcpy((char *)(payload->function_definition.identifier), I);
+    payload->function_definition.scope = NULL;
+    struct hashmap_entry *temp;
+    while ((temp = stack_pop(&current_scope)) != NULL){
+        hashmap_put(&(payload->function_definition.scope), temp->key, temp->value);
+        free(temp->key);
+        free(temp);
+    }
     NODE = tree_create_node(payload, 2, PL, E);
+    temp = malloc(sizeof(struct hashmap_entry));
+    temp->key = strdup(I);
+    temp->value = NODE;
+    stack_push(&global_scope, temp);
     stack_push(&allocated_nodes, NODE);
     free((char *)T);
     free((char *)I);
@@ -334,6 +377,12 @@ parameter(NODE) ::= TYPE(T) IDENTIFIER(I).
     payload->parameter.identifier = malloc(strlen(I) + 1);
     strcpy((char *)(payload->parameter.identifier), I);
     NODE = tree_create_node(payload, 0);
+
+    struct hashmap_entry *entry = malloc(sizeof(struct hashmap_entry));
+    entry->key = strdup(I);
+    entry->value = NODE;
+    stack_push(&current_scope, entry);
+
     stack_push(&allocated_nodes, NODE);
     free((char *)T);
     free((char *)I);

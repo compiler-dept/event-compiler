@@ -82,6 +82,9 @@ struct payload {
 
     union {
         struct {
+            struct hashmap *scope;
+        } translation_unit;
+        struct {
             double number;
             char *identifier[2];
         } atomic;
