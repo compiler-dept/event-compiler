@@ -94,9 +94,11 @@ struct payload {
         struct {
             char *type;
             char *identifier;
+            struct hashmap *scope;
         } function_definition;
         struct {
             char *identifier;
+            struct hashmap *scope;
         } predicate_definition;
         struct {
             char *type;
