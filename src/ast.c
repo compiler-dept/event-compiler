@@ -27,6 +27,12 @@ void payload_free(void *payload)
                     free(temp_payload->event_sequence.type);
                 }
                 break;
+            case N_PREDICATE_DEFINITION:
+                if (temp_payload->alternative == ALT_EXPRESSION ||
+                    temp_payload->alternative == ALT_PARAMETER_LIST) {
+                    free(temp_payload->predicate_definition.identifier);
+                }
+                break;
             case N_FUNCTION_DEFINITION:
                 if (temp_payload->alternative == ALT_EXPRESSION ||
                     temp_payload->alternative == ALT_PARAMETER_LIST) {
