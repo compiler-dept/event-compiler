@@ -1,5 +1,6 @@
 #include <stdlib.h>
 #include <stdio.h>
+#include <hashmap.h>
 #include "ast.h"
 
 void payload_free(void *payload)
