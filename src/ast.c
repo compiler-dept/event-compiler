@@ -15,7 +15,7 @@ void payload_free(void *payload)
                 break;
             case N_RULE_DECLARATION:
                 if (temp_payload->alternative == ALT_RULE_SIGNATURE) {
-                    free(temp_payload->rule_declaration.type);
+                    free(temp_payload->rule_declaration.name);
                     free(temp_payload->rule_declaration.identifier);
                 }
                 break;

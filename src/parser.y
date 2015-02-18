@@ -156,8 +156,8 @@ rule_declaration(NODE) ::= TYPE(T) COLON rule_signature(RS) RARROW IDENTIFIER(I)
     struct payload *payload = malloc(sizeof(struct payload));
     payload->type = N_RULE_DECLARATION;
     payload->alternative = ALT_RULE_SIGNATURE;
-    payload->rule_declaration.type = malloc(strlen(T) + 1);
-    strcpy((char *)(payload->rule_declaration.type), T);
+    payload->rule_declaration.name = malloc(strlen(T) + 1);
+    strcpy((char *)(payload->rule_declaration.name), T);
     payload->rule_declaration.identifier = malloc(strlen(I) + 1);
     strcpy((char *)(payload->rule_declaration.identifier), I);
     NODE = tree_create_node(payload, 1, RS);
