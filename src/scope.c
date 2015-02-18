@@ -6,7 +6,7 @@
 struct node *find_scope_for(struct node *node)
 {
 	struct node *temp = node;
-	while ((temp = node->parent) != NULL) {
+	while ((temp = temp->parent) != NULL) {
 		if (((struct payload *)temp->payload)->type == N_FUNCTION_DEFINITION
 		    || ((struct payload *)temp->payload)->type == N_PREDICATE_DEFINITION
             || ((struct payload *)temp->payload)->type == N_TRANSLATION_UNIT) {
@@ -28,7 +28,7 @@ struct node *resolve_reference(struct node *scope, const char *id){
         default:
             return NULL;
     }
-} 
+}
 
 void link_references(struct node *node){
     struct tree_iterator *it = tree_iterator_init(&node, POSTORDER);
@@ -43,6 +43,6 @@ void link_references(struct node *node){
             }
         }
     }
-    
+
     tree_iterator_free(it);
 }

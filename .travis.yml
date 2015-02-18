@@ -4,10 +4,12 @@ compiler:
   - gcc
 before_install:
   - sudo apt-get update -qq
-  - sudo apt-get install -qq git valgrind
+  - sudo apt-get install -qq valgrind
 install:
   - make getexternals
   - make -C libcollect
   - make -C lemon
 script:
+  - make
   - make test
+  - make valgrind

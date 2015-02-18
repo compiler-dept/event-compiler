@@ -12,7 +12,7 @@ COBJECTS=$(patsubst %.c, %.o, $(SOURCES))
 LOBJECTS=$(patsubst %.l, %.o, $(COBJECTS))
 OBJECTS=$(patsubst %.y, %.o, $(LOBJECTS))
 
-.PHONY: all clean lemon libcollect getexternals
+.PHONY: all clean lemon libcollect getexternals test valgrind
 
 all: $(BIN)
 
@@ -35,6 +35,8 @@ tests/testsuite: $(TEST_SOURCES) $(TEST_DEPS) libcollect
 
 test: tests/testsuite
 	tests/testsuite
+
+valgrind: tests/testsuite
 	valgrind --leak-check=full --error-exitcode=1 --suppressions=tests/valgrind.supp tests/testsuite
 
 clean:
