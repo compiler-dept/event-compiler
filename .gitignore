@@ -41,3 +41,5 @@ src/parser.h
 
 # OS X
 *.dSYM
+
+.gdb_history
