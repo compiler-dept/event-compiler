@@ -42,7 +42,7 @@ clean:
 	rm -rf tests/testsuite tests/testsuite.dSYM tests/.clarcache tests/clar.suite
 
 libcollect:
-	@- make -C libcollect
+	@- CFLAGS=-DTREE_PARENT_POINTERS make -C libcollect
 
 lemon:
 	@- make -C lemon
