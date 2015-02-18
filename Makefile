@@ -7,7 +7,7 @@ LDLIBS=-lcollect
 YACC=lemon/lemon
 LEX=flex
 
-SOURCES=src/event-compiler.c src/compiler.c src/lexer.l src/parser.y src/ast.c
+SOURCES=src/event-compiler.c src/compiler.c src/lexer.l src/parser.y src/ast.c src/scope.c
 COBJECTS=$(patsubst %.c, %.o, $(SOURCES))
 LOBJECTS=$(patsubst %.l, %.o, $(COBJECTS))
 OBJECTS=$(patsubst %.y, %.o, $(LOBJECTS))
