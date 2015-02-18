@@ -103,7 +103,7 @@ struct payload {
             char *identifier;
         } parameter;
         struct {
-            char *type;
+            char *name;
             char *identifier;
         } rule_declaration;
         struct {
