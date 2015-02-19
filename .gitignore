@@ -43,3 +43,6 @@ src/parser.h
 *.dSYM
 
 .gdb_history
+
+# Docs
+docs/html
