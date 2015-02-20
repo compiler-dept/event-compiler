@@ -12,7 +12,7 @@ COBJECTS=$(patsubst %.c, %.o, $(SOURCES))
 LOBJECTS=$(patsubst %.l, %.o, $(COBJECTS))
 OBJECTS=$(patsubst %.y, %.o, $(LOBJECTS))
 
-.PHONY: all clean lemon libcollect getexternals test valgrind
+.PHONY: all clean lemon libcollect getexternals test valgrind docs
 
 all: $(BIN)
 
@@ -39,9 +39,13 @@ test: tests/testsuite
 valgrind: tests/testsuite
 	valgrind --leak-check=full --error-exitcode=1 --suppressions=tests/valgrind.supp tests/testsuite
 
+docs:
+	doxygen docs/Doxyfile
+
 clean:
 	rm -f $(BIN) $(OBJECTS) src/lexer.c src/lexer.h src/parser.c src/parser.h src/parser.out
 	rm -rf tests/testsuite tests/testsuite.dSYM tests/.clarcache tests/clar.suite
+	rm -rf docs/html
 
 libcollect:
 	@- make -C libcollect
