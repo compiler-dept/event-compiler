@@ -41,6 +41,10 @@ void link_references(struct node *node){
                 const char *id = ((struct payload *)temp->payload)->atomic.identifier[0];
                 ((struct payload *)temp->payload)->atomic.ref = resolve_reference(scope, id);
             }
+        } else if (((struct payload *)temp->payload)->type == N_FUNCTION_CALL){
+            struct node *scope = find_scope_for(temp);
+            const char *id = ((struct payload *)temp->payload)->function_call.identifier;
+            ((struct payload *)temp->payload)->function_call.ref = resolve_reference(scope, id);
         }
     }
 

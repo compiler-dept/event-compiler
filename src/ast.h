@@ -121,6 +121,7 @@ struct payload {
 		/** function_call payload */
 		struct {
 			char *identifier;
+            struct node *ref;
 		} function_call;
 		/** function_definition payload */
 		struct {
