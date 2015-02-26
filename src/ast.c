@@ -51,12 +51,9 @@ void payload_free(void *payload)
                     free(temp_payload->parameter.identifier);
                 }
                 break;
-            case N_PREDICATE_SEQUENCE:
+            case N_PREDICATE:
                 if (temp_payload->alternative == ALT_IDENTIFIER) {
-                    for (int i = 0; i < temp_payload->predicate_sequence.count; i++) {
-                        free(temp_payload->predicate_sequence.identifier[i]);
-                    }
-                    free(temp_payload->predicate_sequence.identifier);
+                    free(temp_payload->predicate.identifier);
                 }
                 break;
             case N_FUNCTION_CALL:

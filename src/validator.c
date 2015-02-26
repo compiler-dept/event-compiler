@@ -51,9 +51,25 @@ int validate(struct node *root)
                 break;
             case N_PREDICATE_SEQUENCE:
                 break;
+            case N_PREDICATE:
+                
+                break;
             case N_PREDICATE_DEFINITION:
+                op1 = stack_pop(&type_stack);
+                if (*op1 != T_BOOL) {
+                    success = 0;
+                }
                 break;
             case N_FUNCTION_DEFINITION:
+                op1 = stack_pop(&type_stack);
+                if (*op1 == T_EVENT) {
+                    typename1 = stack_pop(&type_stack);
+                    if(strcmp(typename1, payload->function_definition.type) != 0) {
+                        success = 0;
+                    }
+                } else {
+                    success = 0;
+                }
                 break;
             case N_PARAMETER_LIST:
                 break;
@@ -67,13 +83,13 @@ int validate(struct node *root)
                 tempnode2 = temp->childv[0]->childv[0];
 
                 // check number of parameters
-                if (tempnode1->childv[0]->childc == tempnode2->childc){
+                if (tempnode1->childv[0]->childc == tempnode2->childc) {
                     // check parameter types against function definition
                     for (int i = 0; i < tempnode2->childc; i++){
-                        if (*((enum types *)stack_pop(&type_stack)) == T_EVENT){
+                        if (*((enum types *)stack_pop(&type_stack)) == T_EVENT) {
                             typename1 = stack_pop(&type_stack);
                             typename2 = ((struct payload *)tempnode1->childv[0]->childv[i]->payload)->parameter.type;
-                            if (strcmp(typename1, typename2) != 0){
+                            if (strcmp(typename1, typename2) != 0) {
                                 success = 0;
                                 break;
                             }
@@ -105,12 +121,12 @@ int validate(struct node *root)
                 }
                 break;
             case N_INITIALIZER:
-                if (*((enum types *) stack_peek(type_stack)) != T_VECTOR){
+                if (*((enum types *) stack_peek(type_stack)) != T_VECTOR) {
                     success = 0;
                 }
                 break;
             case N_VECTOR:
-                if (*((enum types *) stack_pop(&type_stack)) != T_NUMBER){
+                if (*((enum types *) stack_pop(&type_stack)) != T_NUMBER) {
                     success = 0;
                 } else {
                     stack_push(&type_stack, new_type(T_VECTOR));
@@ -119,7 +135,7 @@ int validate(struct node *root)
             case N_COMPONENT_SEQUENCE:
                 op1 = stack_pop(&type_stack);
                 for (int i = 1; i<temp->childc; i++){
-                   if (*((enum types *)stack_pop(&type_stack)) != *op1){
+                   if (*((enum types *)stack_pop(&type_stack)) != *op1) {
                         success = 0;
                         break;
                    }
@@ -133,7 +149,7 @@ int validate(struct node *root)
             case N_COMPARISON_EXPRESSION:
                 op2 = stack_pop(&type_stack);
                 op1 = stack_pop(&type_stack);
-                if (*op1 != T_VECTOR || *op2 != T_VECTOR){
+                if (*op1 != T_VECTOR || *op2 != T_VECTOR) {
                     success = 0;
                 } else {
                     stack_push(&type_stack, new_type(T_BOOL));
@@ -146,7 +162,7 @@ int validate(struct node *root)
             case N_ADDITION:
                 op2 = stack_pop(&type_stack);
                 op1 = stack_peek(type_stack);
-                if (*op1 != T_NUMBER || *op2 != T_NUMBER){
+                if (*op1 != T_NUMBER || *op2 != T_NUMBER) {
                     success = 0;
                 }
                 break;
@@ -156,12 +172,12 @@ int validate(struct node *root)
                 op2 = stack_pop(&type_stack);
                 op1 = stack_peek(type_stack);
                 //TODO scalar * vector
-                if (*op1 != T_NUMBER || *op2 != T_NUMBER){
+                if (*op1 != T_NUMBER || *op2 != T_NUMBER) {
                     success = 0;
                 }
                 break;
             case N_NEGATION:
-                if (*((enum types *)(stack_peek(type_stack))) != T_NUMBER){
+                if (*((enum types *)(stack_peek(type_stack))) != T_NUMBER) {
                     success = 0;
                 }
                 break;

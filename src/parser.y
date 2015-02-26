@@ -29,6 +29,7 @@
 %type rule_signature { struct node * }
 %type event_sequence { struct node * }
 %type predicate_sequence { struct node * }
+%type predicate { struct node * }
 %type predicate_definition { struct node * }
 %type function_definition { struct node * }
 %type parameter_list { struct node * }
@@ -229,28 +230,32 @@ event_sequence(NODE) ::= TYPE(T).
     free((char *)T);
 }
 
-predicate_sequence(NODE) ::= predicate_sequence(PS) COMMA IDENTIFIER(I).
+predicate_sequence(NODE) ::= predicate_sequence(PS) COMMA predicate(P).
 {
-    struct payload *payload = PS->payload;
-    payload->predicate_sequence.count += 1;
-    payload->predicate_sequence.identifier =
-        realloc(payload->predicate_sequence.identifier,
-            payload->predicate_sequence.count * sizeof(char *));
-    payload->predicate_sequence.identifier[payload->predicate_sequence.count - 1] =
-        malloc(strlen(I) + 1);
-    strcpy((char *)(payload->predicate_sequence.identifier[payload->predicate_sequence.count - 1]), I);
-    NODE = PS;
-    free((char *)I);
+    NODE = malloc(sizeof(struct node) + ((PS->childc + 1) * sizeof(struct node *)));
+    NODE->payload = PS->payload;
+    NODE->childc = PS->childc + 1;
+    memcpy(NODE->childv, PS->childv, PS->childc * sizeof(struct node *));
+    NODE->childv[PS->childc] = P;
+    stack_pop(&allocated_nodes);
+    free(PS);
 }
-predicate_sequence(NODE) ::= IDENTIFIER(I).
+predicate_sequence(NODE) ::= predicate(P).
 {
     struct payload *payload = malloc(sizeof(struct payload));
     payload->type = N_PREDICATE_SEQUENCE;
+    payload->alternative = ALT_PREDICATE;
+    NODE = tree_create_node(payload, 1, P);
+    stack_push(&allocated_nodes, NODE);
+}
+
+predicate(NODE) ::= IDENTIFIER(I).
+{
+    struct payload *payload = malloc(sizeof(struct payload));
+    payload->type = N_PREDICATE;
     payload->alternative = ALT_IDENTIFIER;
-    payload->predicate_sequence.count = 1;
-    payload->predicate_sequence.identifier = malloc(sizeof(char *));
-    payload->predicate_sequence.identifier[0] = malloc(strlen(I) + 1);
-    strcpy((char *)(payload->predicate_sequence.identifier[0]), I);
+    payload->predicate.ref = NULL;
+    payload->predicate.identifier = strdup(I);
     NODE = tree_create_node(payload, 0);
     stack_push(&allocated_nodes, NODE);
     free((char *)I);

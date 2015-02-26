@@ -20,6 +20,7 @@ enum type {
 	N_EVENT_SEQUENCE,
 	N_PREDICATE_SEQUENCE,
 	N_PREDICATE_DEFINITION,
+	N_PREDICATE,
 	N_FUNCTION_DEFINITION,
 	N_PARAMETER_LIST,
 	N_PARAMETER,
@@ -86,6 +87,7 @@ enum alternative {
 	ALT_EVENT_SEQUENCE,
 	ALT_NONE,
 	ALT_PREDICATE_SEQUENCE,
+	ALT_PREDICATE,
 	ALT_NUMBER,
 	ALT_PRIMARY_EXPRESSION
 };
@@ -148,11 +150,11 @@ struct payload {
 		struct {
 			char *type[2];
 		} event_inheritance;
-		/** predicate_sequence payload */
+		/** predicate payload */
 		struct {
-			int count;
-			char **identifier;
-		} predicate_sequence;
+			char *identifier;
+			struct node *ref;
+		} predicate;
 		/** event_sequence payload */
 		struct {
 			int count;

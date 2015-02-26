@@ -35,17 +35,21 @@ void link_references(struct node *node){
 
     struct node *temp = NULL;
     while ((temp = tree_iterator_next(it)) != NULL) {
+		struct node *scope = find_scope_for(temp);
+		char *id = NULL;
+
         if (((struct payload *)temp->payload)->type == N_ATOMIC){
-            if (((struct payload *)temp->payload)->alternative == ALT_IDENTIFIER){
-                struct node *scope = find_scope_for(temp);
-                const char *id = ((struct payload *)temp->payload)->atomic.identifier[0];
+            if (((struct payload *)temp->payload)->alternative == ALT_IDENTIFIER) {
+                id = ((struct payload *)temp->payload)->atomic.identifier[0];
                 ((struct payload *)temp->payload)->atomic.ref = resolve_reference(scope, id);
             }
-        } else if (((struct payload *)temp->payload)->type == N_FUNCTION_CALL){
-            struct node *scope = find_scope_for(temp);
-            const char *id = ((struct payload *)temp->payload)->function_call.identifier;
+        } else if (((struct payload *)temp->payload)->type == N_FUNCTION_CALL) {
+            id = ((struct payload *)temp->payload)->function_call.identifier;
             ((struct payload *)temp->payload)->function_call.ref = resolve_reference(scope, id);
-        }
+        } else if(((struct payload *)temp->payload)->type == N_PREDICATE) {
+			id = ((struct payload *)temp->payload)->predicate.identifier;
+			((struct payload *)temp->payload)->predicate.ref = resolve_reference(scope, id);
+		}
     }
 
     tree_iterator_free(it);
