@@ -46,13 +46,36 @@ int validate(struct node *root)
             case N_RULE_DECLARATION:
                 break;
             case N_RULE_SIGNATURE:
+                /* loop over predicates */
+                for (int i = 0; i < temp->childv[1]->childc; i++) {
+                    /* get predicate definition */
+                    tempnode1 = ((struct payload *)(temp->childv[1]->childv[i]->payload))->predicate.ref;
+                    if (tempnode1->childc == 2) {
+                        /* loop over parameters */
+                        for (int j = 0; j < tempnode1->childv[0]->childc; j++) {
+                            tempnode2 = tempnode1->childv[0]->childv[j];
+                            typename1 = ((struct payload *)(tempnode2->payload))->parameter.type;
+                            typename2 = ((struct payload *)(temp->childv[0]->payload))->event_sequence.type[j];
+                            if (strcmp(typename1, typename2) != 0) {
+                                success = 0;
+                                break;
+                            }
+                        }
+
+                        if (!success) {
+                            break;
+                        }
+                    } else if (temp->childc != 1) {
+                        success = 0;
+                        break;
+                    }
+                }
                 break;
             case N_EVENT_SEQUENCE:
                 break;
             case N_PREDICATE_SEQUENCE:
                 break;
             case N_PREDICATE:
-                
                 break;
             case N_PREDICATE_DEFINITION:
                 op1 = stack_pop(&type_stack);

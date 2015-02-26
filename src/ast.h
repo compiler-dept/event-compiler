@@ -145,6 +145,7 @@ struct payload {
 		struct {
 			char *name;
 			char *identifier;
+			struct node *ref;
 		} rule_declaration;
 		/** event_inheritance payload */
 		struct {
