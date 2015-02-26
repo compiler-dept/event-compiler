@@ -24,7 +24,7 @@ int validate(struct node *root)
     struct node *temp = NULL;
     struct payload *payload = NULL;
     struct stack *type_stack = NULL;
-    enum types *op2 = NULL; 
+    enum types *op2 = NULL;
     enum types *op1 = NULL;
     struct node *tempnode1 = NULL;
     struct node *tempnode2 = NULL;
@@ -37,34 +37,34 @@ int validate(struct node *root)
         switch (payload->type) {
             case N_TRANSLATION_UNIT:
                 break;
-        	case N_DECLARATION_SEQUENCE:
+            case N_DECLARATION_SEQUENCE:
                 break;
-        	case N_DECLARATION:
+            case N_DECLARATION:
                 break;
-        	case N_EVENT_INHERITANCE:
+            case N_EVENT_INHERITANCE:
                 break;
-        	case N_RULE_DECLARATION:
+            case N_RULE_DECLARATION:
                 break;
-        	case N_RULE_SIGNATURE:
+            case N_RULE_SIGNATURE:
                 break;
-        	case N_EVENT_SEQUENCE:
+            case N_EVENT_SEQUENCE:
                 break;
-        	case N_PREDICATE_SEQUENCE:
+            case N_PREDICATE_SEQUENCE:
                 break;
-        	case N_PREDICATE_DEFINITION:
+            case N_PREDICATE_DEFINITION:
                 break;
-        	case N_FUNCTION_DEFINITION:
+            case N_FUNCTION_DEFINITION:
                 break;
-        	case N_PARAMETER_LIST:
+            case N_PARAMETER_LIST:
                 break;
-        	case N_PARAMETER:
+            case N_PARAMETER:
                 break;
-        	case N_FUNCTION_CALL:
+            case N_FUNCTION_CALL:
                 // get corresponding function definition from scope
                 tempnode1 = ((struct payload *)payload)->function_call.ref;
 
                 // get expression sequence via argument sequence
-                tempnode2 = temp->childv[0]->childv[0]; 
+                tempnode2 = temp->childv[0]->childv[0];
 
                 // check number of parameters
                 if (tempnode1->childv[0]->childc == tempnode2->childc){
@@ -81,7 +81,7 @@ int validate(struct node *root)
                             success = 0;
                             break;
                         }
-                    } 
+                    }
                 } else {
                     success = 0;
                 }
@@ -93,44 +93,44 @@ int validate(struct node *root)
                     stack_push(&type_stack, new_type(T_EVENT));
                 }
                 break;
-        	case N_ARGUMENT_SEQUENCE:
+            case N_ARGUMENT_SEQUENCE:
                 break;
-        	case N_EVENT_DEFINITION:
+            case N_EVENT_DEFINITION:
                 stack_pop(&type_stack);
                 stack_push(&type_stack, new_type(T_EVENT));
                 break;
-        	case N_INITIALIZER_SEQUENCE:
+            case N_INITIALIZER_SEQUENCE:
                 for (int i = 0; i < temp->childc - 1; i++){
                     stack_pop(&type_stack);
                 }
                 break;
-        	case N_INITIALIZER:
+            case N_INITIALIZER:
                 if (*((enum types *) stack_peek(type_stack)) != T_VECTOR){
                     success = 0;
                 }
                 break;
-        	case N_VECTOR:
+            case N_VECTOR:
                 if (*((enum types *) stack_pop(&type_stack)) != T_NUMBER){
                     success = 0;
                 } else {
                     stack_push(&type_stack, new_type(T_VECTOR));
                 }
                 break;
-        	case N_COMPONENT_SEQUENCE:
+            case N_COMPONENT_SEQUENCE:
                 op1 = stack_pop(&type_stack);
                 for (int i = 1; i<temp->childc; i++){
                    if (*((enum types *)stack_pop(&type_stack)) != *op1){
                         success = 0;
                         break;
-                   } 
+                   }
                 }
                 if (success){
                     stack_push(&type_stack, op1);
                 }
                 break;
-        	case N_EXPRESSION_SEQUENCE:
+            case N_EXPRESSION_SEQUENCE:
                 break;
-        	case N_COMPARISON_EXPRESSION:
+            case N_COMPARISON_EXPRESSION:
                 op2 = stack_pop(&type_stack);
                 op1 = stack_pop(&type_stack);
                 if (*op1 != T_VECTOR || *op2 != T_VECTOR){
@@ -139,20 +139,20 @@ int validate(struct node *root)
                     stack_push(&type_stack, new_type(T_BOOL));
                 }
                 break;
-        	case N_EXPRESSION:
+            case N_EXPRESSION:
                 break;
-        	case N_ADDITIVE_EXPRESSION:
+            case N_ADDITIVE_EXPRESSION:
                 break;
-        	case N_ADDITION:
+            case N_ADDITION:
                 op2 = stack_pop(&type_stack);
                 op1 = stack_peek(type_stack);
                 if (*op1 != T_NUMBER || *op2 != T_NUMBER){
                     success = 0;
                 }
                 break;
-        	case N_MULTIPLICATIVE_EXPRESSION:
+            case N_MULTIPLICATIVE_EXPRESSION:
                 break;
-        	case N_MULTIPLICATION:
+            case N_MULTIPLICATION:
                 op2 = stack_pop(&type_stack);
                 op1 = stack_peek(type_stack);
                 //TODO scalar * vector
@@ -160,14 +160,14 @@ int validate(struct node *root)
                     success = 0;
                 }
                 break;
-        	case N_NEGATION:
+            case N_NEGATION:
                 if (*((enum types *)(stack_peek(type_stack))) != T_NUMBER){
                     success = 0;
                 }
                 break;
-        	case N_PRIMARY_EXPRESSION:
+            case N_PRIMARY_EXPRESSION:
                 break;
-        	case N_ATOMIC:
+            case N_ATOMIC:
                 switch (payload->alternative) {
                     case ALT_IDENTIFIER: ;
                         struct payload *ref = (struct payload *)(payload->atomic.ref->payload);
