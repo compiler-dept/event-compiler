@@ -83,6 +83,8 @@ int validate(struct node *root)
                 if (*op1 != T_BOOL) {
                     success = 0;
                 }
+                free(op1);
+                op1 = NULL;
                 break;
             case N_FUNCTION_DEFINITION:
                 op1 = stack_pop(&type_stack);
@@ -94,6 +96,8 @@ int validate(struct node *root)
                 } else if (*op1 != T_GENERIC_EVENT) {
                     success = 0;
                 }
+                free(op1);
+                op1 = NULL;
                 break;
             case N_PARAMETER_LIST:
                 break;
@@ -109,24 +113,30 @@ int validate(struct node *root)
                 // check number of parameters
                 if (tempnode1->childv[0]->childc == tempnode2->childc) {
                     // check parameter types against function definition
-                    for (int i = 0; i < tempnode2->childc; i++){
-                        if (*((enum types *)stack_pop(&type_stack)) == T_EVENT) {
+                    for (int i = 0; i < tempnode2->childc; i++) {
+                        enum types *type = stack_pop(&type_stack);
+                        if (*type == T_EVENT) {
                             typename1 = stack_pop(&type_stack);
                             typename2 = ((struct payload *)tempnode1->childv[0]->childv[i]->payload)->parameter.type;
                             if (strcmp(typename1, typename2) != 0) {
                                 success = 0;
+                                free(type);
                                 break;
                             }
                         } else {
                             success = 0;
+                            free(type);
                             break;
                         }
+
+                        free(type);
                     }
                 } else {
                     success = 0;
+                    break;
                 }
 
-                if (success){
+                if (success) {
                     // push return type
                     typename1 = ((struct payload *)tempnode1->payload)->function_definition.type;
                     stack_push(&type_stack, typename1);
@@ -136,7 +146,7 @@ int validate(struct node *root)
             case N_ARGUMENT_SEQUENCE:
                 break;
             case N_EVENT_DEFINITION:
-                stack_pop(&type_stack);
+                free(stack_pop(&type_stack));
                 stack_push(&type_stack, new_type(T_GENERIC_EVENT));
                 break;
             case N_INITIALIZER_SEQUENCE:
@@ -145,16 +155,19 @@ int validate(struct node *root)
                 }
                 break;
             case N_INITIALIZER:
-                if (*((enum types *) stack_peek(type_stack)) != T_VECTOR) {
+                if (*((enum types *)stack_peek(type_stack)) != T_VECTOR) {
                     success = 0;
                 }
                 break;
             case N_VECTOR:
-                if (*((enum types *) stack_pop(&type_stack)) != T_NUMBER) {
+                op1 = stack_pop(&type_stack);
+                if (*op1 != T_NUMBER) {
                     success = 0;
                 } else {
                     stack_push(&type_stack, new_type(T_VECTOR));
                 }
+                free(op1);
+                op1 = NULL;
                 break;
             case N_COMPONENT_SEQUENCE:
                 op1 = stack_pop(&type_stack);
@@ -179,6 +192,10 @@ int validate(struct node *root)
                     } else {
                         stack_push(&type_stack, new_type(T_BOOL));
                     }
+                    free(op1);
+                    op1 = NULL;
+                    free(op2);
+                    op2 = NULL;
                 }
                 break;
             case N_EXPRESSION:
@@ -191,16 +208,20 @@ int validate(struct node *root)
                 if (*op1 != T_NUMBER || *op2 != T_NUMBER) {
                     success = 0;
                 }
+                free(op2);
+                op2 = NULL;
                 break;
             case N_MULTIPLICATIVE_EXPRESSION:
                 break;
             case N_MULTIPLICATION:
                 op2 = stack_pop(&type_stack);
                 op1 = stack_peek(type_stack);
-                //TODO scalar * vector
+                // TODO scalar * vector
                 if (*op1 != T_NUMBER || *op2 != T_NUMBER) {
                     success = 0;
                 }
+                free(op2);
+                op2 = NULL;
                 break;
             case N_NEGATION:
                 if (payload->alternative == ALT_NEGATION) {
