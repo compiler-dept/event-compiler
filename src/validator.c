@@ -8,7 +8,8 @@ enum types {
     T_NUMBER = 1,
     T_BOOL,
     T_VECTOR,
-    T_EVENT
+    T_EVENT,
+    T_GENERIC_EVENT
 };
 
 static enum types *new_type(enum types type)
@@ -90,7 +91,7 @@ int validate(struct node *root)
                     if(strcmp(typename1, payload->function_definition.type) != 0) {
                         success = 0;
                     }
-                } else {
+                } else if (*op1 != T_GENERIC_EVENT) {
                     success = 0;
                 }
                 break;
@@ -136,7 +137,7 @@ int validate(struct node *root)
                 break;
             case N_EVENT_DEFINITION:
                 stack_pop(&type_stack);
-                stack_push(&type_stack, new_type(T_EVENT));
+                stack_push(&type_stack, new_type(T_GENERIC_EVENT));
                 break;
             case N_INITIALIZER_SEQUENCE:
                 for (int i = 0; i < temp->childc - 1; i++){
@@ -170,12 +171,14 @@ int validate(struct node *root)
             case N_EXPRESSION_SEQUENCE:
                 break;
             case N_COMPARISON_EXPRESSION:
-                op2 = stack_pop(&type_stack);
-                op1 = stack_pop(&type_stack);
-                if (*op1 != T_VECTOR || *op2 != T_VECTOR) {
-                    success = 0;
-                } else {
-                    stack_push(&type_stack, new_type(T_BOOL));
+                if (payload->alternative != ALT_ADDITIVE_EXPRESSION) {
+                    op2 = stack_pop(&type_stack);
+                    op1 = stack_pop(&type_stack);
+                    if (*op1 != T_VECTOR || *op2 != T_VECTOR) {
+                        success = 0;
+                    } else {
+                        stack_push(&type_stack, new_type(T_BOOL));
+                    }
                 }
                 break;
             case N_EXPRESSION:
@@ -200,8 +203,10 @@ int validate(struct node *root)
                 }
                 break;
             case N_NEGATION:
-                if (*((enum types *)(stack_peek(type_stack))) != T_NUMBER) {
-                    success = 0;
+                if (payload->alternative == ALT_NEGATION) {
+                    if (*((enum types *)(stack_peek(type_stack))) != T_NUMBER) {
+                        success = 0;
+                    }
                 }
                 break;
             case N_PRIMARY_EXPRESSION:
