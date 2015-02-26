@@ -152,10 +152,8 @@ event_inheritance(NODE) ::= TYPE(TL) EXTENDS TYPE(TR).
     struct payload *payload = malloc(sizeof(struct payload));
     payload->type = N_EVENT_INHERITANCE;
     payload->alternative = ALT_TYPE;
-    payload->event_inheritance.type[0] = malloc(strlen(TL) + 1);
-    strcpy((char *)(payload->event_inheritance.type[0]), TL);
-    payload->event_inheritance.type[1] = malloc(strlen(TR) + 1);
-    strcpy((char *)(payload->event_inheritance.type[1]), TR);
+    payload->event_inheritance.type[0] = strdup(TL);
+    payload->event_inheritance.type[1] = strdup(TR);
     NODE = tree_create_node(payload, 0);
     stack_push(&allocated_nodes, NODE);
     free((char *)TL);
@@ -169,10 +167,8 @@ rule_declaration(NODE) ::= TYPE(T) COLON rule_signature(RS) RARROW IDENTIFIER(I)
     payload->type = N_RULE_DECLARATION;
     payload->alternative = ALT_RULE_SIGNATURE;
     payload->rule_declaration.ref = NULL;
-    payload->rule_declaration.name = malloc(strlen(T) + 1);
-    strcpy((char *)(payload->rule_declaration.name), T);
-    payload->rule_declaration.identifier = malloc(strlen(I) + 1);
-    strcpy((char *)(payload->rule_declaration.identifier), I);
+    payload->rule_declaration.name = strdup(T);
+    payload->rule_declaration.identifier = strdup(I);
     NODE = tree_create_node(payload, 1, RS);
     stack_push(&allocated_nodes, NODE);
     free((char *)T);
@@ -211,9 +207,7 @@ event_sequence(NODE) ::= event_sequence(ES) COMMA TYPE(T).
     payload->event_sequence.type =
         realloc(payload->event_sequence.type,
             payload->event_sequence.count * sizeof(char *));
-    payload->event_sequence.type[payload->event_sequence.count - 1] =
-        malloc(strlen(T) + 1);
-    strcpy((char *)(payload->event_sequence.type[payload->event_sequence.count - 1]), T);
+    payload->event_sequence.type[payload->event_sequence.count - 1] = strdup(T);
     NODE = ES;
     free((char *)T);
 }
@@ -224,8 +218,7 @@ event_sequence(NODE) ::= TYPE(T).
     payload->alternative = ALT_TYPE;
     payload->event_sequence.count = 1;
     payload->event_sequence.type = malloc(sizeof(char *));
-    payload->event_sequence.type[0] = malloc(strlen(T) + 1);
-    strcpy((char *)(payload->event_sequence.type[0]), T);
+    payload->event_sequence.type[0] = strdup(T);
     NODE = tree_create_node(payload, 0);
     stack_push(&allocated_nodes, NODE);
     free((char *)T);
@@ -268,8 +261,7 @@ predicate_definition(NODE) ::= PREDICATE IDENTIFIER(I) LPAREN RPAREN DEF express
     struct payload *payload = malloc(sizeof(struct payload));
     payload->type = N_PREDICATE_DEFINITION;
     payload->alternative = ALT_EXPRESSION;
-    payload->predicate_definition.identifier = malloc(strlen(I) + 1);
-    strcpy((char *)(payload->predicate_definition.identifier), I);
+    payload->predicate_definition.identifier = strdup(I);
     payload->predicate_definition.scope = NULL;
     NODE = tree_create_node(payload, 1, E);
     struct hashmap_entry *temp = malloc(sizeof(struct hashmap_entry));
@@ -284,8 +276,7 @@ predicate_definition(NODE) ::= PREDICATE IDENTIFIER(I) LPAREN parameter_list(PL)
     struct payload *payload = malloc(sizeof(struct payload));
     payload->type = N_PREDICATE_DEFINITION;
     payload->alternative = ALT_PARAMETER_LIST;
-    payload->predicate_definition.identifier = malloc(strlen(I) + 1);
-    strcpy((char *)(payload->predicate_definition.identifier), I);
+    payload->predicate_definition.identifier = strdup(I);
     payload->predicate_definition.scope = NULL;
     struct hashmap_entry *temp;
     while ((temp = stack_pop(&current_scope)) != NULL){
@@ -308,10 +299,8 @@ function_definition(NODE) ::= TYPE(T) IDENTIFIER(I) LPAREN RPAREN DEF expression
     struct payload *payload = malloc(sizeof(struct payload));
     payload->type = N_FUNCTION_DEFINITION;
     payload->alternative = ALT_EXPRESSION;
-    payload->function_definition.type = malloc(strlen(T) + 1);
-    strcpy((char *)(payload->function_definition.type), T);
-    payload->function_definition.identifier = malloc(strlen(I) + 1);
-    strcpy((char *)(payload->function_definition.identifier), I);
+    payload->function_definition.type = strdup(T);
+    payload->function_definition.identifier = strdup(I);
     payload->function_definition.scope = NULL;
     NODE = tree_create_node(payload, 1, E);
     struct hashmap_entry *temp = malloc(sizeof(struct hashmap_entry));
@@ -327,10 +316,8 @@ function_definition(NODE) ::= TYPE(T) IDENTIFIER(I) LPAREN parameter_list(PL) RP
     struct payload *payload = malloc(sizeof(struct payload));
     payload->type = N_FUNCTION_DEFINITION;
     payload->alternative = ALT_PARAMETER_LIST;
-    payload->function_definition.type = malloc(strlen(T) + 1);
-    strcpy((char *)(payload->function_definition.type), T);
-    payload->function_definition.identifier = malloc(strlen(I) + 1);
-    strcpy((char *)(payload->function_definition.identifier), I);
+    payload->function_definition.type = strdup(T);
+    payload->function_definition.identifier = strdup(I);
     payload->function_definition.scope = NULL;
     struct hashmap_entry *temp;
     while ((temp = stack_pop(&current_scope)) != NULL){
@@ -378,10 +365,8 @@ parameter(NODE) ::= TYPE(T) IDENTIFIER(I).
     struct payload *payload = malloc(sizeof(struct payload));
     payload->type = N_PARAMETER;
     payload->alternative = ALT_IDENTIFIER;
-    payload->parameter.type = malloc(strlen(T) + 1);
-    strcpy((char *)(payload->parameter.type), T);
-    payload->parameter.identifier = malloc(strlen(I) + 1);
-    strcpy((char *)(payload->parameter.identifier), I);
+    payload->parameter.type = strdup(T);
+    payload->parameter.identifier = strdup(I);
     NODE = tree_create_node(payload, 0);
 
     struct hashmap_entry *entry = malloc(sizeof(struct hashmap_entry));
@@ -400,8 +385,7 @@ function_call(NODE) ::= IDENTIFIER(I) LPAREN argument_sequence(AS) RPAREN.
     struct payload *payload = malloc(sizeof(struct payload));
     payload->type = N_FUNCTION_CALL;
     payload->alternative = ALT_ARGUMENT_SEQUENCE;
-    payload->function_call.identifier = malloc(strlen(I) + 1);
-    strcpy((char *)(payload->function_call.identifier), I);
+    payload->function_call.identifier = strdup(I);
     NODE = tree_create_node(payload, 1, AS);
     stack_push(&allocated_nodes, NODE);
     free((char *)I);
@@ -456,8 +440,7 @@ initializer(NODE) ::= IDENTIFIER(I) ASSIGN expression(E).
     struct payload *payload = malloc(sizeof(struct payload));
     payload->type = N_INITIALIZER;
     payload->alternative = ALT_EXPRESSION;
-    payload->initializer.identifier = malloc(strlen(I) + 1);
-    strcpy((char *)(payload->initializer.identifier), I);
+    payload->initializer.identifier = strdup(I);
     NODE = tree_create_node(payload, 1, E);
     stack_push(&allocated_nodes, NODE);
     free((char *)I);
@@ -666,10 +649,8 @@ atomic(NODE) ::= IDENTIFIER(IL) DOT IDENTIFIER(IR).
     struct payload *payload = malloc(sizeof(struct payload));
     payload->type = N_ATOMIC;
     payload->alternative = ALT_IDENTIFIER;
-    payload->atomic.identifier[0] = malloc(strlen(IL) + 1);
-    payload->atomic.identifier[1] = malloc(strlen(IR) + 1);
-    strcpy((char *)(payload->atomic.identifier[0]), IL);
-    strcpy((char *)(payload->atomic.identifier[1]), IR);
+    payload->atomic.identifier[0] = strdup(IL);
+    payload->atomic.identifier[1] = strdup(IR);
     NODE = tree_create_node(payload, 0);
     stack_push(&allocated_nodes, NODE);
     free((char *)IL);
@@ -680,9 +661,8 @@ atomic(NODE) ::= IDENTIFIER(I).
     struct payload *payload = malloc(sizeof(struct payload));
     payload->type = N_ATOMIC;
     payload->alternative = ALT_IDENTIFIER;
-    payload->atomic.identifier[0] = malloc(strlen(I) + 1);
+    payload->atomic.identifier[0] = strdup(I);
     payload->atomic.identifier[1] = NULL;
-    strcpy((char *)(payload->atomic.identifier[0]), I);
     NODE = tree_create_node(payload, 0);
     stack_push(&allocated_nodes, NODE);
     free((char *)I);
