@@ -12,7 +12,7 @@ COBJECTS=$(patsubst %.c, %.o, $(SOURCES))
 LOBJECTS=$(patsubst %.l, %.o, $(COBJECTS))
 OBJECTS=$(patsubst %.y, %.o, $(LOBJECTS))
 
-.PHONY: all clean lemon libcollect getexternals test valgrind docs docs\:deploy
+.PHONY: all clean lemon libcollect getexternals test valgrind docs docs\:deploy style
 
 all: $(BIN)
 
