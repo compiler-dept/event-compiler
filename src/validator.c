@@ -12,8 +12,7 @@ enum types {
     T_GENERIC_EVENT
 };
 
-static enum types *new_type(enum types type)
-{
+static enum types *new_type(enum types type) {
     enum types *t = malloc(sizeof(enum types));
     *t = type;
     return t;
@@ -90,7 +89,7 @@ int validate(struct node *root)
                 op1 = stack_pop(&type_stack);
                 if (*op1 == T_EVENT) {
                     typename1 = stack_pop(&type_stack);
-                    if(strcmp(typename1, payload->function_definition.type) != 0) {
+                    if (strcmp(typename1, payload->function_definition.type) != 0) {
                         success = 0;
                     }
                 } else if (*op1 != T_GENERIC_EVENT) {
@@ -150,7 +149,7 @@ int validate(struct node *root)
                 stack_push(&type_stack, new_type(T_GENERIC_EVENT));
                 break;
             case N_INITIALIZER_SEQUENCE:
-                for (int i = 0; i < temp->childc - 1; i++){
+                for (int i = 0; i < temp->childc - 1; i++) {
                     stack_pop(&type_stack);
                 }
                 break;
@@ -171,13 +170,13 @@ int validate(struct node *root)
                 break;
             case N_COMPONENT_SEQUENCE:
                 op1 = stack_pop(&type_stack);
-                for (int i = 1; i<temp->childc; i++){
-                   if (*((enum types *)stack_pop(&type_stack)) != *op1) {
+                for (int i = 1; i < temp->childc; i++) {
+                    if (*((enum types *)stack_pop(&type_stack)) != *op1) {
                         success = 0;
                         break;
-                   }
+                    }
                 }
-                if (success){
+                if (success) {
                     stack_push(&type_stack, op1);
                 }
                 break;
@@ -234,7 +233,8 @@ int validate(struct node *root)
                 break;
             case N_ATOMIC:
                 switch (payload->alternative) {
-                    case ALT_IDENTIFIER: ;
+                    case ALT_IDENTIFIER:
+                        ;
                         struct payload *ref = (struct payload *)(payload->atomic.ref->payload);
                         if (ref->type == N_PARAMETER) {
                             if (payload->atomic.identifier[1]) {

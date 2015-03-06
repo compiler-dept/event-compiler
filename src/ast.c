@@ -32,14 +32,14 @@ void payload_free(void *payload)
                 break;
             case N_PREDICATE_DEFINITION:
                 if (temp_payload->alternative == ALT_EXPRESSION ||
-                    temp_payload->alternative == ALT_PARAMETER_LIST) {
+                        temp_payload->alternative == ALT_PARAMETER_LIST) {
                     free(temp_payload->predicate_definition.identifier);
                     hashmap_free(temp_payload->predicate_definition.scope, NULL);
                 }
                 break;
             case N_FUNCTION_DEFINITION:
                 if (temp_payload->alternative == ALT_EXPRESSION ||
-                    temp_payload->alternative == ALT_PARAMETER_LIST) {
+                        temp_payload->alternative == ALT_PARAMETER_LIST) {
                     free(temp_payload->function_definition.type);
                     free(temp_payload->function_definition.identifier);
                     hashmap_free(temp_payload->function_definition.scope, NULL);

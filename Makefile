@@ -64,3 +64,6 @@ lemon:
 getexternals:
 	git submodule init
 	git submodule update
+
+style:
+	astyle -A3s4SpHk3jn "src/*.c" "src/*.h"
