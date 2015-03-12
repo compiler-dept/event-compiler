@@ -1,5 +1,26 @@
+#include "codegen.h"
+#include "compiler.h"
+#include "validator.h"
+#include "scope.h"
+#include <stdio.h>
+
 int main(int argc, const char *argv[])
 {
+    struct node *root = parse_ast("/* comment *//* Event Inheritance Definition */SampleEvent extends PositionEvent;PositionEvent extends BasicEvent;/* rule declaration */A: [p1, p2] -> a;B: [SampleEvent : p3, p4] -> foo;/* function definition */SampleEvent a() := {  pos = [1, 2, 3],  angle = [30.0]};/* function definition */SampleEvent foo(SampleEvent s1) := {  pos = 2 * s1.pos,  angle = [0]};/* predicate definition */predicate p1(SampleEvent s1, SampleEvent s2) := s1.pos == s2.pos;predicate p2(SampleEvent s1, SampleEvent s2) := s1.pos != s2.pos;predicate p3(SampleEvent s1, SampleEvent s2) := s1.pos < s2.pos;predicate p4(SampleEvent s1, SampleEvent s2) := s1.pos > s2.pos;predicate p5(SampleEvent s1, SampleEvent s2) := (s1.pos - s2.pos) < [1,1];");
+
+    link_references(root);
+
+    /*if (validate(root)) {
+        printf("YAY \\o/\n");
+    }*/
+
+    LLVMModuleRef module = generate_module(root, "TestModule");
+
+    tree_free(&root, payload_free);
+
+    LLVMDumpModule(module);
+
+    LLVMDisposeModule(module);
 
     return 0;
 }

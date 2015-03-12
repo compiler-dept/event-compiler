@@ -5,6 +5,6 @@
 #include <tree.h>
 #include "ast.h"
 
-LLVMModuleRef generate_module(struct node *ast, const char *mname);
+LLVMModuleRef generate_module(struct node *ast, const char *name);
 
 #endif

@@ -7,7 +7,7 @@
 void generate_rule_declaration(LLVMModuleRef module, struct node *node)
 {
     struct payload *payload = node->payload;
-    char *name = malloc((7 + strlen(payload->rule_declaration.name)) * sizeof(char));
+    char *name = malloc((1 + 7 + strlen(payload->rule_declaration.name)) * sizeof(char));
     sprintf(name, "%s_active", payload->rule_declaration.name);
 
     LLVMValueRef func = LLVMAddFunction(module, name, LLVMFunctionType(LLVMVoidType(), NULL, 0, 0));
@@ -20,6 +20,7 @@ void generate_rule_declaration(LLVMModuleRef module, struct node *node)
 
     LLVMVerifyFunction(func, LLVMPrintMessageAction);
     LLVMDisposeBuilder(builder);
+    free(name);
 }
 
 LLVMModuleRef generate_module(struct node *ast, const char *name)
