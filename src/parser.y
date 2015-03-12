@@ -228,7 +228,7 @@ predicate_sequence(NODE) ::= predicate_sequence(PS) COMMA predicate(P).
     NODE->payload = PS->payload;
     NODE->childc = PS->childc + 1;
     memcpy(NODE->childv, PS->childv, PS->childc * sizeof(struct node *));
-    NODE->childv[PS->childc] = P;
+    NODE->childv[NODE->childc - 1] = P;
     for (int i = 0; i < NODE->childc; i++) {
         NODE->childv[i]->parent = NODE;
     }
