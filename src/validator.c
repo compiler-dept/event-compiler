@@ -47,9 +47,16 @@ int validate(struct node *root)
                 break;
             case N_RULE_SIGNATURE:
                 /* loop over predicates */
-                for (int i = 0; i < temp->childv[1]->childc; i++) {
+                ;
+                int predicate_sequence_index;
+                if (payload->alternative == ALT_EVENT_SEQUENCE){
+                    predicate_sequence_index = 1;
+                } else {
+                    continue;
+                }
+                for (int i = 0; i < temp->childv[predicate_sequence_index]->childc; i++) {
                     /* get predicate definition */
-                    tempnode1 = ((struct payload *)(temp->childv[1]->childv[i]->payload))->predicate.ref;
+                    tempnode1 = ((struct payload *)(temp->childv[predicate_sequence_index]->childv[i]->payload))->predicate.ref;
                     if (tempnode1->childc == 2) {
                         /* loop over parameters */
                         for (int j = 0; j < tempnode1->childv[0]->childc; j++) {
