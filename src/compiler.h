@@ -3,5 +3,4 @@
 
 struct node *parse_ast(const char *);
 
-
 #endif

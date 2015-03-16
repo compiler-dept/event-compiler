@@ -90,16 +90,14 @@ translation_unit ::= error.
 
 declaration_sequence(NODE) ::= declaration_sequence(DS) declaration(D).
 {
-    struct payload *payload = malloc(sizeof(struct payload));
-    payload->type = N_DECLARATION_SEQUENCE;
-    payload->alternative = ALT_DECLARATION;
     NODE = malloc(sizeof(struct node) + sizeof(struct node *) * (DS->childc + 1));
-    NODE->payload = payload;
+    NODE->payload = DS->payload;
     NODE->childc = DS->childc + 1;
     memcpy(NODE->childv, DS->childv, sizeof(struct node *) * DS->childc);
     NODE->childv[NODE->childc - 1] = D;
-    payload_free(DS->payload);
-    DS->payload = NULL;
+    for (int i = 0; i < NODE->childc; i++) {
+        NODE->childv[i]->parent = NODE;
+    }
     stack_pop(&allocated_nodes);
     stack_push(&allocated_nodes, NODE);
     free(DS);
@@ -230,7 +228,10 @@ predicate_sequence(NODE) ::= predicate_sequence(PS) COMMA predicate(P).
     NODE->payload = PS->payload;
     NODE->childc = PS->childc + 1;
     memcpy(NODE->childv, PS->childv, PS->childc * sizeof(struct node *));
-    NODE->childv[PS->childc] = P;
+    NODE->childv[NODE->childc - 1] = P;
+    for (int i = 0; i < NODE->childc; i++) {
+        NODE->childv[i]->parent = NODE;
+    }
     stack_pop(&allocated_nodes);
     free(PS);
 }
@@ -337,16 +338,14 @@ function_definition(NODE) ::= TYPE(T) IDENTIFIER(I) LPAREN parameter_list(PL) RP
 
 parameter_list(NODE) ::= parameter_list(PL) COMMA parameter(P).
 {
-    struct payload *payload = malloc(sizeof(struct payload));
-    payload->type = N_INITIALIZER_SEQUENCE;
-    payload->alternative = ALT_INITIALIZER;
     NODE = malloc(sizeof(struct node) + sizeof(struct node *) * (PL->childc + 1));
-    NODE->payload = payload;
+    NODE->payload = PL->payload;
     NODE->childc = PL->childc + 1;
     memcpy(NODE->childv, PL->childv, sizeof(struct node *) * PL->childc);
     NODE->childv[NODE->childc - 1] = P;
-    payload_free(PL->payload);
-    PL->payload = NULL;
+    for (int i = 0; i < NODE->childc; i++) {
+        NODE->childv[i]->parent = NODE;
+    }
     stack_pop(&allocated_nodes);
     stack_push(&allocated_nodes, NODE);
     free(PL);
@@ -412,16 +411,14 @@ event_definition(NODE) ::= LBRACE initializer_sequence(IS) RBRACE.
 
 initializer_sequence(NODE) ::= initializer_sequence(IS) COMMA initializer(I).
 {
-    struct payload *payload = malloc(sizeof(struct payload));
-    payload->type = N_INITIALIZER_SEQUENCE;
-    payload->alternative = ALT_INITIALIZER;
     NODE = malloc(sizeof(struct node) + sizeof(struct node *) * (IS->childc + 1));
-    NODE->payload = payload;
+    NODE->payload = IS->payload;
     NODE->childc = IS->childc + 1;
     memcpy(NODE->childv, IS->childv, sizeof(struct node *) * IS->childc);
     NODE->childv[NODE->childc - 1] = I;
-    payload_free(IS->payload);
-    IS->payload = NULL;
+    for (int i = 0; i < NODE->childc; i++) {
+        NODE->childv[i]->parent = NODE;
+    }
     stack_pop(&allocated_nodes);
     stack_push(&allocated_nodes, NODE);
     free(IS);
@@ -468,16 +465,14 @@ component_sequence(NODE) ::= expression_sequence(ES).
 // expression_sequence
 expression_sequence(NODE) ::= expression_sequence(ES) COMMA expression(E).
 {
-    struct payload *payload = malloc(sizeof(struct payload));
-    payload->type = N_EXPRESSION_SEQUENCE;
-    payload->alternative = ALT_EXPRESSION;
     NODE = malloc(sizeof(struct node) + sizeof(struct node *) * (ES->childc + 1));
-    NODE->payload = payload;
+    NODE->payload = ES->payload;
     NODE->childc = ES->childc + 1;
     memcpy(NODE->childv, ES->childv, sizeof(struct node *) * ES->childc);
     NODE->childv[NODE->childc - 1] = E;
-    payload_free(ES->payload);
-    ES->payload = NULL;
+    for (int i = 0; i < NODE->childc; i++) {
+        NODE->childv[i]->parent = NODE;
+    }
     stack_pop(&allocated_nodes);
     stack_push(&allocated_nodes, NODE);
     free(ES);
