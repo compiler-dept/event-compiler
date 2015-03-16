@@ -1,6 +1,7 @@
 #include <stdlib.h>
 #include <stack.h>
 #include <string.h>
+#include <stdio.h>
 #include "ast.h"
 #include "validator.h"
 
@@ -12,7 +13,8 @@ enum types {
     T_GENERIC_EVENT
 };
 
-static enum types *new_type(enum types type) {
+static enum types *new_type(enum types type)
+{
     enum types *t = malloc(sizeof(enum types));
     *t = type;
     return t;
@@ -47,34 +49,41 @@ int validate(struct node *root)
                 break;
             case N_RULE_SIGNATURE:
                 /* loop over predicates */
-                ;
-                int predicate_sequence_index;
-                if (payload->alternative == ALT_EVENT_SEQUENCE){
-                    predicate_sequence_index = 1;
-                } else {
-                    continue;
-                }
-                for (int i = 0; i < temp->childv[predicate_sequence_index]->childc; i++) {
-                    /* get predicate definition */
-                    tempnode1 = ((struct payload *)(temp->childv[predicate_sequence_index]->childv[i]->payload))->predicate.ref;
-                    if (tempnode1->childc == 2) {
-                        /* loop over parameters */
-                        for (int j = 0; j < tempnode1->childv[0]->childc; j++) {
-                            tempnode2 = tempnode1->childv[0]->childv[j];
-                            typename1 = ((struct payload *)(tempnode2->payload))->parameter.type;
-                            typename2 = ((struct payload *)(temp->childv[0]->payload))->event_sequence.type[j];
-                            if (strcmp(typename1, typename2) != 0) {
+                if (payload->alternative == ALT_EVENT_SEQUENCE) {
+                    for (int i = 0; i < temp->childv[1]->childc; i++) {
+                        /* get predicate definition */
+                        tempnode1 = ((struct payload *)(temp->childv[1]->childv[i]->payload))->predicate.ref;
+                        if (tempnode1->childc == 2) {
+                            /* loop over parameters */
+                            int num_predicate_params = tempnode1->childv[0]->childc;
+                            int num_events = ((struct payload *)(temp->childv[0]->payload))->event_sequence.count;
+                            if (num_predicate_params == num_events) {
+                                for (int j = 0; j < tempnode1->childv[0]->childc; j++) {
+                                    tempnode2 = tempnode1->childv[0]->childv[j];
+                                    typename1 = ((struct payload *)(tempnode2->payload))->parameter.type;
+                                    typename2 = ((struct payload *)(temp->childv[0]->payload))->event_sequence.type[j];
+                                    puts(typename1);
+                                    puts(typename2);
+                                    puts("ok");
+                                    if (strcmp(typename1, typename2) != 0) {
+                                        puts("fail69");
+                                        success = 0;
+                                        break;
+                                    }
+                                }
+                            } else {
+                                puts("fail74");
                                 success = 0;
+                            }
+
+                            if (!success) {
                                 break;
                             }
-                        }
-
-                        if (!success) {
+                        } else if (temp->childc != 1) {
+                            puts("fail81");
+                            success = 0;
                             break;
                         }
-                    } else if (temp->childc != 1) {
-                        success = 0;
-                        break;
                     }
                 }
                 break;
@@ -87,6 +96,7 @@ int validate(struct node *root)
             case N_PREDICATE_DEFINITION:
                 op1 = stack_pop(&type_stack);
                 if (*op1 != T_BOOL) {
+                    puts("fail96");
                     success = 0;
                 }
                 free(op1);
@@ -97,9 +107,11 @@ int validate(struct node *root)
                 if (*op1 == T_EVENT) {
                     typename1 = stack_pop(&type_stack);
                     if (strcmp(typename1, payload->function_definition.type) != 0) {
+                        puts("fail106");
                         success = 0;
                     }
                 } else if (*op1 != T_GENERIC_EVENT) {
+                    puts("fail109");
                     success = 0;
                 }
                 free(op1);
@@ -125,11 +137,13 @@ int validate(struct node *root)
                             typename1 = stack_pop(&type_stack);
                             typename2 = ((struct payload *)tempnode1->childv[0]->childv[i]->payload)->parameter.type;
                             if (strcmp(typename1, typename2) != 0) {
+                                puts("fail134");
                                 success = 0;
                                 free(type);
                                 break;
                             }
                         } else {
+                            puts("fail139");
                             success = 0;
                             free(type);
                             break;
@@ -138,6 +152,7 @@ int validate(struct node *root)
                         free(type);
                     }
                 } else {
+                    puts("fail147");
                     success = 0;
                     break;
                 }
@@ -162,12 +177,14 @@ int validate(struct node *root)
                 break;
             case N_INITIALIZER:
                 if (*((enum types *)stack_peek(type_stack)) != T_VECTOR) {
+                    puts("fail171");
                     success = 0;
                 }
                 break;
             case N_VECTOR:
                 op1 = stack_pop(&type_stack);
                 if (*op1 != T_NUMBER) {
+                    puts("fail177");
                     success = 0;
                 } else {
                     stack_push(&type_stack, new_type(T_VECTOR));
@@ -179,6 +196,7 @@ int validate(struct node *root)
                 op1 = stack_pop(&type_stack);
                 for (int i = 1; i < temp->childc; i++) {
                     if (*((enum types *)stack_pop(&type_stack)) != *op1) {
+                        puts("fail188");
                         success = 0;
                         break;
                     }
@@ -194,6 +212,7 @@ int validate(struct node *root)
                     op2 = stack_pop(&type_stack);
                     op1 = stack_pop(&type_stack);
                     if (*op1 != T_VECTOR || *op2 != T_VECTOR) {
+                        puts("fail203");
                         success = 0;
                     } else {
                         stack_push(&type_stack, new_type(T_BOOL));
@@ -211,7 +230,13 @@ int validate(struct node *root)
             case N_ADDITION:
                 op2 = stack_pop(&type_stack);
                 op1 = stack_peek(type_stack);
-                if (*op1 != T_NUMBER || *op2 != T_NUMBER) {
+                if (*op1 == *op2) {
+                    if (*op1 != T_NUMBER && *op1 != T_VECTOR) {
+                        puts("fail221");
+                        success = 0;
+                    }
+                } else {
+                    puts("fail239");
                     success = 0;
                 }
                 free(op2);
@@ -224,6 +249,7 @@ int validate(struct node *root)
                 op1 = stack_peek(type_stack);
                 // TODO scalar * vector
                 if (*op1 != T_NUMBER || *op2 != T_NUMBER) {
+                    puts("fail233");
                     success = 0;
                 }
                 free(op2);
@@ -232,6 +258,7 @@ int validate(struct node *root)
             case N_NEGATION:
                 if (payload->alternative == ALT_NEGATION) {
                     if (*((enum types *)(stack_peek(type_stack))) != T_NUMBER) {
+                        puts("fail241");
                         success = 0;
                     }
                 }
@@ -252,6 +279,7 @@ int validate(struct node *root)
                                 stack_push(&type_stack, new_type(T_EVENT));
                             }
                         } else {
+                            puts("fail261");
                             success = 0;
                         }
                         break;
@@ -268,6 +296,7 @@ int validate(struct node *root)
                         // Should be ok
                         break;
                     default:
+                        puts("fail277");
                         success = 0;
                         break;
                 }
