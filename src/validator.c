@@ -96,13 +96,13 @@ int validate(struct node *root)
                                     typename1 = ((struct payload *)(tempnode2->payload))->parameter.type;
                                     typename2 = ((struct payload *)(temp->childv[0]->payload))->event_sequence.type[j];
                                     if (strcmp(typename1, typename2) != 0) {
-                                        puts("fail69");
+                                        puts("fail1");
                                         success = 0;
                                         break;
                                     }
                                 }
                             } else {
-                                puts("fail74");
+                                puts("fail2");
                                 success = 0;
                             }
 
@@ -110,7 +110,7 @@ int validate(struct node *root)
                                 break;
                             }
                         } else if (temp->childc != 1) {
-                            puts("fail81");
+                            puts("fail3");
                             success = 0;
                             break;
                         }
@@ -127,7 +127,7 @@ int validate(struct node *root)
                 puts("N_PREDICATE_DEFINITION");
                 op1 = type_stack_pop(&type_stack);
                 if (*op1 != T_BOOL) {
-                    puts("fail96");
+                    puts("fail4");
                     success = 0;
                 }
                 free(op1);
@@ -139,11 +139,11 @@ int validate(struct node *root)
                 if (*op1 == T_EVENT) {
                     typename1 = stack_pop(&type_stack);
                     if (strcmp(typename1, payload->function_definition.type) != 0) {
-                        puts("fail106");
+                        puts("fail5");
                         success = 0;
                     }
                 } else if (*op1 != T_GENERIC_EVENT) {
-                    puts("fail109");
+                    puts("fail6");
                     success = 0;
                 }
                 free(op1);
@@ -170,13 +170,13 @@ int validate(struct node *root)
                             typename1 = stack_pop(&type_stack);
                             typename2 = ((struct payload *)tempnode1->childv[0]->childv[i]->payload)->parameter.type;
                             if (strcmp(typename1, typename2) != 0) {
-                                puts("fail134");
+                                puts("fail7");
                                 success = 0;
                                 free(type);
                                 break;
                             }
                         } else {
-                            puts("fail139");
+                            puts("fail8");
                             success = 0;
                             free(type);
                             break;
@@ -185,7 +185,7 @@ int validate(struct node *root)
                         free(type);
                     }
                 } else {
-                    puts("fail147");
+                    puts("fail9");
                     success = 0;
                     break;
                 }
@@ -213,7 +213,7 @@ int validate(struct node *root)
             case N_INITIALIZER:
                 puts("N_INITIALIZER");
                 if (*((enum types *)type_stack_peek(type_stack)) != T_VECTOR) {
-                    puts("fail171");
+                    puts("fail10");
                     success = 0;
                 }
                 break;
@@ -221,7 +221,7 @@ int validate(struct node *root)
                 puts("N_VECTOR");
                 op1 = type_stack_pop(&type_stack);
                 if (*op1 != T_NUMBER) {
-                    puts("fail177");
+                    puts("fail11");
                     success = 0;
                 } else {
                     type_stack_push(&type_stack, new_type(T_VECTOR));
@@ -235,7 +235,7 @@ int validate(struct node *root)
                 for (int i = 1; i < temp->childv[0]->childc; i++) {
                     op2 = (enum types *)type_stack_pop(&type_stack);
                     if (*op1 != *op2) {
-                        puts("fail188");
+                        puts("fail12");
                         success = 0;
                         break;
                     }
@@ -253,7 +253,7 @@ int validate(struct node *root)
                     op2 = type_stack_pop(&type_stack);
                     op1 = type_stack_pop(&type_stack);
                     if (*op1 != T_VECTOR || *op2 != T_VECTOR) {
-                        puts("fail203");
+                        puts("fail13");
                         success = 0;
                     } else {
                         type_stack_push(&type_stack, new_type(T_BOOL));
@@ -274,11 +274,11 @@ int validate(struct node *root)
                 op1 = type_stack_peek(type_stack);
                 if (*op1 == *op2) {
                     if (*op1 != T_NUMBER && *op1 != T_VECTOR) {
-                        puts("fail221");
+                        puts("fail14");
                         success = 0;
                     }
                 } else {
-                    puts("fail239");
+                    puts("fail15");
                     success = 0;
                 }
                 free(op2);
@@ -291,9 +291,16 @@ int validate(struct node *root)
                 op2 = type_stack_pop(&type_stack);
                 op1 = type_stack_peek(type_stack);
                 // TODO scalar * vector
-                if (*op1 != T_NUMBER || *op2 != T_NUMBER) {
-                    puts("fail233");
-                    success = 0;
+                if (*op2 == T_NUMBER) {
+                    if (*op1 != T_NUMBER){
+                        puts("fail16");
+                        success = 0;
+                    }
+                } else if (*op2 == T_VECTOR){
+                    if (*op1 != T_NUMBER && *op1 != T_VECTOR){
+                        puts("fail17");
+                        success = 0;
+                    }
                 }
                 free(op2);
                 op2 = NULL;
@@ -302,7 +309,7 @@ int validate(struct node *root)
                 puts("N_NEGATION");
                 if (payload->alternative == ALT_NEGATION) {
                     if (*((enum types *)(type_stack_peek(type_stack))) != T_NUMBER) {
-                        puts("fail241");
+                        puts("fail1");
                         success = 0;
                     }
                 }
@@ -324,7 +331,7 @@ int validate(struct node *root)
                                 type_stack_push(&type_stack, new_type(T_EVENT));
                             }
                         } else {
-                            puts("fail261");
+                            puts("fail2");
                             success = 0;
                         }
                         break;
@@ -341,7 +348,7 @@ int validate(struct node *root)
                         // Should be ok
                         break;
                     default:
-                        puts("fail277");
+                        puts("fail3");
                         success = 0;
                         break;
                 }
