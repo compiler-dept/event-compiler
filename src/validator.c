@@ -13,7 +13,13 @@ enum types {
     T_GENERIC_EVENT
 };
 
-const char *type_names[] = {"NUMBER", "BOOL", "VECTOR", "EVENT", "GENERIC_EVENT"};
+const char *type_names[] = {
+    "NUMBER",
+    "BOOL",
+    "VECTOR",
+    "EVENT",
+    "GENERIC_EVENT"
+};
 
 static enum types *new_type(enum types type)
 {
@@ -24,20 +30,23 @@ static enum types *new_type(enum types type)
 
 int stack_size = 0;
 
-static enum types *type_stack_pop(struct stack **stack){
+static enum types *type_stack_pop(struct stack **stack)
+{
     stack_size--;
     enum types *type = stack_pop(stack);
     printf("Pop: %s (Stack Size: %i)\n", type_names[*type - 1], stack_size);
     return type;
 }
 
-static enum types *type_stack_peek(struct stack *stack){
+static enum types *type_stack_peek(struct stack *stack)
+{
     enum types *type = stack_peek(stack);
     printf("Peek: %s (Stack Size: %i)\n", type_names[*type - 1], stack_size);
     return type;
 }
 
-static void type_stack_push(struct stack **stack, enum types *type){
+static void type_stack_push(struct stack **stack, enum types *type)
+{
     stack_size++;
     printf("Push: %s (Stack Size: %i)\n", type_names[*type - 1], stack_size);
     stack_push(stack, type);
@@ -198,7 +207,7 @@ int validate(struct node *root)
             case N_INITIALIZER_SEQUENCE:
                 puts("N_INITIALIZER_SEQUENCE");
                 for (int i = 0; i < temp->childc - 1; i++) {
-                    type_stack_pop(&type_stack);
+                    free(type_stack_pop(&type_stack));
                 }
                 break;
             case N_INITIALIZER:
@@ -224,11 +233,13 @@ int validate(struct node *root)
                 puts("N_COMPONENT_SEQUENCE");
                 op1 = type_stack_pop(&type_stack);
                 for (int i = 1; i < temp->childv[0]->childc; i++) {
-                    if (*((enum types *)type_stack_pop(&type_stack)) != *op1) {
+                    op2 = (enum types *)type_stack_pop(&type_stack);
+                    if (*op1 != *op2) {
                         puts("fail188");
                         success = 0;
                         break;
                     }
+                    free(op2);
                 }
                 if (success) {
                     type_stack_push(&type_stack, op1);

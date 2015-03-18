@@ -7,7 +7,7 @@
 int main(int argc, const char *argv[])
 {
     struct node *root = parse_ast(
-        "\
+                            "\
         SampleEvent extends PositionEvent;\
         PositionEvent extends BasicEvent;\
         A: [p1, p2] -> a;\
@@ -20,7 +20,7 @@ int main(int argc, const char *argv[])
         predicate p4(SampleEvent s1, SampleEvent s2) := s1.pos > s2.pos;\
         predicate p5(SampleEvent s1, SampleEvent s2) := (s1.pos - s2.pos) < [1,2];\
         "
-    );
+                        );
 
     link_references(root);
 
@@ -30,6 +30,7 @@ int main(int argc, const char *argv[])
         puts("Validation failed.");
     }
 
+    /*
     LLVMModuleRef module = generate_module(root, "TestModule");
 
     tree_free(&root, payload_free);
@@ -37,6 +38,7 @@ int main(int argc, const char *argv[])
     LLVMDumpModule(module);
 
     LLVMDisposeModule(module);
-
+    */
+    tree_free(&root, payload_free);
     return 0;
 }
