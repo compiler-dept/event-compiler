@@ -6,14 +6,31 @@
 
 int main(int argc, const char *argv[])
 {
-    struct node *root = parse_ast("SampleEvent extends PositionEvent;PositionEvent extends BasicEvent;A: [p1, p2] -> a;B: [SampleEvent : p3, p4] -> foo;SampleEvent a() := {  pos = [1, 2, 3],  angle = [30.0]};SampleEvent foo(SampleEvent s1) := {  pos = 2 * s1.pos,  angle = [0]};predicate p1(SampleEvent s1, SampleEvent s2) := s1.pos == s2.pos;predicate p2(SampleEvent s1, SampleEvent s2) := s1.pos != s2.pos;predicate p3(SampleEvent s1, SampleEvent s2) := s1.pos < s2.pos;predicate p4(SampleEvent s1, SampleEvent s2) := s1.pos > s2.pos;predicate p5(SampleEvent s1, SampleEvent s2) := (s1.pos - s2.pos) < [1,1];");
+    struct node *root = parse_ast(
+                            "\
+        SampleEvent extends PositionEvent;\
+        PositionEvent extends BasicEvent;\
+        A: [p1, p2] -> a;\
+        B: [SampleEvent, SampleEvent : p3, p4] -> foo;\
+        SampleEvent a() := {  pos = [1, 2, 3],  angle = [30.0]};\
+        SampleEvent foo(SampleEvent s1) := {  pos = [2] ,  angle = [0]};\
+        predicate p1(SampleEvent s1, SampleEvent s2) := s1.pos == s2.pos;\
+        predicate p2(SampleEvent s1, SampleEvent s2) := s1.pos != s2.pos;\
+        predicate p3(SampleEvent s1, SampleEvent s2) := s1.pos < s2.pos;\
+        predicate p4(SampleEvent s1, SampleEvent s2) := s1.pos > s2.pos;\
+        predicate p5(SampleEvent s1, SampleEvent s2) := (s1.pos - s2.pos) < 3*[1,2]-[1,1];\
+        "
+                        );
 
     link_references(root);
 
     if (validate(root)) {
         printf("YAY \\o/\n");
+    } else {
+        puts("Validation failed.");
     }
 
+    /*
     LLVMModuleRef module = generate_module(root, "TestModule");
 
     tree_free(&root, payload_free);
@@ -21,6 +38,7 @@ int main(int argc, const char *argv[])
     LLVMDumpModule(module);
 
     LLVMDisposeModule(module);
-
+    */
+    tree_free(&root, payload_free);
     return 0;
 }

@@ -1,8 +1,8 @@
 BIN=event-compiler
 
 DISABLED_WARNINGS=switch
-CFLAGS=-g -Wall -std=gnu99 -Ilibcollect $(patsubst %, -Wno-%, $(DISABLED_WARNINGS)) `llvm-config --cflags`
-CXXFLAGS=-g -Wall -Ilibcollect `llvm-config --cxxflags`
+CFLAGS=-O0 -g -Wall -std=gnu99 -Ilibcollect $(patsubst %, -Wno-%, $(DISABLED_WARNINGS)) `llvm-config --cflags`
+CXXFLAGS=-O0 -g -Wall -Ilibcollect `llvm-config --cxxflags`
 LDFLAGS=-Llibcollect `llvm-config --ldflags`
 LDLIBS=-lcollect `llvm-config --libs --system-libs`
 YACC=lemon/lemon
@@ -28,7 +28,7 @@ src/lexer.c: src/lexer.l src/parser.c
 src/parser.c: src/parser.y lemon
 	$(YACC) $<
 
-TEST_DEPS=$(filter-out src/%.l, $(filter-out src/%.y, $(filter-out src/event-compiler.c, $(SOURCES)))) src/lexer.c src/parser.c
+TEST_DEPS=$(filter-out src/%.l, $(filter-out src/%.y, $(filter-out src/event-compiler.c src/codegen.c, $(SOURCES)))) src/lexer.c src/parser.c
 TEST_SOURCES=$(wildcard tests/*.c)
 TEST_CFLAGS=-g -Wall -std=gnu99 -Ilibcollect $(patsubst %, -Wno-%, $(DISABLED_WARNINGS))
 TEST_LDFLAGS=-Llibcollect
