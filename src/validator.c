@@ -13,11 +13,34 @@ enum types {
     T_GENERIC_EVENT
 };
 
+const char *type_names[] = {"NUMBER", "BOOL", "VECTOR", "EVENT", "GENERIC_EVENT"};
+
 static enum types *new_type(enum types type)
 {
     enum types *t = malloc(sizeof(enum types));
     *t = type;
     return t;
+}
+
+int stack_size = 0;
+
+static enum types *type_stack_pop(struct stack **stack){
+    stack_size--;
+    enum types *type = stack_pop(stack);
+    printf("Pop: %s (Stack Size: %i)\n", type_names[*type - 1], stack_size);
+    return type;
+}
+
+static enum types *type_stack_peek(struct stack *stack){
+    enum types *type = stack_peek(stack);
+    printf("Peek: %s (Stack Size: %i)\n", type_names[*type - 1], stack_size);
+    return type;
+}
+
+static void type_stack_push(struct stack **stack, enum types *type){
+    stack_size++;
+    printf("Push: %s (Stack Size: %i)\n", type_names[*type - 1], stack_size);
+    stack_push(stack, type);
 }
 
 int validate(struct node *root)
@@ -48,6 +71,7 @@ int validate(struct node *root)
             case N_RULE_DECLARATION:
                 break;
             case N_RULE_SIGNATURE:
+                puts("RULE_SIGNATURE");
                 /* loop over predicates */
                 if (payload->alternative == ALT_EVENT_SEQUENCE) {
                     for (int i = 0; i < temp->childv[1]->childc; i++) {
@@ -62,9 +86,6 @@ int validate(struct node *root)
                                     tempnode2 = tempnode1->childv[0]->childv[j];
                                     typename1 = ((struct payload *)(tempnode2->payload))->parameter.type;
                                     typename2 = ((struct payload *)(temp->childv[0]->payload))->event_sequence.type[j];
-                                    puts(typename1);
-                                    puts(typename2);
-                                    puts("ok");
                                     if (strcmp(typename1, typename2) != 0) {
                                         puts("fail69");
                                         success = 0;
@@ -94,7 +115,8 @@ int validate(struct node *root)
             case N_PREDICATE:
                 break;
             case N_PREDICATE_DEFINITION:
-                op1 = stack_pop(&type_stack);
+                puts("N_PREDICATE_DEFINITION");
+                op1 = type_stack_pop(&type_stack);
                 if (*op1 != T_BOOL) {
                     puts("fail96");
                     success = 0;
@@ -103,7 +125,8 @@ int validate(struct node *root)
                 op1 = NULL;
                 break;
             case N_FUNCTION_DEFINITION:
-                op1 = stack_pop(&type_stack);
+                puts("N_FUNCTION_DEFINITION");
+                op1 = type_stack_pop(&type_stack);
                 if (*op1 == T_EVENT) {
                     typename1 = stack_pop(&type_stack);
                     if (strcmp(typename1, payload->function_definition.type) != 0) {
@@ -122,6 +145,7 @@ int validate(struct node *root)
             case N_PARAMETER:
                 break;
             case N_FUNCTION_CALL:
+                puts("N_FUNCTION_CALL");
                 // get corresponding function definition from scope
                 tempnode1 = ((struct payload *)payload)->function_call.ref;
 
@@ -132,7 +156,7 @@ int validate(struct node *root)
                 if (tempnode1->childv[0]->childc == tempnode2->childc) {
                     // check parameter types against function definition
                     for (int i = 0; i < tempnode2->childc; i++) {
-                        enum types *type = stack_pop(&type_stack);
+                        enum types *type = type_stack_pop(&type_stack);
                         if (*type == T_EVENT) {
                             typename1 = stack_pop(&type_stack);
                             typename2 = ((struct payload *)tempnode1->childv[0]->childv[i]->payload)->parameter.type;
@@ -161,61 +185,67 @@ int validate(struct node *root)
                     // push return type
                     typename1 = ((struct payload *)tempnode1->payload)->function_definition.type;
                     stack_push(&type_stack, typename1);
-                    stack_push(&type_stack, new_type(T_EVENT));
+                    type_stack_push(&type_stack, new_type(T_EVENT));
                 }
                 break;
             case N_ARGUMENT_SEQUENCE:
                 break;
             case N_EVENT_DEFINITION:
-                free(stack_pop(&type_stack));
-                stack_push(&type_stack, new_type(T_GENERIC_EVENT));
+                puts("N_EVENT_DEFINITION");
+                free(type_stack_pop(&type_stack));
+                type_stack_push(&type_stack, new_type(T_GENERIC_EVENT));
                 break;
             case N_INITIALIZER_SEQUENCE:
+                puts("N_INITIALIZER_SEQUENCE");
                 for (int i = 0; i < temp->childc - 1; i++) {
-                    stack_pop(&type_stack);
+                    type_stack_pop(&type_stack);
                 }
                 break;
             case N_INITIALIZER:
-                if (*((enum types *)stack_peek(type_stack)) != T_VECTOR) {
+                puts("N_INITIALIZER");
+                if (*((enum types *)type_stack_peek(type_stack)) != T_VECTOR) {
                     puts("fail171");
                     success = 0;
                 }
                 break;
             case N_VECTOR:
-                op1 = stack_pop(&type_stack);
+                puts("N_VECTOR");
+                op1 = type_stack_pop(&type_stack);
                 if (*op1 != T_NUMBER) {
                     puts("fail177");
                     success = 0;
                 } else {
-                    stack_push(&type_stack, new_type(T_VECTOR));
+                    type_stack_push(&type_stack, new_type(T_VECTOR));
                 }
                 free(op1);
                 op1 = NULL;
                 break;
             case N_COMPONENT_SEQUENCE:
-                op1 = stack_pop(&type_stack);
-                for (int i = 1; i < temp->childc; i++) {
-                    if (*((enum types *)stack_pop(&type_stack)) != *op1) {
+                puts("N_COMPONENT_SEQUENCE");
+                op1 = type_stack_pop(&type_stack);
+                for (int i = 1; i < temp->childv[0]->childc; i++) {
+                    if (*((enum types *)type_stack_pop(&type_stack)) != *op1) {
                         puts("fail188");
                         success = 0;
                         break;
                     }
                 }
                 if (success) {
-                    stack_push(&type_stack, op1);
+                    type_stack_push(&type_stack, op1);
                 }
                 break;
             case N_EXPRESSION_SEQUENCE:
                 break;
             case N_COMPARISON_EXPRESSION:
+                puts("N_COMPARISON_EXPRESSION");
                 if (payload->alternative != ALT_ADDITIVE_EXPRESSION) {
-                    op2 = stack_pop(&type_stack);
-                    op1 = stack_pop(&type_stack);
+                    op2 = type_stack_pop(&type_stack);
+                    op1 = type_stack_pop(&type_stack);
                     if (*op1 != T_VECTOR || *op2 != T_VECTOR) {
                         puts("fail203");
                         success = 0;
                     } else {
-                        stack_push(&type_stack, new_type(T_BOOL));
+                        type_stack_push(&type_stack, new_type(T_BOOL));
                     }
                     free(op1);
                     op1 = NULL;
@@ -228,8 +258,9 @@ int validate(struct node *root)
             case N_ADDITIVE_EXPRESSION:
                 break;
             case N_ADDITION:
-                op2 = stack_pop(&type_stack);
-                op1 = stack_peek(type_stack);
+                puts("N_ADDITION");
+                op2 = type_stack_pop(&type_stack);
+                op1 = type_stack_peek(type_stack);
                 if (*op1 == *op2) {
                     if (*op1 != T_NUMBER && *op1 != T_VECTOR) {
                         puts("fail221");
@@ -245,8 +276,9 @@ int validate(struct node *root)
             case N_MULTIPLICATIVE_EXPRESSION:
                 break;
             case N_MULTIPLICATION:
-                op2 = stack_pop(&type_stack);
-                op1 = stack_peek(type_stack);
+                puts("N_MULTIPLICATION");
+                op2 = type_stack_pop(&type_stack);
+                op1 = type_stack_peek(type_stack);
                 // TODO scalar * vector
                 if (*op1 != T_NUMBER || *op2 != T_NUMBER) {
                     puts("fail233");
@@ -256,8 +288,9 @@ int validate(struct node *root)
                 op2 = NULL;
                 break;
             case N_NEGATION:
+                puts("N_NEGATION");
                 if (payload->alternative == ALT_NEGATION) {
-                    if (*((enum types *)(stack_peek(type_stack))) != T_NUMBER) {
+                    if (*((enum types *)(type_stack_peek(type_stack))) != T_NUMBER) {
                         puts("fail241");
                         success = 0;
                     }
@@ -266,17 +299,18 @@ int validate(struct node *root)
             case N_PRIMARY_EXPRESSION:
                 break;
             case N_ATOMIC:
+                puts("N_ATOMIC");
                 switch (payload->alternative) {
                     case ALT_IDENTIFIER:
                         ;
                         struct payload *ref = (struct payload *)(payload->atomic.ref->payload);
                         if (ref->type == N_PARAMETER) {
                             if (payload->atomic.identifier[1]) {
-                                stack_push(&type_stack, new_type(T_VECTOR));
+                                type_stack_push(&type_stack, new_type(T_VECTOR));
                             } else {
                                 typename1 = strdup(ref->parameter.type);
                                 stack_push(&type_stack, typename1);
-                                stack_push(&type_stack, new_type(T_EVENT));
+                                type_stack_push(&type_stack, new_type(T_EVENT));
                             }
                         } else {
                             puts("fail261");
@@ -284,7 +318,7 @@ int validate(struct node *root)
                         }
                         break;
                     case ALT_NUMBER:
-                        stack_push(&type_stack, new_type(T_NUMBER));
+                        type_stack_push(&type_stack, new_type(T_NUMBER));
                         break;
                     case ALT_VECTOR:
                         // Should be ok
