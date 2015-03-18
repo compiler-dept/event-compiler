@@ -289,8 +289,7 @@ int validate(struct node *root)
             case N_MULTIPLICATION:
                 puts("N_MULTIPLICATION");
                 op2 = type_stack_pop(&type_stack);
-                op1 = type_stack_peek(type_stack);
-                // TODO scalar * vector
+                op1 = type_stack_pop(&type_stack);
                 if (*op2 == T_NUMBER) {
                     if (*op1 != T_NUMBER){
                         puts("fail16");
@@ -302,13 +301,15 @@ int validate(struct node *root)
                         success = 0;
                     }
                 }
-                free(op2);
+                type_stack_push(&type_stack, op2);
+                free(op1);
                 op2 = NULL;
                 break;
             case N_NEGATION:
                 puts("N_NEGATION");
                 if (payload->alternative == ALT_NEGATION) {
-                    if (*((enum types *)(type_stack_peek(type_stack))) != T_NUMBER) {
+                    op1 = (enum types *)(type_stack_peek(type_stack));
+                    if (*op1 != T_NUMBER && *op1 != T_VECTOR) {
                         puts("fail1");
                         success = 0;
                     }

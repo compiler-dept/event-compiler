@@ -18,7 +18,7 @@ int main(int argc, const char *argv[])
         predicate p2(SampleEvent s1, SampleEvent s2) := s1.pos != s2.pos;\
         predicate p3(SampleEvent s1, SampleEvent s2) := s1.pos < s2.pos;\
         predicate p4(SampleEvent s1, SampleEvent s2) := s1.pos > s2.pos;\
-        predicate p5(SampleEvent s1, SampleEvent s2) := (s1.pos - s2.pos) < [1,2]-[1,1];\
+        predicate p5(SampleEvent s1, SampleEvent s2) := (s1.pos - s2.pos) < 3*[1,2]-[1,1];\
         "
                         );
 
