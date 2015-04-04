@@ -13,7 +13,7 @@ COBJECTS=$(patsubst %.c, %.o, $(SOURCES))
 LOBJECTS=$(patsubst %.l, %.o, $(COBJECTS))
 OBJECTS=$(patsubst %.y, %.o, $(LOBJECTS))
 
-.PHONY: all clean lemon libcollect getexternals test valgrind docs docs\:deploy style
+.PHONY: all clean lemon libcollect getexternals test valgrind doxygen doxygen\:deploy docs docs\:preview style
 
 all: $(BIN)
 
@@ -44,10 +44,16 @@ valgrind: tests/testsuite
 	valgrind --leak-check=full --error-exitcode=1 --suppressions=tests/valgrind.supp tests/testsuite
 
 docs:
-	doxygen docs/Doxyfile
+	mkdocs build --clean
 
-docs\:deploy: docs
-	cd docs/html && \
+docs\:preview: docs
+	mkdocs serve
+
+doxygen:
+	doxygen doxygen/Doxyfile
+
+doxygen\:deploy: doxygen
+	cd doxygen/html && \
 	git init . && \
 	git add . && \
 	git commit -m "`date`" && \
@@ -57,7 +63,8 @@ docs\:deploy: docs
 clean:
 	rm -f $(BIN) $(OBJECTS) src/lexer.c src/lexer.h src/parser.c src/parser.h src/parser.out
 	rm -rf tests/testsuite tests/testsuite.dSYM tests/.clarcache tests/clar.suite
-	rm -rf docs/html
+	rm -rf doxygen/html
+	rm -rf site
 
 libcollect:
 	@- make -C libcollect
