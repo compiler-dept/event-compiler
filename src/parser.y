@@ -24,7 +24,8 @@
 %type translation_unit { struct node * }
 %type declaration_sequence { struct node * }
 %type declaration { struct node * }
-%type event_inheritance { struct node * }
+%type event_declaration { struct node * }
+%type member_sequence { struct node * }
 %type rule_declaration { struct node * }
 %type rule_signature { struct node * }
 %type event_sequence { struct node * }
@@ -115,16 +116,8 @@ declaration(NODE) ::= event_declaration(ED) SEMIC.
 {
     struct payload *payload = malloc(sizeof(struct payload));
     payload->type = N_DECLARATION;
-    payload->alternative ALT_EVENT_DECLARATION;
+    payload->alternative = ALT_EVENT_DECLARATION;
     NODE = tree_create_node(payload, 1, ED);
-    stack_push(&allocated_nodes, NODE);
-}
-declaration(NODE) ::= event_inheritance(EI) SEMIC.
-{
-    struct payload *payload = malloc(sizeof(struct payload));
-    payload->type = N_DECLARATION;
-    payload->alternative = ALT_EVENT_INHERITANCE;
-    NODE = tree_create_node(payload, 1, EI);
     stack_push(&allocated_nodes, NODE);
 }
 declaration(NODE) ::= rule_declaration(RD) SEMIC.
@@ -155,46 +148,53 @@ declaration(NODE) ::= function_definition(FD) SEMIC.
 // event_declaration
 event_declaration(NODE) ::= EVENT TYPE(T) LBRACE member_sequence(MS) RBRACE SEMIC.
 {
-    struct payload * payload = malloc(sizeof(struct payload));
+    struct payload *payload = malloc(sizeof(struct payload));
     payload->type = N_EVENT_DECLARATION;
     payload->alternative = ALT_MEMBER_SEQUENCE;
     payload->event_declaration.type[0] = strdup(T);
     payload->event_declaration.type[1] = NULL;
     NODE = tree_create_node(payload, 1, MS);
     stack_push(&allocated_nodes, NODE);
+    free((char *)T);
 }
 event_declaration(NODE) ::= EVENT TYPE(TL) EXTENDS TYPE(TR) LBRACE member_sequence(MS) RBRACE SEMIC.
 {
-    struct payload * payload = malloc(sizeof(struct payload));
+    struct payload *payload = malloc(sizeof(struct payload));
     payload->type = N_EVENT_DECLARATION;
     payload->alternative = ALT_MEMBER_SEQUENCE;
     payload->event_declaration.type[0] = strdup(TL);
     payload->event_declaration.type[1] = strdup(TR);
     NODE = tree_create_node(payload, 1, MS);
     stack_push(&allocated_nodes, NODE);
+    free((char *)TL);
+    free((char *)TR);
 }
 
 member_sequence(NODE) ::= member_sequence(MS) COMMA IDENTIFIER(I).
 {
-
+    struct payload *payload = malloc(sizeof(struct payload));
+    payload->type = N_MEMBER_SEQUENCE;
+    payload->alternative = ALT_IDENTIFIER;
+    payload->member_sequence.count += 1;
+    payload->member_sequence.identifier =
+    realloc(payload->member_sequence.identifier,
+        payload->member_sequence.count * sizeof(char *));
+    payload->member_sequence.identifier[payload->member_sequence.count - 1] =
+        strdup(I);
+    NODE = MS;
+    free((char *)I);
 }
 member_sequence(NODE) ::= IDENTIFIER(I).
 {
-
-}
-
-// event_inheritance
-event_inheritance(NODE) ::= TYPE(TL) EXTENDS TYPE(TR).
-{
     struct payload *payload = malloc(sizeof(struct payload));
-    payload->type = N_EVENT_INHERITANCE;
-    payload->alternative = ALT_TYPE;
-    payload->event_inheritance.type[0] = strdup(TL);
-    payload->event_inheritance.type[1] = strdup(TR);
+    payload->type = N_MEMBER_SEQUENCE;
+    payload->alternative = ALT_IDENTIFIER;
+    payload->member_sequence.count = 1;
+    payload->member_sequence.identifier = malloc(sizeof(char *));
+    payload->member_sequence.identifier[0] = strdup(I);
     NODE = tree_create_node(payload, 0);
     stack_push(&allocated_nodes, NODE);
-    free((char *)TL);
-    free((char *)TR);
+    free((char *)I);
 }
 
 // rule_declaration

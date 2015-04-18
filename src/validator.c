@@ -75,7 +75,9 @@ int validate(struct node *root)
                 break;
             case N_DECLARATION:
                 break;
-            case N_EVENT_INHERITANCE:
+            case N_EVENT_DECLARATION:
+                break;
+            case N_MEMBER_SEQUENCE:
                 break;
             case N_RULE_DECLARATION:
                 break;

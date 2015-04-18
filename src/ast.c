@@ -10,10 +10,21 @@ void payload_free(void *payload)
         switch (temp_payload->type) {
             case N_TRANSLATION_UNIT:
                 hashmap_free(temp_payload->translation_unit.scope, NULL);
-            case N_EVENT_INHERITANCE:
+                break;
+            case N_EVENT_DECLARATION:
                 if (temp_payload->alternative == ALT_TYPE) {
-                    free(temp_payload->event_inheritance.type[0]);
-                    free(temp_payload->event_inheritance.type[1]);
+                    free(temp_payload->event_declaration.type[0]);
+                    if (temp_payload->event_declaration.type[1]) {
+                        free(temp_payload->event_declaration.type[1]);
+                    }
+                }
+                break;
+            case N_MEMBER_SEQUENCE:
+                if (temp_payload->alternative == ALT_IDENTIFIER) {
+                    for (int i = 0; i < temp_payload->member_sequence.count; i++) {
+                        free(temp_payload->member_sequence.identifier[i]);
+                    }
+                    free(temp_payload->member_sequence.identifier);
                 }
                 break;
             case N_RULE_DECLARATION:
