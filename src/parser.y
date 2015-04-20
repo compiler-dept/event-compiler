@@ -146,7 +146,7 @@ declaration(NODE) ::= function_definition(FD) SEMIC.
 }
 
 // event_declaration
-event_declaration(NODE) ::= EVENT TYPE(T) LBRACE member_sequence(MS) RBRACE SEMIC.
+event_declaration(NODE) ::= EVENT TYPE(T) LBRACE member_sequence(MS) RBRACE.
 {
     struct payload *payload = malloc(sizeof(struct payload));
     payload->type = N_EVENT_DECLARATION;
@@ -157,7 +157,7 @@ event_declaration(NODE) ::= EVENT TYPE(T) LBRACE member_sequence(MS) RBRACE SEMI
     stack_push(&allocated_nodes, NODE);
     free((char *)T);
 }
-event_declaration(NODE) ::= EVENT TYPE(TL) EXTENDS TYPE(TR) LBRACE member_sequence(MS) RBRACE SEMIC.
+event_declaration(NODE) ::= EVENT TYPE(TL) EXTENDS TYPE(TR) LBRACE member_sequence(MS) RBRACE.
 {
     struct payload *payload = malloc(sizeof(struct payload));
     payload->type = N_EVENT_DECLARATION;

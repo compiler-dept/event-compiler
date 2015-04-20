@@ -7,7 +7,7 @@
 void test_integration__event_declaration(void)
 {
     struct node *root =
-        parse_ast("Alfred extends Bazinga { foo, bar }; Bazinga { baz };");
+        parse_ast("event Alfred extends Bazinga { foo, bar }; event Bazinga { baz };");
 
     cl_assert(root != NULL);
 

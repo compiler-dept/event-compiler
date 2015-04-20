@@ -12,6 +12,7 @@ void test_parser__event_declaration(void)
     struct parser_state parser_state;
     void *parser = ParseAlloc(malloc);
 
+    Parse(parser, EVENT, strdup("event"), &parser_state);
     Parse(parser, TYPE, strdup("InheritedEvent"), &parser_state);
     Parse(parser, EXTENDS, strdup("extends"), &parser_state);
     Parse(parser, TYPE, strdup("BasicEvent"), &parser_state);
