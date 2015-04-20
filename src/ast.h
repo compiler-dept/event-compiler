@@ -14,7 +14,8 @@ enum type {
     N_TRANSLATION_UNIT = 1,
     N_DECLARATION_SEQUENCE,
     N_DECLARATION,
-    N_EVENT_INHERITANCE,
+    N_EVENT_DECLARATION,
+    N_MEMBER_SEQUENCE,
     N_RULE_DECLARATION,
     N_RULE_SIGNATURE,
     N_EVENT_SEQUENCE,
@@ -51,7 +52,7 @@ enum type {
 enum alternative {
     ALT_DECLARATION_SEQUENCE = 1,
     ALT_DECLARATION,
-    ALT_EVENT_INHERITANCE,
+    ALT_EVENT_DECLARATION,
     ALT_RULE_DECLARATION,
     ALT_PREDICATE_DEFINITION,
     ALT_FUNCTION_DEFINITION,
@@ -84,6 +85,7 @@ enum alternative {
     ALT_PARAMETER,
     ALT_PARAMETER_LIST,
     ALT_TYPE,
+    ALT_MEMBER_SEQUENCE,
     ALT_EVENT_SEQUENCE,
     ALT_NONE,
     ALT_PREDICATE_SEQUENCE,
@@ -147,10 +149,15 @@ struct payload {
             char *identifier;
             struct node *ref;
         } rule_declaration;
-        /** event_inheritance payload */
+        /** event_declaration payload */
         struct {
             char *type[2];
-        } event_inheritance;
+        } event_declaration;
+        /** member_sequence payload */
+        struct {
+            int count;
+            char **identifier;
+        } member_sequence;
         /** predicate payload */
         struct {
             char *identifier;

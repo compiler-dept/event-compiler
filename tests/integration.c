@@ -4,10 +4,10 @@
 #include <ast.h>
 #include <tree.h>
 
-void test_integration__event_inheritance(void)
+void test_integration__event_declaration(void)
 {
     struct node *root =
-        parse_ast("Alfred extends Bazinga; Bazinga extends Carlos;");
+        parse_ast("event Alfred extends Bazinga { foo, bar }; event Bazinga { baz };");
 
     cl_assert(root != NULL);
 

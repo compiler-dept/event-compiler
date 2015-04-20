@@ -11,6 +11,7 @@
 
 %%
 
+"event"              return EVENT;
 "extends"            return EXTENDS;
 "predicate"          return PREDICATE;
 [A-Z][a-zA-Z0-9_]*   return TYPE;

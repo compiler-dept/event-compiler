@@ -7,19 +7,18 @@
 #include <parser_signatures.h>
 #include <ast.h>
 
-void test_parser__event_inheritance(void)
+void test_parser__event_declaration(void)
 {
     struct parser_state parser_state;
     void *parser = ParseAlloc(malloc);
 
+    Parse(parser, EVENT, strdup("event"), &parser_state);
     Parse(parser, TYPE, strdup("InheritedEvent"), &parser_state);
     Parse(parser, EXTENDS, strdup("extends"), &parser_state);
     Parse(parser, TYPE, strdup("BasicEvent"), &parser_state);
-    Parse(parser, SEMIC, strdup(";"), &parser_state);
-
-    Parse(parser, TYPE, strdup("InheritedEvent2"), &parser_state);
-    Parse(parser, EXTENDS, strdup("extends"), &parser_state);
-    Parse(parser, TYPE, strdup("BasicEvent"), &parser_state);
+    Parse(parser, LBRACE, strdup("{"), &parser_state);
+    Parse(parser, IDENTIFIER, strdup("foo"), &parser_state);
+    Parse(parser, RBRACE, strdup("}"), &parser_state);
     Parse(parser, SEMIC, strdup(";"), &parser_state);
 
     Parse(parser, 0, 0, &parser_state);
