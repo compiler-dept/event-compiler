@@ -12,7 +12,7 @@ void payload_free(void *payload)
                 hashmap_free(temp_payload->translation_unit.scope, NULL);
                 break;
             case N_EVENT_DECLARATION:
-                if (temp_payload->alternative == ALT_TYPE) {
+                if (temp_payload->alternative == ALT_MEMBER_SEQUENCE) {
                     free(temp_payload->event_declaration.type[0]);
                     if (temp_payload->event_declaration.type[1]) {
                         free(temp_payload->event_declaration.type[1]);

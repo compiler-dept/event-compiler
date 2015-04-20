@@ -172,9 +172,7 @@ event_declaration(NODE) ::= EVENT TYPE(TL) EXTENDS TYPE(TR) LBRACE member_sequen
 
 member_sequence(NODE) ::= member_sequence(MS) COMMA IDENTIFIER(I).
 {
-    struct payload *payload = malloc(sizeof(struct payload));
-    payload->type = N_MEMBER_SEQUENCE;
-    payload->alternative = ALT_IDENTIFIER;
+    struct payload *payload = MS->payload;
     payload->member_sequence.count += 1;
     payload->member_sequence.identifier =
     realloc(payload->member_sequence.identifier,
