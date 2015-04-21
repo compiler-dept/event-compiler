@@ -17,6 +17,7 @@ void payload_free(void *payload)
                     if (temp_payload->event_declaration.type[1]) {
                         free(temp_payload->event_declaration.type[1]);
                     }
+                    hashmap_free(temp_payload->event_declaration.scope, free);
                 }
                 break;
             case N_MEMBER_SEQUENCE:
