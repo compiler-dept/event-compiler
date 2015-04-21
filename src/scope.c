@@ -40,7 +40,8 @@ struct node *resolve_reference(struct node *node, const char *id)
     return ref;
 }
 
-int index_of_id(struct node *parent, char *type, char *id) {
+int index_of_id(struct node *parent, char *type, char *id)
+{
     struct node *ref_node = resolve_reference(parent, type);
     if (ref_node) {
         struct payload *ref_payload = ref_node->payload;
@@ -90,7 +91,7 @@ void link_references(struct node *node)
                 payload->initializer.ref_index = index_of_id(parent, type, id);
             }
         } else if (payload->type == N_EVENT_DECLARATION &&
-            payload->event_declaration.type[1] != NULL) {
+                   payload->event_declaration.type[1] != NULL) {
             id = payload->event_declaration.type[1];
             payload->event_declaration.parent_ref = resolve_reference(temp, id);
         } else if (payload->type == N_FUNCTION_DEFINITION) {

@@ -22,8 +22,7 @@ const char *type_names[] = {
     "GENERIC_EVENT"
 };
 
-static enum types *new_type(enum types type)
-{
+static enum types *new_type(enum types type) {
     enum types *t = malloc(sizeof(enum types));
     *t = type;
     return t;
@@ -31,29 +30,27 @@ static enum types *new_type(enum types type)
 
 int stack_size = 0;
 
-static enum types *type_stack_pop(struct stack **stack)
-{
+static enum types *type_stack_pop(struct stack **stack) {
     stack_size--;
     enum types *type = stack_pop(stack);
     printf("Pop: %s (Stack Size: %i)\n", type_names[*type - 1], stack_size);
     return type;
 }
 
-static enum types *type_stack_peek(struct stack *stack)
-{
+static enum types *type_stack_peek(struct stack *stack) {
     enum types *type = stack_peek(stack);
     printf("Peek: %s (Stack Size: %i)\n", type_names[*type - 1], stack_size);
     return type;
 }
 
-static void type_stack_push(struct stack **stack, enum types *type)
-{
+static void type_stack_push(struct stack **stack, enum types *type) {
     stack_size++;
     printf("Push: %s (Stack Size: %i)\n", type_names[*type - 1], stack_size);
     stack_push(stack, type);
 }
 
-int check_duplicate_members(struct node *event_declaration, char* member) {
+int check_duplicate_members(struct node *event_declaration, char *member)
+{
     struct payload *payload = event_declaration->payload;
     if (hashmap_get(payload->event_declaration.scope, member)) {
         return 1;
@@ -331,12 +328,12 @@ int validate(struct node *root)
                 op2 = type_stack_pop(&type_stack);
                 op1 = type_stack_pop(&type_stack);
                 if (*op2 == T_NUMBER) {
-                    if (*op1 != T_NUMBER){
+                    if (*op1 != T_NUMBER) {
                         puts("fail16");
                         success = 0;
                     }
-                } else if (*op2 == T_VECTOR){
-                    if (*op1 != T_NUMBER && *op1 != T_VECTOR){
+                } else if (*op2 == T_VECTOR) {
+                    if (*op1 != T_NUMBER && *op1 != T_VECTOR) {
                         puts("fail17");
                         success = 0;
                     }
