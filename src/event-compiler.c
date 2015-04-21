@@ -1,26 +1,21 @@
+#include <stdio.h>
 #include "codegen.h"
 #include "compiler.h"
 #include "validator.h"
 #include "scope.h"
-#include <stdio.h>
 
-int main(int argc, const char *argv[])
+int main(int argc, const char **argv)
 {
-    struct node *root = parse_ast(
-                            "\
-        SampleEvent extends PositionEvent;\
-        PositionEvent extends BasicEvent;\
-        A: [p1, p2] -> a;\
-        B: [SampleEvent, SampleEvent : p3, p4] -> foo;\
-        SampleEvent a() := {  pos = [1, 2, 3],  angle = [30.0]};\
-        SampleEvent foo(SampleEvent s1) := {  pos = [2] ,  angle = [0]};\
-        predicate p1(SampleEvent s1, SampleEvent s2) := s1.pos == s2.pos;\
-        predicate p2(SampleEvent s1, SampleEvent s2) := s1.pos != s2.pos;\
-        predicate p3(SampleEvent s1, SampleEvent s2) := s1.pos < s2.pos;\
-        predicate p4(SampleEvent s1, SampleEvent s2) := s1.pos > s2.pos;\
-        predicate p5(SampleEvent s1, SampleEvent s2) := (s1.pos - s2.pos) < 3*[1,2]-[1,1];\
-        "
-                        );
+    struct node *root = parse_ast("\
+        event SampleEvent { pos, time };\
+        event EnheritanceEvent extends SampleEvent { angle };\
+        \
+        predicate sample_prediacte(SampleEvent sample_a, SampleEvent sample_b) := sample_a.pos == sample_b.pos;\
+        \
+        PosEqual: [SampleEvent : sample_predicate] -> example;\
+        \
+        /*SampleEvent example(SampleEvent sampleEvent) := {  pos = 3 * sampleEvent.pos, time = [12.3] };*/\
+    ");
 
     link_references(root);
 
@@ -39,6 +34,8 @@ int main(int argc, const char *argv[])
 
     LLVMDisposeModule(module);
     */
+
     tree_free(&root, payload_free);
+
     return 0;
 }
