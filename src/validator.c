@@ -165,6 +165,11 @@ int validate(struct node *root)
                 break;
             case N_FUNCTION_DEFINITION:
                 puts("N_FUNCTION_DEFINITION");
+                if (payload->function_definition.event_ref == NULL) {
+                    success = 0;
+                    break;
+                }
+
                 op1 = type_stack_pop(&type_stack);
                 if (*op1 == T_EVENT) {
                     typename1 = stack_pop(&type_stack);

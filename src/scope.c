@@ -93,6 +93,9 @@ void link_references(struct node *node)
             payload->event_declaration.type[1] != NULL) {
             id = payload->event_declaration.type[1];
             payload->event_declaration.parent_ref = resolve_reference(temp, id);
+        } else if (payload->type == N_FUNCTION_DEFINITION) {
+            id = payload->function_definition.type;
+            payload->function_definition.event_ref = resolve_reference(temp, id);
         }
     }
 

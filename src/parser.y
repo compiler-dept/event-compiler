@@ -386,6 +386,7 @@ function_definition(NODE) ::= TYPE(T) IDENTIFIER(I) LPAREN RPAREN DEF expression
     payload->function_definition.type = strdup(T);
     payload->function_definition.identifier = strdup(I);
     payload->function_definition.scope = NULL;
+    payload->function_definition.event_ref = NULL;
     NODE = tree_create_node(payload, 1, E);
     struct hashmap_entry *temp = malloc(sizeof(struct hashmap_entry));
     temp->key = strdup(I);

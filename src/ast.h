@@ -132,6 +132,7 @@ struct payload {
         struct {
             char *type;
             char *identifier;
+            struct node *event_ref;
             struct hashmap *scope;
         } function_definition;
         /** predicate_definition payload */
