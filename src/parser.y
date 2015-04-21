@@ -68,7 +68,7 @@ translation_unit(NODE) ::= declaration_sequence(DS).
     payload->alternative = ALT_DECLARATION_SEQUENCE;
     payload->translation_unit.scope = NULL;
     struct hashmap_entry *temp;
-    while ((temp = stack_pop(&global_scope)) != NULL){
+    while ((temp = stack_pop(&global_scope)) != NULL) {
         hashmap_put(&(payload->translation_unit.scope), temp->key, temp->value);
         free(temp->key);
         free(temp);
@@ -153,8 +153,18 @@ event_declaration(NODE) ::= EVENT TYPE(T) LBRACE member_sequence(MS) RBRACE.
     payload->alternative = ALT_MEMBER_SEQUENCE;
     payload->event_declaration.type[0] = strdup(T);
     payload->event_declaration.type[1] = NULL;
+    payload->event_declaration.scope = NULL;
+
+    struct hashmap_entry *temp;
+    while ((temp = stack_pop(&current_scope)) != NULL) {
+        hashmap_put(&(payload->event_declaration.scope), temp->key, temp->value);
+        free(temp->key);
+        free(temp);
+    }
+
     NODE = tree_create_node(payload, 1, MS);
     stack_push(&allocated_nodes, NODE);
+    stack_push(&global_scope, NODE);
     free((char *)T);
 }
 event_declaration(NODE) ::= EVENT TYPE(TL) EXTENDS TYPE(TR) LBRACE member_sequence(MS) RBRACE.
@@ -164,8 +174,18 @@ event_declaration(NODE) ::= EVENT TYPE(TL) EXTENDS TYPE(TR) LBRACE member_sequen
     payload->alternative = ALT_MEMBER_SEQUENCE;
     payload->event_declaration.type[0] = strdup(TL);
     payload->event_declaration.type[1] = strdup(TR);
+    payload->event_declaration.scope = NULL;
+
+    struct hashmap_entry *temp;
+    while ((temp = stack_pop(&current_scope)) != NULL) {
+        hashmap_put(&(payload->event_declaration.scope), temp->key, temp->value);
+        free(temp->key);
+        free(temp);
+    }
+
     NODE = tree_create_node(payload, 1, MS);
     stack_push(&allocated_nodes, NODE);
+    stack_push(&global_scope, NODE);
     free((char *)TL);
     free((char *)TR);
 }
@@ -180,6 +200,13 @@ member_sequence(NODE) ::= member_sequence(MS) COMMA IDENTIFIER(I).
     payload->member_sequence.identifier[payload->member_sequence.count - 1] =
         strdup(I);
     NODE = MS;
+
+    struct hashmap_entry *entry = malloc(sizeof(struct hashmap_entry));
+    entry->key = strdup(I);
+    entry->value = malloc(sizeof(int));
+    *((int *)(entry->value)) = payload->member_sequence.count - 1;
+    stack_push(&current_scope, entry);
+
     free((char *)I);
 }
 member_sequence(NODE) ::= IDENTIFIER(I).
@@ -192,6 +219,13 @@ member_sequence(NODE) ::= IDENTIFIER(I).
     payload->member_sequence.identifier[0] = strdup(I);
     NODE = tree_create_node(payload, 0);
     stack_push(&allocated_nodes, NODE);
+
+    struct hashmap_entry *entry = malloc(sizeof(struct hashmap_entry));
+    entry->key = strdup(I);
+    entry->value = malloc(sizeof(int));
+    *((int *)(entry->value)) = payload->member_sequence.count - 1;
+    stack_push(&current_scope, entry);
+
     free((char *)I);
 }
 
@@ -475,6 +509,7 @@ initializer(NODE) ::= IDENTIFIER(I) ASSIGN expression(E).
     payload->type = N_INITIALIZER;
     payload->alternative = ALT_EXPRESSION;
     payload->initializer.identifier = strdup(I);
+    payload->initializer.ref = NULL;
     NODE = tree_create_node(payload, 1, E);
     stack_push(&allocated_nodes, NODE);
     free((char *)I);

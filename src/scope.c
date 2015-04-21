@@ -62,6 +62,9 @@ void link_references(struct node *node)
         } else if (((struct payload *)temp->payload)->type == N_RULE_DECLARATION) {
             id = ((struct payload *)temp->payload)->rule_declaration.identifier;
             ((struct payload *)temp->payload)->rule_declaration.ref = resolve_reference(temp, id);
+        } else if (((struct payload *)temp->payload)->type == N_INITIALIZER) {
+            id = ((struct payload *)temp->payload)->initializer.identifier;
+            ((struct payload *)temp->payload)->initializer.ref = resolve_reference(temp, id);
         }
     }
 
