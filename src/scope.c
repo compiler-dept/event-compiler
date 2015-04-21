@@ -62,22 +62,23 @@ void link_references(struct node *node)
     struct node *temp = NULL;
     while ((temp = tree_iterator_next(it)) != NULL) {
         char *id = NULL;
+        struct payload *payload = temp->payload;
 
-        if (((struct payload *)temp->payload)->type == N_ATOMIC) {
-            if (((struct payload *)temp->payload)->alternative == ALT_IDENTIFIER) {
-                id = ((struct payload *)temp->payload)->atomic.identifier[0];
-                ((struct payload *)temp->payload)->atomic.ref = resolve_reference(temp, id);
+        if (payload->type == N_ATOMIC) {
+            if (payload->alternative == ALT_IDENTIFIER) {
+                id = payload->atomic.identifier[0];
+                payload->atomic.ref = resolve_reference(temp, id);
             }
-        } else if (((struct payload *)temp->payload)->type == N_FUNCTION_CALL) {
-            id = ((struct payload *)temp->payload)->function_call.identifier;
-            ((struct payload *)temp->payload)->function_call.ref = resolve_reference(temp, id);
-        } else if (((struct payload *)temp->payload)->type == N_PREDICATE) {
-            id = ((struct payload *)temp->payload)->predicate.identifier;
-            ((struct payload *)temp->payload)->predicate.ref = resolve_reference(temp, id);
-        } else if (((struct payload *)temp->payload)->type == N_RULE_DECLARATION) {
-            id = ((struct payload *)temp->payload)->rule_declaration.identifier;
-            ((struct payload *)temp->payload)->rule_declaration.ref = resolve_reference(temp, id);
-        } else if (((struct payload *)temp->payload)->type == N_INITIALIZER) {
+        } else if (payload->type == N_FUNCTION_CALL) {
+            id = payload->function_call.identifier;
+            payload->function_call.ref = resolve_reference(temp, id);
+        } else if (payload->type == N_PREDICATE) {
+            id = payload->predicate.identifier;
+            payload->predicate.ref = resolve_reference(temp, id);
+        } else if (payload->type == N_RULE_DECLARATION) {
+            id = payload->rule_declaration.identifier;
+            payload->rule_declaration.ref = resolve_reference(temp, id);
+        } else if (payload->type == N_INITIALIZER) {
             struct node *parent = temp->parent;
             while (parent && ((struct payload *)parent->payload)->type != N_FUNCTION_DEFINITION) {
                 parent = parent->parent;
@@ -85,9 +86,13 @@ void link_references(struct node *node)
 
             if (parent != NULL) {
                 char *type = ((struct payload *)parent->payload)->function_definition.type;
-                id = ((struct payload *)temp->payload)->initializer.identifier;
-                ((struct payload *)temp->payload)->initializer.ref_index = index_of_id(parent, type, id);
+                id = payload->initializer.identifier;
+                payload->initializer.ref_index = index_of_id(parent, type, id);
             }
+        } else if (payload->type == N_EVENT_DECLARATION &&
+            payload->event_declaration.type[1] != NULL) {
+            id = payload->event_declaration.type[1];
+            payload->event_declaration.parent_ref = resolve_reference(temp, id);
         }
     }
 

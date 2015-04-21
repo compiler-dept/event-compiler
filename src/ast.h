@@ -153,6 +153,7 @@ struct payload {
         /** event_declaration payload */
         struct {
             char *type[2];
+            struct node *parent_ref;
             struct hashmap *scope;
         } event_declaration;
         /** member_sequence payload */

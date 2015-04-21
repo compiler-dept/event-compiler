@@ -154,6 +154,7 @@ event_declaration(NODE) ::= EVENT TYPE(T) LBRACE member_sequence(MS) RBRACE.
     payload->event_declaration.type[0] = strdup(T);
     payload->event_declaration.type[1] = NULL;
     payload->event_declaration.scope = NULL;
+    payload->event_declaration.parent_ref = NULL;
 
     struct hashmap_entry *temp;
     while ((temp = stack_pop(&current_scope)) != NULL) {
@@ -180,6 +181,7 @@ event_declaration(NODE) ::= EVENT TYPE(TL) EXTENDS TYPE(TR) LBRACE member_sequen
     payload->event_declaration.type[0] = strdup(TL);
     payload->event_declaration.type[1] = strdup(TR);
     payload->event_declaration.scope = NULL;
+    payload->event_declaration.parent_ref = NULL;
 
     struct hashmap_entry *temp;
     while ((temp = stack_pop(&current_scope)) != NULL) {
