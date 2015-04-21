@@ -121,6 +121,7 @@ struct payload {
         /** initializer payload */
         struct {
             char *identifier;
+            int ref_index;
         } initializer;
         /** function_call payload */
         struct {
@@ -131,6 +132,7 @@ struct payload {
         struct {
             char *type;
             char *identifier;
+            struct node *event_ref;
             struct hashmap *scope;
         } function_definition;
         /** predicate_definition payload */
@@ -152,6 +154,8 @@ struct payload {
         /** event_declaration payload */
         struct {
             char *type[2];
+            struct node *parent_ref;
+            struct hashmap *scope;
         } event_declaration;
         /** member_sequence payload */
         struct {

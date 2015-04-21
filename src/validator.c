@@ -2,6 +2,7 @@
 #include <stack.h>
 #include <string.h>
 #include <stdio.h>
+#include <hashmap.h>
 #include "ast.h"
 #include "validator.h"
 
@@ -52,6 +53,17 @@ static void type_stack_push(struct stack **stack, enum types *type)
     stack_push(stack, type);
 }
 
+int check_duplicate_members(struct node *event_declaration, char* member) {
+    struct payload *payload = event_declaration->payload;
+    if (hashmap_get(payload->event_declaration.scope, member)) {
+        return 1;
+    } else if (payload->event_declaration.parent_ref) {
+        return check_duplicate_members(payload->event_declaration.parent_ref, member);
+    } else {
+        return 0;
+    }
+}
+
 int validate(struct node *root)
 {
     struct tree_iterator *it = tree_iterator_init(&root, POSTORDER);
@@ -76,6 +88,22 @@ int validate(struct node *root)
             case N_DECLARATION:
                 break;
             case N_EVENT_DECLARATION:
+                puts("EVENT_DECLARATION");
+                if (payload->event_declaration.type[1] != NULL) {
+                    if (payload->event_declaration.parent_ref == NULL) {
+                        puts("fail0.2");
+                        success = 0;
+                    } else {
+                        int count = ((struct payload *)temp->childv[0]->payload)->member_sequence.count;
+                        for (int i = 0; i < count; i++) {
+                            if (check_duplicate_members(payload->event_declaration.parent_ref, ((struct payload *)temp->childv[0]->payload)->member_sequence.identifier[i])) {
+                                puts("fail0.3");
+                                success = 0;
+                            }
+                        }
+                    }
+                }
+
                 break;
             case N_MEMBER_SEQUENCE:
                 break;
@@ -137,6 +165,11 @@ int validate(struct node *root)
                 break;
             case N_FUNCTION_DEFINITION:
                 puts("N_FUNCTION_DEFINITION");
+                if (payload->function_definition.event_ref == NULL) {
+                    success = 0;
+                    break;
+                }
+
                 op1 = type_stack_pop(&type_stack);
                 if (*op1 == T_EVENT) {
                     typename1 = stack_pop(&type_stack);
@@ -216,6 +249,11 @@ int validate(struct node *root)
                 puts("N_INITIALIZER");
                 if (*((enum types *)type_stack_peek(type_stack)) != T_VECTOR) {
                     puts("fail10");
+                    success = 0;
+                }
+
+                if (payload->initializer.ref_index == -1) {
+                    puts("fail10.1");
                     success = 0;
                 }
                 break;
