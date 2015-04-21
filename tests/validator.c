@@ -13,7 +13,7 @@
 void test_validator__function(void)
 {
     struct node *root =
-        parse_ast("event SampleEvent { pos }; SampleEvent sampleEvent() := { pos = 5 * ([1, 2, 3] + [1, 2, 3]) };");
+        parse_ast("event SampleEvent { pos }; event TestEvent extends SampleEvent { angle }; TestEvent testEvent() := { angle = [90], pos = 5 * ([1, 2, 3] + [1, 2, 3]) };");
 
     link_references(root);
 

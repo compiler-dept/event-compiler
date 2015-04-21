@@ -40,6 +40,21 @@ struct node *resolve_reference(struct node *node, const char *id)
     return ref;
 }
 
+int index_of_id(struct node *parent, char *type, char *id) {
+    struct node *ref_node = resolve_reference(parent, type);
+    if (ref_node) {
+        struct payload *ref_payload = ref_node->payload;
+        int *idx = hashmap_get(ref_payload->event_declaration.scope, id);
+        if (idx) {
+            return *idx;
+        } else if (ref_payload->event_declaration.type[1] != NULL) {
+            return index_of_id(parent, ref_payload->event_declaration.type[1], id);
+        }
+    }
+
+    return -1;
+}
+
 void link_references(struct node *node)
 {
     struct tree_iterator *it = tree_iterator_init(&node, POSTORDER);
@@ -69,15 +84,9 @@ void link_references(struct node *node)
             }
 
             if (parent != NULL) {
-                id = ((struct payload *)parent->payload)->function_definition.type;
-                struct node *ref_node = resolve_reference(parent, id);
+                char *type = ((struct payload *)parent->payload)->function_definition.type;
                 id = ((struct payload *)temp->payload)->initializer.identifier;
-                if (ref_node) {
-                    int *idx = hashmap_get(((struct payload *)ref_node->payload)->event_declaration.scope, id);
-                    if (idx) {
-                        ((struct payload *)temp->payload)->initializer.ref_index = *idx;
-                    }
-                }
+                ((struct payload *)temp->payload)->initializer.ref_index = index_of_id(parent, type, id);
             }
         }
     }
