@@ -218,6 +218,11 @@ int validate(struct node *root)
                     puts("fail10");
                     success = 0;
                 }
+
+                if (payload->initializer.ref_index == -1) {
+                    puts("fail10.1");
+                    success = 0;
+                }
                 break;
             case N_VECTOR:
                 puts("N_VECTOR");

@@ -63,8 +63,22 @@ void link_references(struct node *node)
             id = ((struct payload *)temp->payload)->rule_declaration.identifier;
             ((struct payload *)temp->payload)->rule_declaration.ref = resolve_reference(temp, id);
         } else if (((struct payload *)temp->payload)->type == N_INITIALIZER) {
-            id = ((struct payload *)temp->payload)->initializer.identifier;
-            ((struct payload *)temp->payload)->initializer.ref = resolve_reference(temp, id);
+            struct node *parent = temp->parent;
+            while (parent && ((struct payload *)parent->payload)->type != N_FUNCTION_DEFINITION) {
+                parent = parent->parent;
+            }
+
+            if (parent != NULL) {
+                id = ((struct payload *)parent->payload)->function_definition.type;
+                struct node *ref_node = resolve_reference(parent, id);
+                id = ((struct payload *)temp->payload)->initializer.identifier;
+                if (ref_node) {
+                    int *idx = hashmap_get(((struct payload *)ref_node->payload)->event_declaration.scope, id);
+                    if (idx) {
+                        ((struct payload *)temp->payload)->initializer.ref_index = *idx;
+                    }
+                }
+            }
         }
     }
 

@@ -164,7 +164,12 @@ event_declaration(NODE) ::= EVENT TYPE(T) LBRACE member_sequence(MS) RBRACE.
 
     NODE = tree_create_node(payload, 1, MS);
     stack_push(&allocated_nodes, NODE);
-    stack_push(&global_scope, NODE);
+
+    temp = malloc(sizeof(struct hashmap_entry));
+    temp->key = strdup(T);
+    temp->value = NODE;
+    stack_push(&global_scope, temp);
+
     free((char *)T);
 }
 event_declaration(NODE) ::= EVENT TYPE(TL) EXTENDS TYPE(TR) LBRACE member_sequence(MS) RBRACE.
@@ -185,7 +190,12 @@ event_declaration(NODE) ::= EVENT TYPE(TL) EXTENDS TYPE(TR) LBRACE member_sequen
 
     NODE = tree_create_node(payload, 1, MS);
     stack_push(&allocated_nodes, NODE);
-    stack_push(&global_scope, NODE);
+
+    temp = malloc(sizeof(struct hashmap_entry));
+    temp->key = strdup(TL);
+    temp->value = NODE;
+    stack_push(&global_scope, temp);
+
     free((char *)TL);
     free((char *)TR);
 }
@@ -509,7 +519,7 @@ initializer(NODE) ::= IDENTIFIER(I) ASSIGN expression(E).
     payload->type = N_INITIALIZER;
     payload->alternative = ALT_EXPRESSION;
     payload->initializer.identifier = strdup(I);
-    payload->initializer.ref = NULL;
+    payload->initializer.ref_index = -1;
     NODE = tree_create_node(payload, 1, E);
     stack_push(&allocated_nodes, NODE);
     free((char *)I);

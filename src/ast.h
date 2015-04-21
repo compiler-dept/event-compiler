@@ -121,7 +121,7 @@ struct payload {
         /** initializer payload */
         struct {
             char *identifier;
-            struct node *ref;
+            int ref_index;
         } initializer;
         /** function_call payload */
         struct {
