@@ -7,14 +7,25 @@
 int main(int argc, const char **argv)
 {
     struct node *root = parse_ast("\
+        /* comment */\
+        \
+        /* event declaration */\
         event SampleEvent { pos, time };\
         event EnheritanceEvent extends SampleEvent { angle };\
         \
-        predicate sample_prediacte(SampleEvent sample_a, SampleEvent sample_b) := sample_a.pos == sample_b.pos;\
+        /* predicate definition */\
+        predicate sample_prediacte(SampleEvent sample_a, SampleEvent sample_b) :=\
+        sample_a.pos == sample_b.pos;\
         \
-        PosEqual: [SampleEvent : sample_predicate] -> example;\
+        /* function definition */\
+        SampleEvent example(SampleEvent sampleEventA, SampleEvent sampleEventB) :=\
+        {\
+            pos = 3 * sampleEventA.pos,\
+            time = [12.3]\
+        };\
         \
-        /*SampleEvent example(SampleEvent sampleEvent) := {  pos = 3 * sampleEvent.pos, time = [12.3] };*/\
+        /* rule declaration */\
+        PosEqual: [SampleEvent, SampleEvent : sample_predicate] -> example;\
     ");
 
     link_references(root);
