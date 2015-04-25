@@ -113,31 +113,37 @@ int validate(struct node *root)
                     for (int i = 0; i < temp->childv[1]->childc; i++) {
                         /* get predicate definition */
                         tempnode1 = ((struct payload *)(temp->childv[1]->childv[i]->payload))->predicate.ref;
-                        if (tempnode1->childc == 2) {
-                            /* loop over parameters */
-                            int num_predicate_params = tempnode1->childv[0]->childc;
-                            int num_events = ((struct payload *)(temp->childv[0]->payload))->event_sequence.count;
-                            if (num_predicate_params == num_events) {
-                                for (int j = 0; j < tempnode1->childv[0]->childc; j++) {
-                                    tempnode2 = tempnode1->childv[0]->childv[j];
-                                    typename1 = ((struct payload *)(tempnode2->payload))->parameter.type;
-                                    typename2 = ((struct payload *)(temp->childv[0]->payload))->event_sequence.type[j];
-                                    if (strcmp(typename1, typename2) != 0) {
-                                        puts("fail1");
-                                        success = 0;
-                                        break;
+                        if (tempnode1) {
+                            if (tempnode1->childc == 2) {
+                                /* loop over parameters */
+                                int num_predicate_params = tempnode1->childv[0]->childc;
+                                int num_events = ((struct payload *)(temp->childv[0]->payload))->event_sequence.count;
+                                if (num_predicate_params == num_events) {
+                                    for (int j = 0; j < tempnode1->childv[0]->childc; j++) {
+                                        tempnode2 = tempnode1->childv[0]->childv[j];
+                                        typename1 = ((struct payload *)(tempnode2->payload))->parameter.type;
+                                        typename2 = ((struct payload *)(temp->childv[0]->payload))->event_sequence.type[j];
+                                        if (strcmp(typename1, typename2) != 0) {
+                                            puts("fail1");
+                                            success = 0;
+                                            break;
+                                        }
                                     }
+                                } else {
+                                    puts("fail2");
+                                    success = 0;
                                 }
-                            } else {
-                                puts("fail2");
-                                success = 0;
-                            }
 
-                            if (!success) {
+                                if (!success) {
+                                    break;
+                                }
+                            } else if (temp->childc != 1) {
+                                puts("fail3");
+                                success = 0;
                                 break;
                             }
-                        } else if (temp->childc != 1) {
-                            puts("fail3");
+                        } else {
+                            puts("fail3.1");
                             success = 0;
                             break;
                         }

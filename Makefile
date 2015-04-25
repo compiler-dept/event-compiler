@@ -4,7 +4,7 @@ DISABLED_WARNINGS=switch
 CFLAGS=-O0 -g -Wall -std=gnu99 -Ilibcollect $(patsubst %, -Wno-%, $(DISABLED_WARNINGS)) `llvm-config --cflags`
 CXXFLAGS=-O0 -g -Wall -Ilibcollect `llvm-config --cxxflags`
 LDFLAGS=-Llibcollect `llvm-config --ldflags`
-LDLIBS=-lcollect `llvm-config --libs` -lcurses
+LDLIBS=-lcollect `llvm-config --libs` -lcurses -lpthread -ldl
 YACC=lemon/lemon
 LEX=flex
 

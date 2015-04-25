@@ -14,7 +14,7 @@ int main(int argc, const char **argv)
         event EnheritanceEvent extends SampleEvent { angle };\
         \
         /* predicate definition */\
-        predicate sample_prediacte(SampleEvent sample_a, SampleEvent sample_b) :=\
+        predicate sample_predicate(SampleEvent sample_a, SampleEvent sample_b) :=\
         sample_a.pos == sample_b.pos;\
         \
         /* function definition */\
