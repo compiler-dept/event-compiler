@@ -1,0 +1,19 @@
+/* comment */
+
+/* event declaration */
+event SampleEvent { pos, time };
+event EnheritanceEvent extends SampleEvent { angle };
+
+/* predicate definition */
+predicate sample_predicate(SampleEvent sample_a, SampleEvent sample_b) :=
+sample_a.pos == sample_b.pos;
+
+/* function definition */
+SampleEvent example(SampleEvent sampleEventA, SampleEvent sampleEventB) :=
+{
+    pos = 3 * sampleEventA.pos,
+    time = [12.3]
+};
+
+/* rule declaration */
+PosEqual: [SampleEvent, SampleEvent : sample_predicate] -> example;

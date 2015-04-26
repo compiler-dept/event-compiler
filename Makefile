@@ -1,4 +1,4 @@
-BIN=event-compiler
+BIN=evc
 
 DISABLED_WARNINGS=switch
 CFLAGS=-O0 -g -Wall -std=gnu99 -Ilibcollect $(patsubst %, -Wno-%, $(DISABLED_WARNINGS)) `llvm-config --cflags`

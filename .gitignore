@@ -28,7 +28,7 @@
 *.x86_64
 *.hex
 
-event-compiler
+evc
 tests/testsuite
 tests/.clarcache
 tests/clar.suite
