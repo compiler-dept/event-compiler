@@ -118,6 +118,10 @@ int main(int argc, char * const *argv)
         }
     }
 
+    if (flags.code_generation){
+      generate_module(root, flags.input_path);
+    }
+
     tree_free(&root, payload_free);
 
     free(input);
