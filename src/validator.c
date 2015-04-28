@@ -152,9 +152,19 @@ int validate(struct node *root)
                 break;
             case N_EVENT_SEQUENCE:
                 break;
+            case N_EVENT:
+                if (!payload->event.ref){
+                  puts("fail3.1.1");
+                  success = 0;
+                }
+                break;
             case N_PREDICATE_SEQUENCE:
                 break;
             case N_PREDICATE:
+                if (!payload->predicate.ref){
+                  puts("fail3.1.2");
+                  success = 0;
+                }
                 break;
             case N_PREDICATE_DEFINITION:
                 puts("N_PREDICATE_DEFINITION");
