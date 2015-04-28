@@ -29,6 +29,7 @@
 %type rule_declaration { struct node * }
 %type rule_signature { struct node * }
 %type event_sequence { struct node * }
+%type event { struct node * }
 %type predicate_sequence { struct node * }
 %type predicate { struct node * }
 %type predicate_definition { struct node * }
@@ -281,25 +282,34 @@ rule_signature(NODE) ::= LBRACKET RBRACKET.
     stack_push(&allocated_nodes, NODE);
 }
 
-event_sequence(NODE) ::= event_sequence(ES) COMMA TYPE(T).
+event_sequence(NODE) ::= event_sequence(ES) COMMA event(E).
 {
-    struct payload *payload = ES->payload;
-    payload->event_sequence.count += 1;
-    payload->event_sequence.type =
-        realloc(payload->event_sequence.type,
-            payload->event_sequence.count * sizeof(char *));
-    payload->event_sequence.type[payload->event_sequence.count - 1] = strdup(T);
-    NODE = ES;
-    free((char *)T);
+    NODE = malloc(sizeof(struct node) + ((ES->childc + 1) * sizeof(struct node *)));
+    NODE->payload = ES->payload;
+    NODE->childc = ES->childc + 1;
+    memcpy(NODE->childv, ES->childv, ES->childc * sizeof(struct node *));
+    NODE->childv[NODE->childc - 1] = E;
+    for (int i = 0; i < NODE->childc; i++) {
+        NODE->childv[i]->parent = NODE;
+    }
+    stack_pop(&allocated_nodes);
+    free(ES);
 }
-event_sequence(NODE) ::= TYPE(T).
+event_sequence(NODE) ::= event(E).
 {
     struct payload *payload = malloc(sizeof(struct payload));
     payload->type = N_EVENT_SEQUENCE;
+    payload->alternative = ALT_EVENT;
+    NODE = tree_create_node(payload, 1, E);
+    stack_push(&allocated_nodes, NODE);
+}
+event(NODE) ::= TYPE(T).
+{
+    struct payload *payload = malloc(sizeof(struct payload));
+    payload->type = N_EVENT;
     payload->alternative = ALT_TYPE;
-    payload->event_sequence.count = 1;
-    payload->event_sequence.type = malloc(sizeof(char *));
-    payload->event_sequence.type[0] = strdup(T);
+    payload->event.ref = NULL;
+    payload->event.type = strdup(T);
     NODE = tree_create_node(payload, 0);
     stack_push(&allocated_nodes, NODE);
     free((char *)T);

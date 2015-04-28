@@ -19,6 +19,7 @@ enum type {
     N_RULE_DECLARATION,
     N_RULE_SIGNATURE,
     N_EVENT_SEQUENCE,
+    N_EVENT,
     N_PREDICATE_SEQUENCE,
     N_PREDICATE_DEFINITION,
     N_PREDICATE,
@@ -87,6 +88,7 @@ enum alternative {
     ALT_TYPE,
     ALT_MEMBER_SEQUENCE,
     ALT_EVENT_SEQUENCE,
+    ALT_EVENT,
     ALT_NONE,
     ALT_PREDICATE_SEQUENCE,
     ALT_PREDICATE,
@@ -167,11 +169,11 @@ struct payload {
             char *identifier;
             struct node *ref;
         } predicate;
-        /** event_sequence payload */
+        /** event payload */
         struct {
-            int count;
-            char **type;
-        } event_sequence;
+            char *type;
+            struct node *ref;
+        } event;
     };
 };
 

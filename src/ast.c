@@ -34,14 +34,6 @@ void payload_free(void *payload)
                     free(temp_payload->rule_declaration.identifier);
                 }
                 break;
-            case N_EVENT_SEQUENCE:
-                if (temp_payload->alternative == ALT_TYPE) {
-                    for (int i = 0; i < temp_payload->event_sequence.count; i++) {
-                        free(temp_payload->event_sequence.type[i]);
-                    }
-                    free(temp_payload->event_sequence.type);
-                }
-                break;
             case N_PREDICATE_DEFINITION:
                 if (temp_payload->alternative == ALT_EXPRESSION ||
                         temp_payload->alternative == ALT_PARAMETER_LIST) {
@@ -66,6 +58,11 @@ void payload_free(void *payload)
             case N_PREDICATE:
                 if (temp_payload->alternative == ALT_IDENTIFIER) {
                     free(temp_payload->predicate.identifier);
+                }
+                break;
+            case N_EVENT:
+                if (temp_payload->alternative == ALT_TYPE) {
+                    free(temp_payload->event.type);
                 }
                 break;
             case N_FUNCTION_CALL:

@@ -117,12 +117,12 @@ int validate(struct node *root)
                             if (tempnode1->childc == 2) {
                                 /* loop over parameters */
                                 int num_predicate_params = tempnode1->childv[0]->childc;
-                                int num_events = ((struct payload *)(temp->childv[0]->payload))->event_sequence.count;
+                                int num_events = temp->childv[0]->childc;
                                 if (num_predicate_params == num_events) {
                                     for (int j = 0; j < tempnode1->childv[0]->childc; j++) {
                                         tempnode2 = tempnode1->childv[0]->childv[j];
                                         typename1 = ((struct payload *)(tempnode2->payload))->parameter.type;
-                                        typename2 = ((struct payload *)(temp->childv[0]->payload))->event_sequence.type[j];
+                                        typename2 = ((struct payload *)(temp->childv[0]->childv[j]->payload))->event.type;
                                         if (strcmp(typename1, typename2) != 0) {
                                             puts("fail1");
                                             success = 0;

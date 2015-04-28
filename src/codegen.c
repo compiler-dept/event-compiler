@@ -56,10 +56,13 @@ int generate_event_fields(struct stack **members, struct node *node)
 void generate_rule_declaration(LLVMModuleRef module, struct node *node)
 {
 	struct payload *payload = node->payload;
-	char *name =
-	    malloc((1 + 7 +
-		    strlen(payload->rule_declaration.name)) * sizeof(char));
+	char *name = malloc((1 + 7 + strlen(payload->rule_declaration.name))
+    * sizeof(char));
 	sprintf(name, "%s_active", payload->rule_declaration.name);
+
+  if (((struct payload *)node->childv[0]->payload)->alternative == ALT_EVENT_SEQUENCE){
+    struct payload *es_payload = node->childv[0]->childv[0]->payload;
+  }
 
 	LLVMValueRef func =
 	    LLVMAddFunction(module, name,
