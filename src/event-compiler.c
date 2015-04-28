@@ -108,9 +108,9 @@ int main(int argc, char * const *argv)
         return EXIT_FAILURE;
     }
 
-    if (flags.validation) {
-        link_references(root);
+    link_references(root);
 
+    if (flags.validation) {
         if (validate(root)) {
             printf("YAY \\o/\n");
         } else {
