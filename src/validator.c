@@ -109,7 +109,7 @@ int validate(struct node *root)
             case N_RULE_SIGNATURE:
                 puts("RULE_SIGNATURE");
                 /* loop over predicates */
-                if (payload->alternative == ALT_EVENT_SEQUENCE) {
+                if (payload->alternative == ALT_PREDICATE_SEQUENCE) {
                     for (int i = 0; i < temp->childv[1]->childc; i++) {
                         /* get predicate definition */
                         tempnode1 = ((struct payload *)(temp->childv[1]->childv[i]->payload))->predicate.ref;

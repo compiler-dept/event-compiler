@@ -248,9 +248,9 @@ rule_declaration(NODE) ::= TYPE(T) COLON rule_signature(RS) RARROW IDENTIFIER(I)
     struct payload *payload = malloc(sizeof(struct payload));
     payload->type = N_RULE_DECLARATION;
     payload->alternative = ALT_RULE_SIGNATURE;
-    payload->rule_declaration.ref = NULL;
     payload->rule_declaration.name = strdup(T);
     payload->rule_declaration.identifier = strdup(I);
+    payload->rule_declaration.ref = NULL;
     NODE = tree_create_node(payload, 1, RS);
     stack_push(&allocated_nodes, NODE);
     free((char *)T);
@@ -414,6 +414,7 @@ function_definition(NODE) ::= TYPE(T) IDENTIFIER(I) LPAREN parameter_list(PL) RP
     payload->function_definition.type = strdup(T);
     payload->function_definition.identifier = strdup(I);
     payload->function_definition.scope = NULL;
+    payload->function_definition.event_ref = NULL;
     struct hashmap_entry *temp;
     while ((temp = stack_pop(&current_scope)) != NULL){
         hashmap_put(&(payload->function_definition.scope), temp->key, temp->value);
@@ -479,6 +480,7 @@ function_call(NODE) ::= IDENTIFIER(I) LPAREN argument_sequence(AS) RPAREN.
     payload->type = N_FUNCTION_CALL;
     payload->alternative = ALT_ARGUMENT_SEQUENCE;
     payload->function_call.identifier = strdup(I);
+    payload->function_call.ref = NULL;
     NODE = tree_create_node(payload, 1, AS);
     stack_push(&allocated_nodes, NODE);
     free((char *)I);
@@ -741,21 +743,11 @@ atomic(NODE) ::= IDENTIFIER(IL) DOT IDENTIFIER(IR).
     payload->alternative = ALT_IDENTIFIER;
     payload->atomic.identifier[0] = strdup(IL);
     payload->atomic.identifier[1] = strdup(IR);
+    payload->atomic.ref = NULL;
     NODE = tree_create_node(payload, 0);
     stack_push(&allocated_nodes, NODE);
     free((char *)IL);
     free((char *)IR);
-}
-atomic(NODE) ::= IDENTIFIER(I).
-{
-    struct payload *payload = malloc(sizeof(struct payload));
-    payload->type = N_ATOMIC;
-    payload->alternative = ALT_IDENTIFIER;
-    payload->atomic.identifier[0] = strdup(I);
-    payload->atomic.identifier[1] = NULL;
-    NODE = tree_create_node(payload, 0);
-    stack_push(&allocated_nodes, NODE);
-    free((char *)I);
 }
 atomic(NODE) ::= NUMBER(N).
 {
@@ -763,6 +755,7 @@ atomic(NODE) ::= NUMBER(N).
     payload->type = N_ATOMIC;
     payload->alternative = ALT_NUMBER;
     payload->atomic.number = atof(N);
+    payload->atomic.ref = NULL;
     NODE = tree_create_node(payload, 0);
     stack_push(&allocated_nodes, NODE);
     free((char *)N);
@@ -772,6 +765,7 @@ atomic(NODE) ::= vector(V).
     struct payload *payload = malloc(sizeof(struct payload));
     payload->type = N_ATOMIC;
     payload->alternative = ALT_VECTOR;
+    payload->atomic.ref = NULL;
     NODE = tree_create_node(payload, 1, V);
     stack_push(&allocated_nodes, NODE);
 }
@@ -780,6 +774,7 @@ atomic(NODE) ::= event_definition(ED).
     struct payload *payload = malloc(sizeof(struct payload));
     payload->type = N_ATOMIC;
     payload->alternative = ALT_EVENT_DEFINITION;
+    payload->atomic.ref = NULL;
     NODE = tree_create_node(payload, 1, ED);
     stack_push(&allocated_nodes, NODE);
 }
@@ -788,6 +783,7 @@ atomic(NODE) ::= function_call(FC).
     struct payload *payload = malloc(sizeof(struct payload));
     payload->type = N_ATOMIC;
     payload->alternative = ALT_FUNCTION_CALL;
+    payload->atomic.ref = NULL;
     NODE = tree_create_node(payload, 1, FC);
     stack_push(&allocated_nodes, NODE);
 }
