@@ -115,11 +115,14 @@ int main(int argc, char * const *argv)
             printf("YAY \\o/\n");
         } else {
             puts("Validation failed.");
+            tree_free(&root, payload_free);
+            free(input);
+            return EXIT_FAILURE;
         }
     }
 
-    if (flags.code_generation){
-      generate_module(root, flags.input_path);
+    if (flags.code_generation) {
+        generate_module(root, flags.input_path);
     }
 
     tree_free(&root, payload_free);

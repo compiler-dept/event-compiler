@@ -14,7 +14,6 @@ void test_integration__event_declaration(void)
     tree_free(&root, payload_free);
 }
 
-
 void test_integration__rule_declaration_with_events(void)
 {
     struct node *root =
@@ -48,7 +47,7 @@ void test_integration__function_definition(void)
 void test_integration__function_definition_function(void)
 {
     struct node *root =
-        parse_ast("SampleEvent foo(SampleEvent s1) := f1(f2(s1), f3(s1));");
+        parse_ast("SampleEvent foo(SampleEvent s1) := f1(f2(s1), f3(s1));");
 
     cl_assert(root != NULL);
 

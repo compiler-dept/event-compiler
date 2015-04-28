@@ -749,6 +749,18 @@ atomic(NODE) ::= IDENTIFIER(IL) DOT IDENTIFIER(IR).
     free((char *)IL);
     free((char *)IR);
 }
+atomic(NODE) ::= IDENTIFIER(I).
+{
+    struct payload *payload = malloc(sizeof(struct payload));
+    payload->type = N_ATOMIC;
+    payload->alternative = ALT_IDENTIFIER;
+    payload->atomic.identifier[0] = strdup(I);
+    payload->atomic.identifier[1] = NULL;
+    payload->atomic.ref = NULL;
+    NODE = tree_create_node(payload, 0);
+    stack_push(&allocated_nodes, NODE);
+    free((char *)I);
+}
 atomic(NODE) ::= NUMBER(N).
 {
     struct payload *payload = malloc(sizeof(struct payload));
