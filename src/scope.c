@@ -76,6 +76,9 @@ void link_references(struct node *node)
         } else if (payload->type == N_PREDICATE) {
             id = payload->predicate.identifier;
             payload->predicate.ref = resolve_reference(temp, id);
+        } else if (payload->type == N_EVENT) {
+            id = payload->event.type;
+            payload->predicate.ref = resolve_reference(temp, id);
         } else if (payload->type == N_RULE_DECLARATION) {
             id = payload->rule_declaration.identifier;
             payload->rule_declaration.ref = resolve_reference(temp, id);
