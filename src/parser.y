@@ -261,16 +261,16 @@ rule_signature(NODE) ::= LBRACKET event_sequence(ES) COLON predicate_sequence(PS
 {
     struct payload *payload = malloc(sizeof(struct payload));
     payload->type = N_RULE_SIGNATURE;
-    payload->alternative = ALT_EVENT_SEQUENCE;
+    payload->alternative = ALT_PREDICATE_SEQUENCE;
     NODE = tree_create_node(payload, 2, ES, PS);
     stack_push(&allocated_nodes, NODE);
 }
-rule_signature(NODE) ::= LBRACKET predicate_sequence(PS) RBRACKET.
+rule_signature(NODE) ::= LBRACKET event_sequence(ES) RBRACKET.
 {
     struct payload *payload = malloc(sizeof(struct payload));
     payload->type = N_RULE_SIGNATURE;
-    payload->alternative = ALT_PREDICATE_SEQUENCE;
-    NODE = tree_create_node(payload, 1, PS);
+    payload->alternative = ALT_EVENT_SEQUENCE;
+    NODE = tree_create_node(payload, 1, ES);
     stack_push(&allocated_nodes, NODE);
 }
 rule_signature(NODE) ::= LBRACKET RBRACKET.

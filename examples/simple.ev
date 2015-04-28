@@ -2,17 +2,18 @@
 
 /* event declaration */
 event SampleEvent { pos, time };
-event EnheritanceEvent extends SampleEvent { angle };
+event InheritanceEvent extends SampleEvent { angle };
 
 /* predicate definition */
 predicate sample_predicate(SampleEvent sample_a, SampleEvent sample_b) :=
 sample_a.pos == sample_b.pos;
 
 /* function definition */
-SampleEvent example(SampleEvent sampleEventA, SampleEvent sampleEventB) :=
+InheritanceEvent example(SampleEvent sampleEventA, SampleEvent sampleEventB) :=
 {
     pos = 3 * sampleEventA.pos,
-    time = [12.3]
+    time = [12.3],
+    angle = [90.0]
 };
 
 /* rule declaration */

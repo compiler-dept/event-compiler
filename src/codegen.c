@@ -6,11 +6,11 @@
 
 int generate_event_fields(struct stack **, struct node *);
 
-void generate_event_declaration(LLVMModuleRef module, struct node *node)
+LLVMTypeRef generate_event_declaration(LLVMModuleRef module, struct node *node)
 {
   struct payload *payload = node->payload;
-  LLVMTypeRef event_struct = LLVMStructCreateNamed(LLVMGetModuleContext(module),
-    payload->event_declaration.type[0]);
+  LLVMTypeRef event_type = LLVMStructCreateNamed(LLVMGetModuleContext(module),
+  payload->event_declaration.type[0]);
 
   struct stack *members = NULL;
   int member_count = generate_event_fields(&members, node);
@@ -21,15 +21,8 @@ void generate_event_declaration(LLVMModuleRef module, struct node *node)
     member_types[i+1] = stack_pop(&members);
   }
 
-  LLVMStructSetBody(event_struct, member_types, 2 * member_count, 0);
-
-  // This is only necessary to have at least one useage of the type. Otherwise
-  // LLVM will not include it in the module. It can be removed as soon as
-  // the generated events are used for the first time
-  int dummyFuncNameLen = 3+strlen(payload->event_declaration.type[0]);
-  char dummyFuncName[dummyFuncNameLen + 1];
-  sprintf(dummyFuncName, "use%s", payload->event_declaration.type[0]);
-  LLVMAddFunction(module, dummyFuncName, LLVMFunctionType(event_struct, NULL, 0, 0));
+  LLVMStructSetBody(event_type, member_types, 2 * member_count, 0);
+  return event_type;
 }
 
 int generate_event_fields(struct stack **members, struct node *node)
@@ -52,31 +45,49 @@ int generate_event_fields(struct stack **members, struct node *node)
   return member_count;
 }
 
+LLVMTypeRef generateEventTypeIfNecessary(LLVMModuleRef module, struct node * event_decl){
+  struct payload *event_decl_payload = (struct payload *) event_decl->payload;
+  char *event_name = event_decl_payload->event_declaration.type[0];
+  LLVMTypeRef type = LLVMGetTypeByName(module, event_name);
+  if (type){
+    return type;
+  } else {
+    return generate_event_declaration(module, event_decl);
+  }
+}
+
 
 void generate_rule_declaration(LLVMModuleRef module, struct node *node)
 {
 	struct payload *payload = node->payload;
-	char *name = malloc((1 + 7 + strlen(payload->rule_declaration.name))
-    * sizeof(char));
-	sprintf(name, "%s_active", payload->rule_declaration.name);
+	char active_name[1 + 7 + strlen(payload->rule_declaration.name)];
+  char function_name[1 + 9 + strlen(payload->rule_declaration.name)];
 
-  if (((struct payload *)node->childv[0]->payload)->alternative == ALT_EVENT_SEQUENCE){
-    struct payload *es_payload = node->childv[0]->childv[0]->payload;
+	sprintf(active_name, "%s_active", payload->rule_declaration.name);
+  sprintf(function_name, "%s_function", payload->rule_declaration.name);
+
+  if (((struct payload *)node->childv[0]->payload)->alternative == ALT_PREDICATE_SEQUENCE){
+    struct node *event_sequence = node->childv[0]->childv[0];
+    LLVMTypeRef parameters[event_sequence->childc];
+    for (int i = 0; i < event_sequence->childc; i++){
+      struct node * event = event_sequence->childv[i];
+      struct payload *event_payload = (struct payload *) event->payload;
+      parameters[i] = generateEventTypeIfNecessary(module, event_payload->event.ref);
+    }
+    LLVMAddFunction(module, active_name,
+      LLVMFunctionType(LLVMInt8Type(), parameters, event_sequence->childc, 0));
+
+    struct payload *func_payload = ((struct payload *)payload->rule_declaration.ref->payload);
+    struct node *event = func_payload->function_definition.event_ref;
+    struct payload *event_payload = (struct payload *) event->payload;
+
+
+    LLVMTypeRef return_type = generateEventTypeIfNecessary(module, event);
+
+    LLVMAddFunction(module, function_name,
+        LLVMFunctionType(return_type, parameters, event_sequence->childc, 0));
   }
 
-	LLVMValueRef func =
-	    LLVMAddFunction(module, name,
-			    LLVMFunctionType(LLVMVoidType(), NULL, 0, 0));
-
-	LLVMBasicBlockRef block = LLVMAppendBasicBlock(func, "entry");
-
-	LLVMBuilderRef builder = LLVMCreateBuilder();
-	LLVMPositionBuilderAtEnd(builder, block);
-	LLVMBuildRetVoid(builder);
-
-	LLVMVerifyFunction(func, LLVMPrintMessageAction);
-	LLVMDisposeBuilder(builder);
-	free(name);
 }
 
 LLVMModuleRef generate_module(struct node *ast, const char *name)
@@ -91,9 +102,6 @@ LLVMModuleRef generate_module(struct node *ast, const char *name)
 	while ((temp = tree_iterator_next(it)) != NULL) {
 		payload = temp->payload;
 		switch (payload->type) {
-    case N_EVENT_DECLARATION:
-  	  generate_event_declaration(module, temp);
-  	  break;
     case N_RULE_DECLARATION:
 			generate_rule_declaration(module, temp);
 			break;
