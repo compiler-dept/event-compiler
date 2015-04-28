@@ -14,15 +14,6 @@ void test_integration__event_declaration(void)
     tree_free(&root, payload_free);
 }
 
-void test_integration__rule_declaration_without_events(void)
-{
-    struct node *root =
-        parse_ast("A: [p1, p2] -> a;");
-
-    cl_assert(root != NULL);
-
-    tree_free(&root, payload_free);
-}
 
 void test_integration__rule_declaration_with_events(void)
 {
