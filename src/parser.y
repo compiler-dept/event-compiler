@@ -77,7 +77,6 @@ translation_unit(NODE) ::= declaration_sequence(DS).
     NODE = tree_create_node(payload, 1, DS);
     parser_state->root = NODE;
     parser_state->state = OK;
-    while (stack_pop(&allocated_nodes));
 }
 translation_unit ::= error.
 {
@@ -293,6 +292,7 @@ event_sequence(NODE) ::= event_sequence(ES) COMMA event(E).
         NODE->childv[i]->parent = NODE;
     }
     stack_pop(&allocated_nodes);
+    stack_push(&allocated_nodes, NODE);
     free(ES);
 }
 event_sequence(NODE) ::= event(E).
@@ -326,6 +326,7 @@ predicate_sequence(NODE) ::= predicate_sequence(PS) COMMA predicate(P).
         NODE->childv[i]->parent = NODE;
     }
     stack_pop(&allocated_nodes);
+    stack_push(&allocated_nodes, NODE);
     free(PS);
 }
 predicate_sequence(NODE) ::= predicate(P).
