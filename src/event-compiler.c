@@ -31,7 +31,7 @@ OPTIONS:\n\
 
 const size_t BUFFER_SIZE = 1024;
 
-int main(int argc, char * const *argv)
+int main(int argc, char *const *argv)
 {
     struct flags flags;
     flags.input = 0;

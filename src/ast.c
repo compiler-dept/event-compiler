@@ -20,13 +20,10 @@ void payload_free(void *payload)
                     hashmap_free(temp_payload->event_declaration.scope, free);
                 }
                 break;
-            case N_MEMBER_SEQUENCE:
-                if (temp_payload->alternative == ALT_IDENTIFIER) {
-                    for (int i = 0; i < temp_payload->member_sequence.count; i++) {
-                        free(temp_payload->member_sequence.identifier[i]);
-                    }
-                    free(temp_payload->member_sequence.identifier);
-                }
+            case N_MEMBER:
+                /*if (temp_payload->alternative == ALT_IDENTIFIER) {
+                    free(temp_payload->member.identifier);
+                }*/
                 break;
             case N_RULE_DECLARATION:
                 if (temp_payload->alternative == ALT_RULE_SIGNATURE) {

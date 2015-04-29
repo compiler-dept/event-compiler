@@ -16,6 +16,7 @@ enum type {
     N_DECLARATION,
     N_EVENT_DECLARATION,
     N_MEMBER_SEQUENCE,
+    N_MEMBER,
     N_RULE_DECLARATION,
     N_RULE_SIGNATURE,
     N_EVENT_SEQUENCE,
@@ -87,6 +88,7 @@ enum alternative {
     ALT_PARAMETER_LIST,
     ALT_TYPE,
     ALT_MEMBER_SEQUENCE,
+    ALT_MEMBER,
     ALT_EVENT_SEQUENCE,
     ALT_EVENT,
     ALT_NONE,
@@ -159,11 +161,10 @@ struct payload {
             struct node *parent_ref;
             struct hashmap *scope;
         } event_declaration;
-        /** member_sequence payload */
+        /** member payload */
         struct {
-            int count;
-            char **identifier;
-        } member_sequence;
+            char *identifier;
+        } member;
         /** predicate payload */
         struct {
             char *identifier;
