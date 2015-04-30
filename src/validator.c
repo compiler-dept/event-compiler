@@ -91,9 +91,10 @@ int validate(struct node *root)
                         puts("fail0.2");
                         success = 0;
                     } else {
-                        int count = ((struct payload *)temp->childv[0]->payload)->member_sequence.count;
+                        int count = temp->childv[0]->childc;
                         for (int i = 0; i < count; i++) {
-                            if (check_duplicate_members(payload->event_declaration.parent_ref, ((struct payload *)temp->childv[0]->payload)->member_sequence.identifier[i])) {
+                            if (check_duplicate_members(payload->event_declaration.parent_ref,
+                                                        ((struct payload *)temp->childv[0]->childv[i]->payload)->member.identifier)) {
                                 puts("fail0.3");
                                 success = 0;
                             }
@@ -153,17 +154,17 @@ int validate(struct node *root)
             case N_EVENT_SEQUENCE:
                 break;
             case N_EVENT:
-                if (!payload->event.ref){
-                  puts("fail3.1.1");
-                  success = 0;
+                if (!payload->event.ref) {
+                    puts("fail3.1.1");
+                    success = 0;
                 }
                 break;
             case N_PREDICATE_SEQUENCE:
                 break;
             case N_PREDICATE:
-                if (!payload->predicate.ref){
-                  puts("fail3.1.2");
-                  success = 0;
+                if (!payload->predicate.ref) {
+                    puts("fail3.1.2");
+                    success = 0;
                 }
                 break;
             case N_PREDICATE_DEFINITION:

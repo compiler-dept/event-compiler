@@ -17,15 +17,12 @@ void payload_free(void *payload)
                     if (temp_payload->event_declaration.type[1]) {
                         free(temp_payload->event_declaration.type[1]);
                     }
-                    hashmap_free(temp_payload->event_declaration.scope, free);
+                    hashmap_free(temp_payload->event_declaration.scope, NULL);
                 }
                 break;
-            case N_MEMBER_SEQUENCE:
+            case N_MEMBER:
                 if (temp_payload->alternative == ALT_IDENTIFIER) {
-                    for (int i = 0; i < temp_payload->member_sequence.count; i++) {
-                        free(temp_payload->member_sequence.identifier[i]);
-                    }
-                    free(temp_payload->member_sequence.identifier);
+                    free(temp_payload->member.identifier);
                 }
                 break;
             case N_RULE_DECLARATION:
