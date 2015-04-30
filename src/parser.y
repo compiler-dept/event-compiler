@@ -67,6 +67,17 @@
         free(temp);
     }
 
+    struct hashmap_entry *temp2 = NULL;
+    while ((temp2 = stack_pop(&current_scope)) != NULL){
+        free(temp2->key);
+        free(temp2);
+    }
+
+    while ((temp2 = stack_pop(&global_scope)) != NULL){
+        free(temp2->key);
+        free(temp2);
+    }
+
     parser_state->state = ERROR;
     parser_state->root = NULL;
 }
@@ -87,9 +98,7 @@ translation_unit(NODE) ::= declaration_sequence(DS).
         free(temp);
     }
 
-    while (stack_pop(&allocated_nodes) != NULL){
-        puts("Clean");
-    }
+    while (stack_pop(&allocated_nodes) != NULL);
 
     parser_state->root = NODE;
     parser_state->state = OK;
@@ -101,7 +110,9 @@ translation_unit ::= error.
 
 declaration_sequence(NODE) ::= declaration_sequence(DS) declaration(D).
 {
+    struct node *temp = stack_pop(&allocated_nodes);
     stack_pop(&allocated_nodes);
+    stack_push(&allocated_nodes, temp);
     NODE = tree_append_node(&DS, D);
     stack_push(&allocated_nodes, NODE);
 }
@@ -211,7 +222,9 @@ event_declaration(NODE) ::= EVENT TYPE(TL) EXTENDS TYPE(TR) LBRACE member_sequen
 
 member_sequence(NODE) ::= member_sequence(MS) COMMA member(M).
 {
+    struct node *temp = stack_pop(&allocated_nodes);
     stack_pop(&allocated_nodes);
+    stack_push(&allocated_nodes, temp);
     NODE = tree_append_node(&MS, M);
     stack_push(&allocated_nodes, NODE);
 }
@@ -290,7 +303,9 @@ rule_signature(NODE) ::= LBRACKET RBRACKET.
 
 event_sequence(NODE) ::= event_sequence(ES) COMMA event(E).
 {
+    struct node *temp = stack_pop(&allocated_nodes);
     stack_pop(&allocated_nodes);
+    stack_push(&allocated_nodes, temp);
     NODE = tree_append_node(&ES, E);
     stack_push(&allocated_nodes, NODE);
 }
@@ -319,7 +334,9 @@ event(NODE) ::= TYPE(T).
 
 predicate_sequence(NODE) ::= predicate_sequence(PS) COMMA predicate(P).
 {
+    struct node *temp = stack_pop(&allocated_nodes);
     stack_pop(&allocated_nodes);
+    stack_push(&allocated_nodes, temp);
     NODE = tree_append_node(&PS, P);
     stack_push(&allocated_nodes, NODE);
 }
@@ -444,7 +461,9 @@ function_definition(NODE) ::= TYPE(T) IDENTIFIER(I) LPAREN parameter_list(PL) RP
 
 parameter_list(NODE) ::= parameter_list(PL) COMMA parameter(P).
 {
+    struct node *temp = stack_pop(&allocated_nodes);
     stack_pop(&allocated_nodes);
+    stack_push(&allocated_nodes, temp);
     NODE = tree_append_node(&PL, P);
     stack_push(&allocated_nodes, NODE);
 }
@@ -516,7 +535,9 @@ event_definition(NODE) ::= LBRACE initializer_sequence(IS) RBRACE.
 
 initializer_sequence(NODE) ::= initializer_sequence(IS) COMMA initializer(I).
 {
+    struct node *temp = stack_pop(&allocated_nodes);
     stack_pop(&allocated_nodes);
+    stack_push(&allocated_nodes, temp);
     NODE = tree_append_node(&IS, I);
     stack_push(&allocated_nodes, NODE);
 }
@@ -568,7 +589,9 @@ component_sequence(NODE) ::= expression_sequence(ES).
 // expression_sequence
 expression_sequence(NODE) ::= expression_sequence(ES) COMMA expression(E).
 {
+    struct node *temp = stack_pop(&allocated_nodes);
     stack_pop(&allocated_nodes);
+    stack_push(&allocated_nodes, temp);
     NODE = tree_append_node(&ES, E);
     stack_push(&allocated_nodes, NODE);
 }
