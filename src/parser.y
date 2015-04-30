@@ -13,6 +13,23 @@
     struct stack *allocated_nodes = NULL;
     struct stack *current_scope = NULL;
     struct stack *global_scope = NULL;
+
+    void remove_topmost_node_of_type(struct stack **target_stack, enum type target_type){
+        struct stack *temp_stack = NULL;
+        struct node *temp_node = NULL;
+        struct payload *temp_payload = NULL;
+        do {
+            temp_node = stack_pop(target_stack);
+            temp_payload = (struct payload *) temp_node->payload;
+            if (temp_payload->type != target_type){
+                stack_push(&temp_stack, temp_node);
+            }
+        } while (temp_payload->type != target_type);
+
+        while ((temp_node = stack_pop(&temp_stack)) != NULL){
+            stack_push(target_stack, temp_node);
+        }
+    }
 }
 
 %token_type { const char * }
@@ -60,7 +77,26 @@
 %syntax_error
 {
     fprintf(stderr, "%s\n", "Error parsing input.");
+
+    struct node *temp = NULL;
+    while ((temp = stack_pop(&allocated_nodes)) != NULL) {
+        payload_free(temp->payload);
+        free(temp);
+    }
+
+    struct hashmap_entry *temp2 = NULL;
+    while ((temp2 = stack_pop(&current_scope)) != NULL){
+        free(temp2->key);
+        free(temp2);
+    }
+
+    while ((temp2 = stack_pop(&global_scope)) != NULL){
+        free(temp2->key);
+        free(temp2);
+    }
+
     parser_state->state = ERROR;
+    parser_state->root = NULL;
 }
 
 translation_unit(NODE) ::= declaration_sequence(DS).
@@ -79,24 +115,19 @@ translation_unit(NODE) ::= declaration_sequence(DS).
         free(temp);
     }
 
+    while (stack_pop(&allocated_nodes) != NULL);
+
     parser_state->root = NODE;
     parser_state->state = OK;
 }
 translation_unit ::= error.
 {
-    struct node *temp = NULL;
-    while ((temp = stack_pop(&allocated_nodes)) != NULL) {
-        payload_free(temp->payload);
-        free(temp);
-    }
 
-    parser_state->state = ERROR;
-    parser_state->root = NULL;
 }
 
 declaration_sequence(NODE) ::= declaration_sequence(DS) declaration(D).
 {
-    stack_pop(&allocated_nodes);
+    remove_topmost_node_of_type(&allocated_nodes, N_DECLARATION_SEQUENCE);
     NODE = tree_append_node(&DS, D);
     stack_push(&allocated_nodes, NODE);
 }
@@ -206,7 +237,7 @@ event_declaration(NODE) ::= EVENT TYPE(TL) EXTENDS TYPE(TR) LBRACE member_sequen
 
 member_sequence(NODE) ::= member_sequence(MS) COMMA member(M).
 {
-    stack_pop(&allocated_nodes);
+    remove_topmost_node_of_type(&allocated_nodes, N_MEMBER_SEQUENCE);
     NODE = tree_append_node(&MS, M);
     stack_push(&allocated_nodes, NODE);
 }
@@ -285,7 +316,7 @@ rule_signature(NODE) ::= LBRACKET RBRACKET.
 
 event_sequence(NODE) ::= event_sequence(ES) COMMA event(E).
 {
-    stack_pop(&allocated_nodes);
+    remove_topmost_node_of_type(&allocated_nodes, N_EVENT_SEQUENCE);
     NODE = tree_append_node(&ES, E);
     stack_push(&allocated_nodes, NODE);
 }
@@ -314,7 +345,7 @@ event(NODE) ::= TYPE(T).
 
 predicate_sequence(NODE) ::= predicate_sequence(PS) COMMA predicate(P).
 {
-    stack_pop(&allocated_nodes);
+    remove_topmost_node_of_type(&allocated_nodes, N_PREDICATE_SEQUENCE);
     NODE = tree_append_node(&PS, P);
     stack_push(&allocated_nodes, NODE);
 }
@@ -439,7 +470,7 @@ function_definition(NODE) ::= TYPE(T) IDENTIFIER(I) LPAREN parameter_list(PL) RP
 
 parameter_list(NODE) ::= parameter_list(PL) COMMA parameter(P).
 {
-    stack_pop(&allocated_nodes);
+    remove_topmost_node_of_type(&allocated_nodes, N_PARAMETER_LIST);
     NODE = tree_append_node(&PL, P);
     stack_push(&allocated_nodes, NODE);
 }
@@ -511,7 +542,7 @@ event_definition(NODE) ::= LBRACE initializer_sequence(IS) RBRACE.
 
 initializer_sequence(NODE) ::= initializer_sequence(IS) COMMA initializer(I).
 {
-    stack_pop(&allocated_nodes);
+    remove_topmost_node_of_type(&allocated_nodes, N_INITIALIZER_SEQUENCE);
     NODE = tree_append_node(&IS, I);
     stack_push(&allocated_nodes, NODE);
 }
@@ -563,7 +594,7 @@ component_sequence(NODE) ::= expression_sequence(ES).
 // expression_sequence
 expression_sequence(NODE) ::= expression_sequence(ES) COMMA expression(E).
 {
-    stack_pop(&allocated_nodes);
+    remove_topmost_node_of_type(&allocated_nodes, N_EXPRESSION_SEQUENCE);
     NODE = tree_append_node(&ES, E);
     stack_push(&allocated_nodes, NODE);
 }
