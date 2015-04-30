@@ -17,13 +17,13 @@ void payload_free(void *payload)
                     if (temp_payload->event_declaration.type[1]) {
                         free(temp_payload->event_declaration.type[1]);
                     }
-                    hashmap_free(temp_payload->event_declaration.scope, free);
+                    hashmap_free(temp_payload->event_declaration.scope, NULL);
                 }
                 break;
             case N_MEMBER:
-                /*if (temp_payload->alternative == ALT_IDENTIFIER) {
+                if (temp_payload->alternative == ALT_IDENTIFIER) {
                     free(temp_payload->member.identifier);
-                }*/
+                }
                 break;
             case N_RULE_DECLARATION:
                 if (temp_payload->alternative == ALT_RULE_SIGNATURE) {

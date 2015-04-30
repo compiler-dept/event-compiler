@@ -117,6 +117,7 @@ LLVMModuleRef generate_module(struct node *ast, const char *name)
     char *foo = NULL;
     if (!LLVMVerifyModule(module, LLVMPrintMessageAction, &foo)) {
         puts(foo);
+        free(foo);
     }
 
     LLVMDumpModule(module);

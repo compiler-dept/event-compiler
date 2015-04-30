@@ -209,11 +209,6 @@ member_sequence(NODE) ::= member_sequence(MS) COMMA member(M).
     stack_pop(&allocated_nodes);
     NODE = tree_append_node(&MS, M);
     stack_push(&allocated_nodes, NODE);
-
-    struct hashmap_entry *entry = malloc(sizeof(struct hashmap_entry));
-    entry->key = ((struct payload *)(M->payload))->member.identifier;
-    entry->value = M;
-    stack_push(&current_scope, entry);
 }
 member_sequence(NODE) ::= member(M).
 {
@@ -223,11 +218,6 @@ member_sequence(NODE) ::= member(M).
 
     NODE = tree_create_node(payload, 1, M);
     stack_push(&allocated_nodes, NODE);
-
-    struct hashmap_entry *entry = malloc(sizeof(struct hashmap_entry));
-    entry->key = ((struct payload *)(M->payload))->member.identifier;
-    entry->value = M;
-    stack_push(&current_scope, entry);
 }
 
 member(NODE) ::= IDENTIFIER(I).
@@ -239,6 +229,11 @@ member(NODE) ::= IDENTIFIER(I).
 
     NODE = tree_create_node(payload, 0);
     stack_push(&allocated_nodes, NODE);
+
+    struct hashmap_entry *entry = malloc(sizeof(struct hashmap_entry));
+    entry->key = strdup(I);
+    entry->value = NODE;
+    stack_push(&current_scope, entry);
 
     free((char *)I);
 }
@@ -821,7 +816,7 @@ atomic(NODE) ::= function_call(FC).
     payload->type = N_ATOMIC;
     payload->alternative = ALT_FUNCTION_CALL;
     payload->atomic.ref = NULL;
-    
+
     NODE = tree_create_node(payload, 1, FC);
     stack_push(&allocated_nodes, NODE);
 }
