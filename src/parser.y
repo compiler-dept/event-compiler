@@ -60,7 +60,15 @@
 %syntax_error
 {
     fprintf(stderr, "%s\n", "Error parsing input.");
+
+    struct node *temp = NULL;
+    while ((temp = stack_pop(&allocated_nodes)) != NULL) {
+        payload_free(temp->payload);
+        free(temp);
+    }
+
     parser_state->state = ERROR;
+    parser_state->root = NULL;
 }
 
 translation_unit(NODE) ::= declaration_sequence(DS).
@@ -79,19 +87,16 @@ translation_unit(NODE) ::= declaration_sequence(DS).
         free(temp);
     }
 
+    while (stack_pop(&allocated_nodes) != NULL){
+        puts("Clean");
+    }
+
     parser_state->root = NODE;
     parser_state->state = OK;
 }
 translation_unit ::= error.
 {
-    struct node *temp = NULL;
-    while ((temp = stack_pop(&allocated_nodes)) != NULL) {
-        payload_free(temp->payload);
-        free(temp);
-    }
 
-    parser_state->state = ERROR;
-    parser_state->root = NULL;
 }
 
 declaration_sequence(NODE) ::= declaration_sequence(DS) declaration(D).
