@@ -154,6 +154,8 @@ struct payload {
             char *name;
             char *identifier;
             struct node *ref;
+            int eventc;
+            struct array_list *eventv;
         } rule_declaration;
         /** event_declaration payload */
         struct {

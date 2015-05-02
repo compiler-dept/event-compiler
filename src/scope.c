@@ -16,7 +16,6 @@ struct node *find_scope_for(struct node *node)
     return NULL;
 }
 
-
 struct node *resolve_reference(struct node *node, const char *id)
 {
     struct node *scope = node;

@@ -7,12 +7,14 @@
     #include <tree.h>
     #include <stack.h>
     #include <hashmap.h>
+    #include <array_list.h>
     #include "ast.h"
     #include "parser_state.h"
 
     struct stack *allocated_nodes = NULL;
     struct stack *current_scope = NULL;
     struct stack *global_scope = NULL;
+    struct stack *events = NULL;
 
     void remove_topmost_node_of_type(struct stack **target_stack, enum type target_type){
         struct stack *temp_stack = NULL;
@@ -52,13 +54,18 @@
         free(temp);
     }
 
+    while ((temp = stack_pop(&events)) != NULL) {
+        payload_free(temp->payload);
+        free(temp);
+    }
+
     struct hashmap_entry *temp2 = NULL;
-    while ((temp2 = stack_pop(&current_scope)) != NULL){
+    while ((temp2 = stack_pop(&current_scope)) != NULL) {
         free(temp2->key);
         free(temp2);
     }
 
-    while ((temp2 = stack_pop(&global_scope)) != NULL){
+    while ((temp2 = stack_pop(&global_scope)) != NULL) {
         free(temp2->key);
         free(temp2);
     }
@@ -247,9 +254,17 @@ rule_declaration(NODE) ::= TYPE(T) COLON rule_signature(RS) RARROW IDENTIFIER(I)
     payload->rule_declaration.name = strdup(T);
     payload->rule_declaration.identifier = strdup(I);
     payload->rule_declaration.ref = NULL;
+    payload->rule_declaration.eventc = 0;
+    payload->rule_declaration.eventv = NULL;
 
     NODE = tree_create_node(payload, 1, RS);
     stack_push(&allocated_nodes, NODE);
+
+    struct node *temp;
+    while ((temp = stack_pop(&events)) != NULL) {
+        payload->rule_declaration.eventc++;
+        array_list_set(&(payload->rule_declaration.eventv), payload->rule_declaration.eventc - 1, temp);
+    }
 
     free((char *)T);
     free((char *)I);
@@ -308,6 +323,8 @@ event(NODE) ::= TYPE(T).
 
     NODE = tree_create_node(payload, 0);
     stack_push(&allocated_nodes, NODE);
+
+    stack_push(&events, NODE);
 
     free((char *)T);
 }
@@ -373,7 +390,7 @@ predicate_definition(NODE) ::= PREDICATE IDENTIFIER(I) LPAREN parameter_list(PL)
     stack_push(&allocated_nodes, NODE);
 
     struct hashmap_entry *temp;
-    while ((temp = stack_pop(&current_scope)) != NULL){
+    while ((temp = stack_pop(&current_scope)) != NULL) {
         hashmap_put(&(payload->predicate_definition.scope), temp->key, temp->value);
         free(temp->key);
         free(temp);

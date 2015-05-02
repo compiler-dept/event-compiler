@@ -1,6 +1,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <hashmap.h>
+#include <array_list.h>
 #include "ast.h"
 
 void payload_free(void *payload)
@@ -29,6 +30,7 @@ void payload_free(void *payload)
                 if (temp_payload->alternative == ALT_RULE_SIGNATURE) {
                     free(temp_payload->rule_declaration.name);
                     free(temp_payload->rule_declaration.identifier);
+                    array_list_free(&(temp_payload->rule_declaration.eventv), NULL);
                 }
                 break;
             case N_PREDICATE_DEFINITION:

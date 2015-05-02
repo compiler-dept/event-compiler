@@ -3,6 +3,7 @@
 #include <string.h>
 #include <stdio.h>
 #include <hashmap.h>
+#include <array_list.h>
 #include "ast.h"
 #include "validator.h"
 
@@ -106,6 +107,46 @@ int validate(struct node *root)
             case N_MEMBER_SEQUENCE:
                 break;
             case N_RULE_DECLARATION:
+                puts("RULE_DECLARATION");
+                if (payload->alternative == ALT_RULE_SIGNATURE) {
+                    /* get function definition */
+                    struct node *function_definition = payload->rule_declaration.ref;
+                    if (function_definition) {
+                        if (((struct payload *)function_definition->payload)->type == N_FUNCTION_DEFINITION) {
+                            if (payload->rule_declaration.eventc <= 0) {
+                                if (((struct payload *)function_definition->payload)->alternative != ALT_EXPRESSION) {
+                                    puts("Rule requires function without arguments!");
+                                    success = 0;
+                                }
+                            } else { /* eventc > 0 */
+                                if (((struct payload *)function_definition->payload)->alternative != ALT_PARAMETER_LIST ||
+                                        payload->rule_declaration.eventc != function_definition->childv[0]->childc) {
+                                    printf("Rule requires function with %d arguments!\n", payload->rule_declaration.eventc);
+                                    success = 0;
+                                } else {
+                                    /* loop over parameters */
+                                    for (int i = 0; i < payload->rule_declaration.eventc; i++) {
+                                        struct node *event = array_list_get(&(payload->rule_declaration.eventv), payload->rule_declaration.eventc - 1 - i);
+                                        struct node *parameter = function_definition->childv[0]->childv[i];
+                                        typename1 = ((struct payload *)event->payload)->event.type;
+                                        typename2 = ((struct payload *)parameter->payload)->parameter.type;
+                                        if (strcmp(typename1, typename2) != 0) {
+                                            puts("Wrong parameter type in function definition!");
+                                            success = 0;
+                                            break;
+                                        }
+                                    }
+                                }
+                            }
+                        } else {
+                            puts("fail0.4");
+                            success = 0;
+                        }
+                    } else {
+                        printf("No function named \"%s\"!\n", payload->rule_declaration.identifier);
+                        success = 0;
+                    }
+                }
                 break;
             case N_RULE_SIGNATURE:
                 puts("RULE_SIGNATURE");
