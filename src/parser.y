@@ -38,39 +38,7 @@
     parser_state->state = parser_state->state;
 }
 
-%type translation_unit { struct node * }
-%type declaration_sequence { struct node * }
-%type declaration { struct node * }
-%type event_declaration { struct node * }
-%type member_sequence { struct node * }
-%type member { struct node * }
-%type rule_declaration { struct node * }
-%type rule_signature { struct node * }
-%type event_sequence { struct node * }
-%type event { struct node * }
-%type predicate_sequence { struct node * }
-%type predicate { struct node * }
-%type predicate_definition { struct node * }
-%type function_definition { struct node * }
-%type parameter_list { struct node * }
-%type parameter { struct node * }
-%type function_call { struct node * }
-%type argument_sequence { struct node * }
-%type event_definition { struct node * }
-%type initializer_sequence { struct node * }
-%type initializer { struct node * }
-%type vector { struct node * }
-%type component_sequence { struct node * }
-%type expression_sequence { struct node * }
-%type expression { struct node * }
-%type comparison_expression { struct node * }
-%type additive_expression { struct node * }
-%type addition { struct node * }
-%type multiplicative_expression { struct node * }
-%type multiplication { struct node * }
-%type negation { struct node * }
-%type primary_expression { struct node * }
-%type atomic { struct node * }
+%default_type { struct node * }
 
 %extra_argument { struct parser_state *parser_state }
 
@@ -115,7 +83,7 @@ translation_unit(NODE) ::= declaration_sequence(DS).
         free(temp);
     }
 
-    while (stack_pop(&allocated_nodes) != NULL);
+    stack_free(&allocated_nodes, NULL);
 
     parser_state->root = NODE;
     parser_state->state = OK;
@@ -128,7 +96,7 @@ translation_unit ::= error.
 declaration_sequence(NODE) ::= declaration_sequence(DS) declaration(D).
 {
     remove_topmost_node_of_type(&allocated_nodes, N_DECLARATION_SEQUENCE);
-    NODE = tree_append_node(&DS, D);
+    NODE = tree_append_node(DS, D);
     stack_push(&allocated_nodes, NODE);
 }
 declaration_sequence(NODE) ::= declaration(D).
@@ -238,7 +206,7 @@ event_declaration(NODE) ::= EVENT TYPE(TL) EXTENDS TYPE(TR) LBRACE member_sequen
 member_sequence(NODE) ::= member_sequence(MS) COMMA member(M).
 {
     remove_topmost_node_of_type(&allocated_nodes, N_MEMBER_SEQUENCE);
-    NODE = tree_append_node(&MS, M);
+    NODE = tree_append_node(MS, M);
     stack_push(&allocated_nodes, NODE);
 }
 member_sequence(NODE) ::= member(M).
@@ -247,8 +215,9 @@ member_sequence(NODE) ::= member(M).
     payload->type = N_MEMBER_SEQUENCE;
     payload->alternative = ALT_MEMBER;
 
-    NODE = tree_create_node(payload, 1, M);
-    stack_push(&allocated_nodes, NODE);
+    struct node *node = tree_create_node(payload, 1, M);
+    stack_push(&allocated_nodes, node);
+    NODE = node;
 }
 
 member(NODE) ::= IDENTIFIER(I).
@@ -317,7 +286,7 @@ rule_signature(NODE) ::= LBRACKET RBRACKET.
 event_sequence(NODE) ::= event_sequence(ES) COMMA event(E).
 {
     remove_topmost_node_of_type(&allocated_nodes, N_EVENT_SEQUENCE);
-    NODE = tree_append_node(&ES, E);
+    NODE = tree_append_node(ES, E);
     stack_push(&allocated_nodes, NODE);
 }
 event_sequence(NODE) ::= event(E).
@@ -346,7 +315,7 @@ event(NODE) ::= TYPE(T).
 predicate_sequence(NODE) ::= predicate_sequence(PS) COMMA predicate(P).
 {
     remove_topmost_node_of_type(&allocated_nodes, N_PREDICATE_SEQUENCE);
-    NODE = tree_append_node(&PS, P);
+    NODE = tree_append_node(PS, P);
     stack_push(&allocated_nodes, NODE);
 }
 predicate_sequence(NODE) ::= predicate(P).
@@ -369,6 +338,7 @@ predicate(NODE) ::= IDENTIFIER(I).
 
     NODE = tree_create_node(payload, 0);
     stack_push(&allocated_nodes, NODE);
+
     free((char *)I);
 }
 
@@ -471,7 +441,7 @@ function_definition(NODE) ::= TYPE(T) IDENTIFIER(I) LPAREN parameter_list(PL) RP
 parameter_list(NODE) ::= parameter_list(PL) COMMA parameter(P).
 {
     remove_topmost_node_of_type(&allocated_nodes, N_PARAMETER_LIST);
-    NODE = tree_append_node(&PL, P);
+    NODE = tree_append_node(PL, P);
     stack_push(&allocated_nodes, NODE);
 }
 parameter_list(NODE) ::= parameter(P).
@@ -543,7 +513,7 @@ event_definition(NODE) ::= LBRACE initializer_sequence(IS) RBRACE.
 initializer_sequence(NODE) ::= initializer_sequence(IS) COMMA initializer(I).
 {
     remove_topmost_node_of_type(&allocated_nodes, N_INITIALIZER_SEQUENCE);
-    NODE = tree_append_node(&IS, I);
+    NODE = tree_append_node(IS, I);
     stack_push(&allocated_nodes, NODE);
 }
 initializer_sequence(NODE) ::= initializer(I).
@@ -595,7 +565,7 @@ component_sequence(NODE) ::= expression_sequence(ES).
 expression_sequence(NODE) ::= expression_sequence(ES) COMMA expression(E).
 {
     remove_topmost_node_of_type(&allocated_nodes, N_EXPRESSION_SEQUENCE);
-    NODE = tree_append_node(&ES, E);
+    NODE = tree_append_node(ES, E);
     stack_push(&allocated_nodes, NODE);
 }
 expression_sequence(NODE) ::= expression(E).
