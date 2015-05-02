@@ -360,24 +360,6 @@ predicate(NODE) ::= IDENTIFIER(I).
 }
 
 // predicate_definiton
-predicate_definition(NODE) ::= PREDICATE IDENTIFIER(I) LPAREN RPAREN DEF expression(E).
-{
-    struct payload *payload = malloc(sizeof(struct payload));
-    payload->type = N_PREDICATE_DEFINITION;
-    payload->alternative = ALT_EXPRESSION;
-    payload->predicate_definition.identifier = strdup(I);
-    payload->predicate_definition.scope = NULL;
-
-    NODE = tree_create_node(payload, 1, E);
-    stack_push(&allocated_nodes, NODE);
-
-    struct hashmap_entry *temp = malloc(sizeof(struct hashmap_entry));
-    temp->key = strdup(I);
-    temp->value = NODE;
-    stack_push(&global_scope, temp);
-
-    free((char *)I);
-}
 predicate_definition(NODE) ::= PREDICATE IDENTIFIER(I) LPAREN parameter_list(PL) RPAREN DEF expression(E).
 {
     struct payload *payload = malloc(sizeof(struct payload));

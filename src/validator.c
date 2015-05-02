@@ -86,17 +86,16 @@ int validate(struct node *root)
             case N_DECLARATION:
                 break;
             case N_EVENT_DECLARATION:
-                puts("EVENT_DECLARATION");
                 if (payload->event_declaration.type[1] != NULL) {
                     if (payload->event_declaration.parent_ref == NULL) {
-                        puts("fail0.2");
+                        printf("Parent event \"%s\" does not exist!\n", payload->event_declaration.type[1]);
                         success = 0;
                     } else {
                         int count = temp->childv[0]->childc;
                         for (int i = 0; i < count; i++) {
                             if (check_duplicate_members(payload->event_declaration.parent_ref,
                                                         ((struct payload *)temp->childv[0]->childv[i]->payload)->member.identifier)) {
-                                puts("fail0.3");
+                                printf("Duplicate members exist in inherited event \"%s\"!\n", payload->event_declaration.type[0]);
                                 success = 0;
                             }
                         }
@@ -107,7 +106,6 @@ int validate(struct node *root)
             case N_MEMBER_SEQUENCE:
                 break;
             case N_RULE_DECLARATION:
-                puts("RULE_DECLARATION");
                 if (payload->alternative == ALT_RULE_SIGNATURE) {
                     /* get function definition */
                     struct node *function_definition = payload->rule_declaration.ref;
@@ -115,13 +113,13 @@ int validate(struct node *root)
                         if (((struct payload *)function_definition->payload)->type == N_FUNCTION_DEFINITION) {
                             if (payload->rule_declaration.eventc <= 0) {
                                 if (((struct payload *)function_definition->payload)->alternative != ALT_EXPRESSION) {
-                                    puts("Rule requires function without arguments!");
+                                    printf("Rule \"%s\" requires function without arguments!\n", payload->rule_declaration.name);
                                     success = 0;
                                 }
                             } else { /* eventc > 0 */
                                 if (((struct payload *)function_definition->payload)->alternative != ALT_PARAMETER_LIST ||
                                         payload->rule_declaration.eventc != function_definition->childv[0]->childc) {
-                                    printf("Rule requires function with %d arguments!\n", payload->rule_declaration.eventc);
+                                    printf("Rule \"%s\" requires function with %d argument(s)!\n", payload->rule_declaration.name, payload->rule_declaration.eventc);
                                     success = 0;
                                 } else {
                                     /* loop over parameters */
@@ -131,7 +129,7 @@ int validate(struct node *root)
                                         typename1 = ((struct payload *)event->payload)->event.type;
                                         typename2 = ((struct payload *)parameter->payload)->parameter.type;
                                         if (strcmp(typename1, typename2) != 0) {
-                                            puts("Wrong parameter type in function definition!");
+                                            printf("Parameter %d of function \"%s\" has wrong type!\n", i + 1, payload->rule_declaration.identifier);
                                             success = 0;
                                             break;
                                         }
@@ -139,7 +137,7 @@ int validate(struct node *root)
                                 }
                             }
                         } else {
-                            puts("fail0.4");
+                            printf("Function assigned to rule \"%s\" is not a function!\n", payload->rule_declaration.name);
                             success = 0;
                         }
                     } else {
@@ -149,43 +147,49 @@ int validate(struct node *root)
                 }
                 break;
             case N_RULE_SIGNATURE:
-                puts("RULE_SIGNATURE");
-                /* loop over predicates */
                 if (payload->alternative == ALT_PREDICATE_SEQUENCE) {
+                    /* loop over predicates */
                     for (int i = 0; i < temp->childv[1]->childc; i++) {
                         /* get predicate definition */
                         tempnode1 = ((struct payload *)(temp->childv[1]->childv[i]->payload))->predicate.ref;
                         if (tempnode1) {
-                            if (tempnode1->childc == 2) {
-                                /* loop over parameters */
-                                int num_predicate_params = tempnode1->childv[0]->childc;
-                                int num_events = temp->childv[0]->childc;
-                                if (num_predicate_params == num_events) {
-                                    for (int j = 0; j < tempnode1->childv[0]->childc; j++) {
-                                        tempnode2 = tempnode1->childv[0]->childv[j];
-                                        typename1 = ((struct payload *)(tempnode2->payload))->parameter.type;
-                                        typename2 = ((struct payload *)(temp->childv[0]->childv[j]->payload))->event.type;
-                                        if (strcmp(typename1, typename2) != 0) {
-                                            puts("fail1");
-                                            success = 0;
-                                            break;
-                                        }
+                            /* loop over parameters */
+                            int num_predicate_params = tempnode1->childv[0]->childc;
+                            int num_events = temp->childv[0]->childc;
+                            if (num_predicate_params == num_events) {
+                                for (int j = 0; j < tempnode1->childv[0]->childc; j++) {
+                                    tempnode2 = tempnode1->childv[0]->childv[j];
+                                    typename1 = ((struct payload *)(tempnode2->payload))->parameter.type;
+                                    typename2 = ((struct payload *)(temp->childv[0]->childv[j]->payload))->event.type;
+                                    if (strcmp(typename1, typename2) != 0) {
+                                        printf("Type of parameter %d \"%s\" of predicate \"%s\" does not match the type in rule \"%s\"!\n",
+                                               j + 1,
+                                               ((struct payload *)(tempnode2->payload))->parameter.identifier,
+                                               ((struct payload *)tempnode1->payload)->predicate_definition.identifier,
+                                               ((struct payload *)temp->parent->payload)->rule_declaration.name);
+                                        success = 0;
+                                        break;
                                     }
-                                } else {
-                                    puts("fail2");
-                                    success = 0;
                                 }
-
-                                if (!success) {
-                                    break;
-                                }
-                            } else if (temp->childc != 1) {
-                                puts("fail3");
+                            } else if (num_predicate_params < num_events) {
+                                printf("To few parameters in predicate \"%s\" in Rule \"%s\"!\n",
+                                       ((struct payload *)tempnode1->payload)->predicate_definition.identifier,
+                                       ((struct payload *)temp->parent->payload)->rule_declaration.name);
                                 success = 0;
+                            } else if (num_predicate_params > num_events) {
+                                printf("To many parameters in predicate \"%s\" in Rule \"%s\"!\n",
+                                       ((struct payload *)tempnode1->payload)->predicate_definition.identifier,
+                                       ((struct payload *)temp->parent->payload)->rule_declaration.name);
+                                success = 0;
+                            }
+
+                            if (!success) {
                                 break;
                             }
                         } else {
-                            puts("fail3.1");
+                            printf("Predicate \"%s\" for rule \"%s\" does not exist!\n",
+                                   ((struct payload *)(temp->childv[1]->childv[i]->payload))->predicate.identifier,
+                                   ((struct payload *)temp->parent->payload)->rule_declaration.name);
                             success = 0;
                             break;
                         }
@@ -196,31 +200,32 @@ int validate(struct node *root)
                 break;
             case N_EVENT:
                 if (!payload->event.ref) {
-                    puts("fail3.1.1");
+                    struct node *rule_declaration = temp->parent->parent->parent;
+                    printf("Event \"%s\" in rule \"%s\" does not exist!\n",
+                           payload->event.type,
+                           ((struct payload *)rule_declaration->payload)->rule_declaration.name);
                     success = 0;
                 }
                 break;
             case N_PREDICATE_SEQUENCE:
                 break;
             case N_PREDICATE:
-                if (!payload->predicate.ref) {
-                    puts("fail3.1.2");
-                    success = 0;
-                }
                 break;
             case N_PREDICATE_DEFINITION:
-                puts("N_PREDICATE_DEFINITION");
                 op1 = type_stack_pop(&type_stack);
                 if (*op1 != T_BOOL) {
-                    puts("fail4");
+                    printf("Expression of predicate \"%s\" is not boolean!\n",
+                           payload->predicate_definition.identifier);
                     success = 0;
                 }
                 free(op1);
                 op1 = NULL;
                 break;
             case N_FUNCTION_DEFINITION:
-                puts("N_FUNCTION_DEFINITION");
                 if (payload->function_definition.event_ref == NULL) {
+                    printf("Return type \"%s\" of function \"%s\" does not exist!\n",
+                           payload->function_definition.type,
+                           payload->function_definition.identifier);
                     success = 0;
                     break;
                 }
