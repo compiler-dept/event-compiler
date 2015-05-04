@@ -72,7 +72,7 @@ void generate_rule_declaration(LLVMModuleRef module, struct node *node)
         for (int i = 0; i < event_sequence->childc; i++) {
             struct node *event = event_sequence->childv[i];
             struct payload *event_payload = (struct payload *) event->payload;
-            parameters[i] = generateEventTypeIfNecessary(module, event_payload->event.ref);
+            parameters[i] = LLVMPointerType(generateEventTypeIfNecessary(module, event_payload->event.ref), 0);
         }
         LLVMAddFunction(module, active_name,
                         LLVMFunctionType(LLVMInt8Type(), parameters, event_sequence->childc, 0));
@@ -81,7 +81,7 @@ void generate_rule_declaration(LLVMModuleRef module, struct node *node)
         struct node *event = func_payload->function_definition.event_ref;
         struct payload *event_payload = (struct payload *)event->payload;
 
-        LLVMTypeRef return_type = generateEventTypeIfNecessary(module, event);
+        LLVMTypeRef return_type = LLVMPointerType(generateEventTypeIfNecessary(module, event), 0);
 
         LLVMAddFunction(module, function_name,
                         LLVMFunctionType(return_type, parameters, event_sequence->childc, 0));
