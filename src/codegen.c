@@ -79,7 +79,6 @@ void generate_rule_declaration(LLVMModuleRef module, struct node *node)
 
         struct payload *func_payload = ((struct payload *)payload->rule_declaration.ref->payload);
         struct node *event = func_payload->function_definition.event_ref;
-        struct payload *event_payload = (struct payload *)event->payload;
 
         LLVMTypeRef return_type = LLVMPointerType(generateEventTypeIfNecessary(module, event), 0);
 
@@ -87,6 +86,46 @@ void generate_rule_declaration(LLVMModuleRef module, struct node *node)
                         LLVMFunctionType(return_type, parameters, event_sequence->childc, 0));
     }
 
+}
+
+int generate_parameter_list(LLVMModuleRef module, struct node *node, LLVMTypeRef **parameters){
+    int parameter_count = node->childc;
+
+    LLVMTypeRef *p = malloc(parameter_count * sizeof(LLVMTypeRef));
+    // *parameters = malloc(parameter_count * sizeof(LLVMTypeRef));
+    for (int i = 0; i < parameter_count; i++){
+        struct node *parameter = node->childv[i];
+        struct payload *parameter_payload = parameter->payload;
+        struct node *event = parameter_payload->parameter.event_ref;
+        LLVMTypeRef event_type = generateEventTypeIfNecessary(module, event);
+        LLVMTypeRef parameter_type = LLVMPointerType(event_type, 0);
+        p[i] = parameter_type;
+        // *parameters[i] = parameter_type;
+    }
+    *parameters = p;
+
+    return parameter_count;
+}
+
+void generate_function_definition(LLVMModuleRef module, struct node *node){
+    struct payload *payload = node->payload;
+
+    LLVMTypeRef return_event_type = generateEventTypeIfNecessary(module, payload->function_definition.event_ref);
+    LLVMTypeRef return_type = LLVMPointerType(return_event_type, 0);
+
+    LLVMTypeRef function_type;
+
+
+    if (payload->alternative == ALT_PARAMETER_LIST){
+        LLVMTypeRef *parameters = NULL;
+        int parameter_count = generate_parameter_list(module, node->childv[0], &parameters);
+        function_type = LLVMFunctionType(return_type, parameters, parameter_count, 0);
+        free(parameters);
+    } else {
+        function_type = LLVMFunctionType(return_type, NULL, 0, 0);
+    }
+
+    LLVMAddFunction(module, payload->function_definition.identifier, function_type);
 }
 
 LLVMModuleRef generate_module(struct node *ast, const char *name)
@@ -103,6 +142,9 @@ LLVMModuleRef generate_module(struct node *ast, const char *name)
         switch (payload->type) {
             case N_RULE_DECLARATION:
                 generate_rule_declaration(module, temp);
+                break;
+            case N_FUNCTION_DEFINITION:
+                generate_function_definition(module, temp);
                 break;
             default:
                 break;

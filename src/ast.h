@@ -148,6 +148,7 @@ struct payload {
         struct {
             char *type;
             char *identifier;
+            struct node *event_ref;
         } parameter;
         /** rule_declaration payload */
         struct {

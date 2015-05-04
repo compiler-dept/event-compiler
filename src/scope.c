@@ -77,7 +77,7 @@ void link_references(struct node *node)
             payload->predicate.ref = resolve_reference(temp, id);
         } else if (payload->type == N_EVENT) {
             id = payload->event.type;
-            payload->predicate.ref = resolve_reference(temp, id);
+            payload->event.ref = resolve_reference(temp, id);
         } else if (payload->type == N_RULE_DECLARATION) {
             id = payload->rule_declaration.identifier;
             payload->rule_declaration.ref = resolve_reference(temp, id);
@@ -99,6 +99,9 @@ void link_references(struct node *node)
         } else if (payload->type == N_FUNCTION_DEFINITION) {
             id = payload->function_definition.type;
             payload->function_definition.event_ref = resolve_reference(temp, id);
+        } else if (payload->type == N_PARAMETER) {
+            id = payload->parameter.type;
+            payload->parameter.event_ref = resolve_reference(temp, id);
         }
     }
 

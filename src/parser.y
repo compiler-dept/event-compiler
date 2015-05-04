@@ -460,6 +460,7 @@ parameter(NODE) ::= TYPE(T) IDENTIFIER(I).
     payload->alternative = ALT_IDENTIFIER;
     payload->parameter.type = strdup(T);
     payload->parameter.identifier = strdup(I);
+    payload->parameter.event_ref = NULL;
 
     NODE = tree_create_node(payload, 0);
     stack_push(&allocated_nodes, NODE);
