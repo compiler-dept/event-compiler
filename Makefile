@@ -32,7 +32,7 @@ TEST_DEPS=$(filter-out src/%.l, $(filter-out src/%.y, $(filter-out src/event-com
 TEST_SOURCES=$(wildcard tests/*.c)
 TEST_CFLAGS=-g -Wall -std=gnu99 -Ilibcollect $(patsubst %, -Wno-%, $(DISABLED_WARNINGS))
 TEST_LDFLAGS=-Llibcollect
-TEST_LDLIBS=-lcollect
+TEST_LDLIBS=-lcollect -lm
 tests/testsuite: $(TEST_SOURCES) $(TEST_DEPS) libcollect
 	tests/generate.py tests
 	$(CC) -Isrc -L. $(TEST_CFLAGS) -Wno-unused-function -o $@ $(TEST_SOURCES) $(TEST_DEPS) $(TEST_LDFLAGS) $(TEST_LDLIBS)
