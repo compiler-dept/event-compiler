@@ -91,18 +91,15 @@ void generate_rule_declaration(LLVMModuleRef module, struct node *node)
 int generate_parameter_list(LLVMModuleRef module, struct node *node, LLVMTypeRef **parameters){
     int parameter_count = node->childc;
 
-    LLVMTypeRef *p = malloc(parameter_count * sizeof(LLVMTypeRef));
-    // *parameters = malloc(parameter_count * sizeof(LLVMTypeRef));
+    *parameters = malloc(parameter_count * sizeof(LLVMTypeRef));
     for (int i = 0; i < parameter_count; i++){
         struct node *parameter = node->childv[i];
         struct payload *parameter_payload = parameter->payload;
         struct node *event = parameter_payload->parameter.event_ref;
         LLVMTypeRef event_type = generateEventTypeIfNecessary(module, event);
         LLVMTypeRef parameter_type = LLVMPointerType(event_type, 0);
-        p[i] = parameter_type;
-        // *parameters[i] = parameter_type;
+        (*parameters)[i] = parameter_type;
     }
-    *parameters = p;
 
     return parameter_count;
 }
