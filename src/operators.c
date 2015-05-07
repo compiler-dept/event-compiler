@@ -4,14 +4,14 @@
 #include <stdio.h>
 #include "operators.h"
 
-uint16_t maximum(uint16_t operand1, uint16_t operand2)
+uint16_t maximum(uint16_t vector_left, uint16_t vector_right)
 {
-    return operand1 == operand2 ? operand1 : (operand1 < operand2 ? operand2 : operand1);
+    return vector_left == vector_right ? vector_left : (vector_left < vector_right ? vector_right : vector_left);
 }
 
-uint16_t minimum(uint16_t operand1, uint16_t operand2)
+uint16_t minimum(uint16_t vector_left, uint16_t vector_right)
 {
-    return operand1 == operand2 ? operand1 : (operand1 < operand2 ? operand1 : operand2);
+    return vector_left == vector_right ? vector_left : (vector_left < vector_right ? vector_left : vector_right);
 }
 
 struct vector *new_vector(int size, ...)
@@ -59,21 +59,21 @@ void print_vector(struct vector *vector)
     printf("]\n");
 }
 
-uint8_t op_v_eq_v(struct vector *operand1, struct vector *operand2)
+uint8_t op_v_eq_v(struct vector *vector_left, struct vector *vector_right)
 {
-    if (operand1 == NULL || operand2 == NULL) {
+    if (vector_left == NULL || vector_right == NULL) {
         return 0;
     }
 
-    if (operand1->size != operand2->size) {
+    if (vector_left->size != vector_right->size) {
         /* vectors have not the same length */
         return 0;
     } else {
         /* vectors have the same length */
 
         /* loop over components */
-        for (int i = 0; i < operand1->size; i++) {
-            if (operand1->components[i] != operand2->components[i]) {
+        for (int i = 0; i < vector_left->size; i++) {
+            if (vector_left->components[i] != vector_right->components[i]) {
                 /* components are not equal */
                 return 0;
             }
@@ -83,52 +83,88 @@ uint8_t op_v_eq_v(struct vector *operand1, struct vector *operand2)
     }
 }
 
-struct vector *op_v_add_v(struct vector *operand1, struct vector *operand2)
+struct vector *op_v_add_v(struct vector *vector_left, struct vector *vector_right)
 {
-    if (operand1 == NULL || operand2 == NULL) {
+    if (vector_left == NULL || vector_right == NULL) {
         return NULL;
     }
 
-    uint16_t min = minimum(operand1->size, operand2->size);
-    uint16_t max = maximum(operand1->size, operand2->size);
+    uint16_t min = minimum(vector_left->size, vector_right->size);
+    uint16_t max = maximum(vector_left->size, vector_right->size);
 
     struct vector *vector = malloc(sizeof(struct vector) + max * sizeof(double));
     vector->size = max;
 
     for (int i = 0; i < min; i++) {
-        vector->components[i] = operand1->components[i] + operand2->components[i];
+        vector->components[i] = vector_left->components[i] + vector_right->components[i];
     }
 
     for (int i = min; i < max; i++) {
         vector->components[i] =
-            operand1->size < operand2->size ?
-            operand2->components[i] : operand1->components[i];
+            vector_left->size < vector_right->size ?
+            vector_right->components[i] : vector_left->components[i];
     }
 
     return vector;
 }
 
-struct vector *op_v_sub_v(struct vector *operand1, struct vector *operand2)
+struct vector *op_v_sub_v(struct vector *vector_left, struct vector *vector_right)
 {
-    if (operand1 == NULL || operand2 == NULL) {
+    if (vector_left == NULL || vector_right == NULL) {
         return NULL;
     }
 
-    uint16_t min = minimum(operand1->size, operand2->size);
-    uint16_t max = maximum(operand1->size, operand2->size);
+    uint16_t min = minimum(vector_left->size, vector_right->size);
+    uint16_t max = maximum(vector_left->size, vector_right->size);
 
     struct vector *vector = malloc(sizeof(struct vector) + max * sizeof(double));
     vector->size = max;
 
     for (int i = 0; i < min; i++) {
-        vector->components[i] = operand1->components[i] - operand2->components[i];
+        vector->components[i] = vector_left->components[i] - vector_right->components[i];
     }
 
     for (int i = min; i < max; i++) {
         vector->components[i] =
-            operand1->size < operand2->size ?
-            operand2->components[i] : operand1->components[i];
+            vector_left->size < vector_right->size ?
+            vector_right->components[i] : vector_left->components[i];
     }
 
     return vector;
+}
+
+struct vector *op_s_mult_v(double scalar, struct vector *vector)
+{
+    if (vector == NULL) {
+        return NULL;
+    }
+
+    uint16_t max = vector->size;
+
+    struct vector *ret_vector = malloc(sizeof(struct vector) + max * sizeof(double));
+    ret_vector->size = max;
+
+    for (int i = 0; i < max; i++) {
+        ret_vector->components[i] = vector->components[i] * scalar;
+    }
+
+    return ret_vector;
+}
+
+struct vector *op_s_div_v(double scalar, struct vector *vector)
+{
+    if (vector == NULL) {
+        return NULL;
+    }
+
+    uint16_t max = vector->size;
+
+    struct vector *ret_vector = malloc(sizeof(struct vector) + max * sizeof(double));
+    ret_vector->size = max;
+
+    for (int i = 0; i < max; i++) {
+        ret_vector->components[i] = vector->components[i] / scalar;
+    }
+
+    return ret_vector;
 }
