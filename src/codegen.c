@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <llvm-c/Analysis.h>
+#include <llvm-c/Target.h>
 #include "codegen.h"
 
 int generate_event_fields(struct stack **members, struct node *node)
@@ -40,7 +41,7 @@ LLVMTypeRef generate_event_declaration(LLVMModuleRef module, struct node *node)
         member_types[i + 1] = stack_pop(&members);
     }
 
-    LLVMStructSetBody(event_type, member_types, 2 * member_count, 0);
+    LLVMStructSetBody(event_type, member_types, 2 * member_count, 1);
     return event_type;
 }
 
@@ -114,22 +115,43 @@ void generate_function_definition(LLVMModuleRef module, struct node *node){
     LLVMTypeRef return_type = LLVMPointerType(return_event_type, 0);
 
     LLVMTypeRef function_type;
+    int parameter_count = 0;
 
 
     if (payload->alternative == ALT_PARAMETER_LIST){
         LLVMTypeRef *parameters = NULL;
-        int parameter_count = generate_parameter_list(module, node->childv[0], &parameters);
+        parameter_count = generate_parameter_list(module, node->childv[0], &parameters);
         function_type = LLVMFunctionType(return_type, parameters, parameter_count, 0);
         free(parameters);
     } else {
         function_type = LLVMFunctionType(return_type, NULL, 0, 0);
     }
 
-    LLVMAddFunction(module, payload->function_definition.identifier, function_type);
+    LLVMValueRef function = LLVMAddFunction(module,
+        payload->function_definition.identifier, function_type);
+
+    LLVMValueRef arg_values[parameter_count];
+    LLVMGetParams(function, arg_values);
+
+    for (int i = 0; i < parameter_count; i++){
+        char buf[7];
+        sprintf(buf, "arg%d", i);
+        LLVMSetValueName(arg_values[i], buf);
+    }
+
+    LLVMBuilderRef builder = LLVMCreateBuilder();
+    LLVMBasicBlockRef basic_block = LLVMAppendBasicBlock(function, "entry");
+    LLVMPositionBuilderAtEnd(builder, basic_block);
+
+    LLVMValueRef returnVal = LLVMBuildMalloc(builder, return_event_type, "returnVal");
+
+    LLVMBuildRet(builder, returnVal);
 }
+
 
 LLVMModuleRef generate_module(struct node *ast, const char *name)
 {
+    LLVMInitializeNativeTarget();
     LLVMModuleRef module = LLVMModuleCreateWithName(name);
 
     struct tree_iterator *it = tree_iterator_init(&ast, PREORDER);
