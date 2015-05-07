@@ -167,14 +167,15 @@ event_declaration(NODE) ::= EVENT TYPE(T) LBRACE member_sequence(MS) RBRACE.
     NODE = tree_create_node(payload, 1, MS);
     stack_push(&allocated_nodes, NODE);
 
-    struct hashmap_entry *temp;
-    while ((temp = stack_pop(&current_scope)) != NULL) {
-        hashmap_put(&(payload->event_declaration.scope), temp->key, temp->value);
-        free(temp->key);
-        free(temp);
+    for (int i = 0; i < MS->childc; i++){
+        struct payload *member_payload = MS->childv[i]->payload;
+        char *key = member_payload->member.identifier;
+        int *value = malloc(sizeof(int));
+        *value = i;
+        hashmap_put(&(payload->event_declaration.scope), key, value);
     }
 
-    temp = malloc(sizeof(struct hashmap_entry));
+    struct hashmap_entry *temp = malloc(sizeof(struct hashmap_entry));
     temp->key = strdup(T);
     temp->value = NODE;
     stack_push(&global_scope, temp);
@@ -194,14 +195,16 @@ event_declaration(NODE) ::= EVENT TYPE(TL) EXTENDS TYPE(TR) LBRACE member_sequen
     NODE = tree_create_node(payload, 1, MS);
     stack_push(&allocated_nodes, NODE);
 
-    struct hashmap_entry *temp;
-    while ((temp = stack_pop(&current_scope)) != NULL) {
-        hashmap_put(&(payload->event_declaration.scope), temp->key, temp->value);
-        free(temp->key);
-        free(temp);
+
+    for (int i = 0; i < MS->childc; i++){
+        struct payload *member_payload = MS->childv[i]->payload;
+        char *key = member_payload->member.identifier;
+        int *value = malloc(sizeof(int));
+        *value = i;
+        hashmap_put(&(payload->event_declaration.scope), key, value);
     }
 
-    temp = malloc(sizeof(struct hashmap_entry));
+    struct hashmap_entry *temp = malloc(sizeof(struct hashmap_entry));
     temp->key = strdup(TL);
     temp->value = NODE;
     stack_push(&global_scope, temp);
@@ -236,11 +239,6 @@ member(NODE) ::= IDENTIFIER(I).
 
     NODE = tree_create_node(payload, 0);
     stack_push(&allocated_nodes, NODE);
-
-    struct hashmap_entry *entry = malloc(sizeof(struct hashmap_entry));
-    entry->key = strdup(I);
-    entry->value = NODE;
-    stack_push(&current_scope, entry);
 
     free((char *)I);
 }

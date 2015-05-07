@@ -41,18 +41,31 @@ struct node *resolve_reference(struct node *node, const char *id)
 
 int index_of_id(struct node *parent, char *type, char *id)
 {
+    int index  = -1;
     struct node *ref_node = resolve_reference(parent, type);
     if (ref_node) {
         struct payload *ref_payload = ref_node->payload;
         int *idx = hashmap_get(ref_payload->event_declaration.scope, id);
+
         if (idx) {
-            return *idx;
+            index = *idx;
+            while (ref_payload->event_declaration.type[1] != NULL){
+                // resolve parent reference if not set
+                if (!ref_payload->event_declaration.parent_ref){
+                    char *id = ref_payload->event_declaration.type[1];
+                    ref_payload->event_declaration.parent_ref = resolve_reference(ref_node, id);
+                }
+                ref_node = ref_payload->event_declaration.parent_ref;
+                ref_payload = ref_node->payload;
+                index += ref_node->childv[0]->childc;
+            }
         } else if (ref_payload->event_declaration.type[1] != NULL) {
-            return index_of_id(parent, ref_payload->event_declaration.type[1], id);
+            // search parent types recursively
+            index = index_of_id(parent, ref_payload->event_declaration.type[1], id);
         }
     }
 
-    return -1;
+    return index;
 }
 
 void link_references(struct node *node)
