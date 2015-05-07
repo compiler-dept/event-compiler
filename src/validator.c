@@ -409,7 +409,15 @@ int validate_function_call(struct node *temp, struct payload *payload, struct st
 	puts("function_call");
 	int success = 1;
 
-
+    struct node *function_definition = payload->function_call.ref;
+    if (function_definition == NULL) {
+        /* called function does not exist */
+        success = 0;
+    } else {
+        /* function exists */
+        stack_push(type_stack, strdup(((struct payload *)(function_definition->payload))->function_definition.type));
+        type_stack_push(type_stack, new_type(T_EVENT));
+    }
 
 	return success;
     /*int success = 1;
