@@ -113,13 +113,9 @@ void generate_initializer(LLVMModuleRef module, LLVMBuilderRef builder,
                                    LLVMValueRef target_value, struct node *node)
 {
     struct payload *payload = node->payload;
-    if (payload->type == N_INITIALIZER){
-        puts("OK");
-    }
     int index_in_struct = payload->initializer.ref_index;
-    printf("%s: %d\n", payload->initializer.identifier, index_in_struct);
     LLVMValueRef field_in_struct = LLVMBuildStructGEP(builder, target_value, index_in_struct, "");
-    //generate_expression(module, builder, field_in_struct, node->childv[0]);
+    generate_expression(module, builder, field_in_struct, node->childv[0]);
 }
 
 void generate_initializer_sequence(LLVMModuleRef module, LLVMBuilderRef builder,

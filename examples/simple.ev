@@ -10,26 +10,14 @@ predicate sample_predicate(SampleEvent sample_a, SampleEvent sample_b) :=
 sample_a.pos == sample_b.pos;
 
 /* function definition */
-InheritanceEvent example(SampleEvent sampleEventA, SampleEvent sampleEventB) :=
-{
-    pos = 3 * sampleEventA.pos,
-    time = [12.3],
-    angle = [90.0]
-};
 
-SampleEvent static() :=
+InheritanceEvent static() :=
 {
     pos = [1, 2, 3],
-    time = [12.5]
-};
-
-OtherEvent calc(SampleEvent sampleEvent) :=
-{
-    foo = [12.3 + 7 * 12.5] + 3 * sampleEvent.time
+    time = [12.5],
+    angle = [3]
 };
 
 /* rule declaration */
-PosEqual: [SampleEvent, SampleEvent : sample_predicate] -> example;
-PosSample: [SampleEvent, SampleEvent] -> example;
 Static: [] -> static;
 Calc: [SampleEvent] -> calc;
