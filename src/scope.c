@@ -92,10 +92,11 @@ void link_references(struct node *node)
                 id = payload->initializer.identifier;
                 payload->initializer.ref_index = index_of_id(parent, type, id);
             }
-        } else if (payload->type == N_EVENT_DECLARATION &&
-                   payload->event_declaration.type[1] != NULL) {
-            id = payload->event_declaration.type[1];
-            payload->event_declaration.parent_ref = resolve_reference(temp, id);
+        } else if (payload->type == N_EVENT_DECLARATION) {
+            if (payload->event_declaration.type[1] != NULL) {
+                id = payload->event_declaration.type[1];
+                payload->event_declaration.parent_ref = resolve_reference(temp, id);
+            }
         } else if (payload->type == N_FUNCTION_DEFINITION) {
             id = payload->function_definition.type;
             payload->function_definition.event_ref = resolve_reference(temp, id);
