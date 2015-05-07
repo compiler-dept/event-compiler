@@ -113,7 +113,7 @@ void generate_initializer(LLVMModuleRef module, LLVMBuilderRef builder,
                                    LLVMValueRef target_value, struct node *node)
 {
     struct payload *payload = node->payload;
-    int index_in_struct = payload->initializer.ref_index;
+    int index_in_struct = 2 * payload->initializer.ref_index + 1;
     LLVMValueRef field_in_struct = LLVMBuildStructGEP(builder, target_value, index_in_struct, "");
     generate_expression(module, builder, field_in_struct, node->childv[0]);
 }
@@ -139,6 +139,19 @@ void generate_event_definition(LLVMModuleRef module, LLVMBuilderRef builder,
     }
 }
 
+void generate_vector(LLVMModuleRef module, LLVMBuilderRef builder,
+                     LLVMValueRef target_value, struct node *node)
+{
+    struct node *expression_sequence = node->childv[0]->childv[0];
+    int count = expression_sequence->childc;
+    LLVMTypeRef vector_type = LLVMArrayType(LLVMDoubleType(), count);
+    LLVMValueRef _vector = LLVMBuildMalloc(builder, vector_type, "");
+    LLVMValueRef const_one = LLVMConstInt(LLVMInt8Type(), 0, 0);
+    LLVMValueRef indices[] = { const_one, const_one };
+    LLVMValueRef vector = LLVMBuildInBoundsGEP(builder, _vector, indices, 2, "");
+    LLVMBuildStore(builder, vector, target_value);
+}
+
 void generate_atomic(LLVMModuleRef module, LLVMBuilderRef builder,
                      LLVMValueRef target_value, struct node *node)
 {
@@ -146,6 +159,9 @@ void generate_atomic(LLVMModuleRef module, LLVMBuilderRef builder,
     switch (payload->alternative) {
         case ALT_EVENT_DEFINITION:
             generate_event_definition(module, builder, target_value, node->childv[0]);
+            break;
+        case ALT_VECTOR:
+            generate_vector(module, builder, target_value, node->childv[0]);
             break;
         default:
             puts("ERROR NOT IMPLEMENTED YET");
@@ -256,11 +272,11 @@ void generate_function_definition(LLVMModuleRef module, struct node *node)
     }
 
     LLVMBuilderRef builder = LLVMCreateBuilder();
-    LLVMBasicBlockRef basic_block = LLVMAppendBasicBlock(function, "entry");
+    LLVMBasicBlockRef basic_block = LLVMAppendBasicBlock(function, "");
     LLVMPositionBuilderAtEnd(builder, basic_block);
 
     LLVMValueRef returnVal = LLVMBuildMalloc(builder,
-                             return_event_type, "returnVal");
+                             return_event_type, "");
 
     if (payload->alternative == ALT_PARAMETER_LIST) {
         generate_expression(module, builder, returnVal, node->childv[1]);
