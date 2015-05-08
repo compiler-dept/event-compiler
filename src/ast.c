@@ -10,7 +10,9 @@ void payload_free(void *payload)
     if (temp_payload) {
         switch (temp_payload->type) {
             case N_TRANSLATION_UNIT:
-                hashmap_free(&temp_payload->translation_unit.scope, NULL);
+                if (temp_payload->translation_unit.scope){
+                    hashmap_free(&temp_payload->translation_unit.scope, NULL);
+                }
                 break;
             case N_EVENT_DECLARATION:
                 if (temp_payload->alternative == ALT_MEMBER_SEQUENCE) {
