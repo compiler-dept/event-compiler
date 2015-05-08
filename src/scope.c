@@ -49,9 +49,9 @@ int index_of_id(struct node *parent, char *type, char *id)
 
         if (idx) {
             index = *idx;
-            while (ref_payload->event_declaration.type[1] != NULL){
+            while (ref_payload->event_declaration.type[1] != NULL) {
                 // resolve parent reference if not set
-                if (!ref_payload->event_declaration.parent_ref){
+                if (!ref_payload->event_declaration.parent_ref) {
                     char *id = ref_payload->event_declaration.type[1];
                     ref_payload->event_declaration.parent_ref = resolve_reference(ref_node, id);
                 }

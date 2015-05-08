@@ -11,10 +11,10 @@ sample_a.pos == sample_b.pos;
 
 /* function definition */
 
-InheritanceEvent static() :=
+InheritanceEvent static(SampleEvent a, SampleEvent b) :=
 {
     pos = [1, 2, 3],
-    time = [12.5],
+    time = [12.5, 7],
     angle = [3]
 };
 

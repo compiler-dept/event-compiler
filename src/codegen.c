@@ -3,12 +3,13 @@
 #include <stdio.h>
 #include <llvm-c/Analysis.h>
 #include <llvm-c/Target.h>
+#include <hashmap.h>
 #include "codegen.h"
+
+struct hashmap *function_arguments = NULL;
 
 int generate_event_fields(struct stack **members, struct node *node)
 {
-    /*struct payload *member_sequence_payload = node->childv[0]->payload;
-    int member_count = member_sequence_payload->member_sequence.count;*/
     int member_count = node->childv[0]->childc;
 
     for (int i = 0; i < member_count; i++) {
@@ -107,21 +108,21 @@ int generate_parameter_list(LLVMModuleRef module, struct node *node, LLVMTypeRef
 }
 
 void generate_expression(LLVMModuleRef module, LLVMBuilderRef builder,
-                                   LLVMValueRef target_value, struct node *node);
+                         LLVMValueRef target_value, struct node *node);
 
 void generate_initializer(LLVMModuleRef module, LLVMBuilderRef builder,
-                                   LLVMValueRef target_value, struct node *node)
+                          LLVMValueRef target_value, struct node *node)
 {
     struct payload *payload = node->payload;
-    int index_in_struct = 2 * payload->initializer.ref_index + 1;
-    LLVMValueRef field_in_struct = LLVMBuildStructGEP(builder, target_value, index_in_struct, "");
-    generate_expression(module, builder, field_in_struct, node->childv[0]);
+    int index_in_struct = 2 * payload->initializer.ref_index;
+    LLVMValueRef vector_in_struct = LLVMBuildStructGEP(builder, target_value, index_in_struct, "");
+    generate_expression(module, builder, vector_in_struct, node->childv[0]);
 }
 
 void generate_initializer_sequence(LLVMModuleRef module, LLVMBuilderRef builder,
                                    LLVMValueRef target_value, struct node *node)
 {
-    for (int i = 0; i < node->childc; i++){
+    for (int i = 0; i < node->childc; i++) {
         generate_initializer(module, builder, target_value, node->childv[i]);
     }
 }
@@ -129,27 +130,49 @@ void generate_initializer_sequence(LLVMModuleRef module, LLVMBuilderRef builder,
 void generate_event_definition(LLVMModuleRef module, LLVMBuilderRef builder,
                                LLVMValueRef target_value, struct node *node)
 {
-    struct payload *payload = node->payload;
-    switch (payload->alternative) {
-        case ALT_INITIALIZER_SEQUENCE:
-            generate_initializer_sequence(module, builder, target_value, node->childv[0]);
-            break;
-        default:
-            puts("ERROR NOT IMPLEMENTED YET");
+    LLVMTypeRef event_type = LLVMGetElementType(LLVMGetElementType(LLVMTypeOf(target_value)));
+    LLVMValueRef event_struct = LLVMBuildMalloc(builder, event_type, "");
+    generate_initializer_sequence(module, builder, event_struct, node->childv[0]);
+    LLVMBuildStore(builder, event_struct, target_value);
+}
+
+void generate_component_sequence(LLVMModuleRef module, LLVMBuilderRef builder,
+                                 LLVMValueRef target_value, struct node *node)
+{
+    struct node *expression_sequence = node->childv[0];
+    LLVMValueRef indices[2];
+    indices[0] = LLVMConstInt(LLVMInt16Type(), 0, 0);
+    for (int i = 0; i < expression_sequence->childc; i++){
+        indices[1] = LLVMConstInt(LLVMInt16Type(), i, 0);
+        LLVMValueRef element_ptr = LLVMBuildGEP(builder, target_value, indices, 2, "");
+        generate_expression(module, builder, element_ptr, expression_sequence->childv[i]);
     }
 }
+
 
 void generate_vector(LLVMModuleRef module, LLVMBuilderRef builder,
                      LLVMValueRef target_value, struct node *node)
 {
     struct node *expression_sequence = node->childv[0]->childv[0];
     int count = expression_sequence->childc;
-    LLVMTypeRef vector_type = LLVMArrayType(LLVMDoubleType(), count);
-    LLVMValueRef _vector = LLVMBuildMalloc(builder, vector_type, "");
-    LLVMValueRef const_one = LLVMConstInt(LLVMInt8Type(), 0, 0);
-    LLVMValueRef indices[] = { const_one, const_one };
-    LLVMValueRef vector = LLVMBuildInBoundsGEP(builder, _vector, indices, 2, "");
-    LLVMBuildStore(builder, vector, target_value);
+
+    LLVMBuildStore(builder, LLVMConstInt(LLVMInt16Type(), count, 0), target_value);
+    LLVMValueRef indices[2];
+    indices[0] = LLVMConstInt(LLVMInt16Type(), 1, 0);
+    LLVMValueRef _vector = LLVMBuildGEP(builder, target_value, indices, 1, "");
+    LLVMTypeRef dest_type = LLVMPointerType(LLVMDoubleType(), 0);
+    dest_type = LLVMPointerType(dest_type, 0);
+    LLVMValueRef vector = LLVMBuildBitCast(builder, _vector, dest_type, "");
+
+    LLVMTypeRef array_type = LLVMArrayType(LLVMDoubleType(), count);
+    LLVMValueRef array = LLVMBuildMalloc(builder, array_type, "");
+
+    generate_component_sequence(module, builder, array, node->childv[0]);
+
+    indices[0] = LLVMConstInt(LLVMInt16Type(), 0, 0);
+    indices[1] = LLVMConstInt(LLVMInt16Type(), 0, 0);
+    LLVMValueRef arry_ptr = LLVMBuildGEP(builder, array, indices, 2, "");
+    LLVMBuildStore(builder, arry_ptr, vector);
 }
 
 void generate_atomic(LLVMModuleRef module, LLVMBuilderRef builder,
@@ -243,7 +266,8 @@ void generate_function_definition(LLVMModuleRef module, struct node *node)
 {
     struct payload *payload = node->payload;
 
-    LLVMTypeRef return_event_type = generateEventTypeIfNecessary(module, payload->function_definition.event_ref);
+    LLVMTypeRef return_event_type = generateEventTypeIfNecessary(module,
+                                    payload->function_definition.event_ref);
     LLVMTypeRef return_type = LLVMPointerType(return_event_type, 0);
 
     LLVMTypeRef function_type;
@@ -259,32 +283,34 @@ void generate_function_definition(LLVMModuleRef module, struct node *node)
         function_type = LLVMFunctionType(return_type, NULL, 0, 0);
     }
 
-    LLVMValueRef function = LLVMAddFunction(module,
-                                            payload->function_definition.identifier, function_type);
+    LLVMValueRef function = LLVMAddFunction(module, payload->function_definition.identifier,
+                                            function_type);
 
     LLVMValueRef arg_values[parameter_count];
     LLVMGetParams(function, arg_values);
 
     for (int i = 0; i < parameter_count; i++) {
-        char buf[7];
-        sprintf(buf, "arg%d", i);
-        LLVMSetValueName(arg_values[i], buf);
+        struct payload *parameter_payload = node->childv[0]->childv[i]->payload;
+        char *key = parameter_payload->parameter.identifier;
+        hashmap_put(&function_arguments, key, arg_values[i]);
     }
 
     LLVMBuilderRef builder = LLVMCreateBuilder();
     LLVMBasicBlockRef basic_block = LLVMAppendBasicBlock(function, "");
     LLVMPositionBuilderAtEnd(builder, basic_block);
 
-    LLVMValueRef returnVal = LLVMBuildMalloc(builder,
-                             return_event_type, "");
+    LLVMValueRef return_ptr = LLVMBuildAlloca(builder, return_type, "");
 
     if (payload->alternative == ALT_PARAMETER_LIST) {
-        generate_expression(module, builder, returnVal, node->childv[1]);
+        generate_expression(module, builder, return_ptr, node->childv[1]);
     } else {
-        generate_expression(module, builder, returnVal, node->childv[0]);
+        generate_expression(module, builder, return_ptr, node->childv[0]);
     }
 
-    LLVMBuildRet(builder, returnVal);
+    hashmap_free(&function_arguments, NULL);
+
+    LLVMValueRef return_val = LLVMBuildLoad(builder, return_ptr, "");
+    LLVMBuildRet(builder, return_val);
 }
 
 

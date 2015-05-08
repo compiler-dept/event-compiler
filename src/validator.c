@@ -40,9 +40,11 @@ int validate_rule_signature(struct node *temp, struct payload *payload);
 
 int validate_event(struct node *temp, struct payload *payload);
 
-int validate_predicate_definition(struct node *temp, struct payload *payload, struct stack **type_stack);
+int validate_predicate_definition(struct node *temp, struct payload *payload,
+                                  struct stack **type_stack);
 
-int validate_function_definition(struct node *temp, struct payload *payload, struct stack **type_stack);
+int validate_function_definition(struct node *temp, struct payload *payload,
+                                 struct stack **type_stack);
 
 int validate_function_call(struct node *temp, struct payload *payload, struct stack **type_stack);
 
@@ -56,7 +58,8 @@ int validate_vector(struct node *temp, struct stack **type_stack);
 
 int validate_component_sequence(struct node *temp, struct stack **type_stack);
 
-int validate_comparison_expression(struct node *temp, struct payload *payload, struct stack **type_stack);
+int validate_comparison_expression(struct node *temp, struct payload *payload,
+                                   struct stack **type_stack);
 
 int validate_addition(struct node *temp, struct stack **type_stack);
 
@@ -369,13 +372,15 @@ int validate_event_declaration(struct node *temp, struct payload *payload)
     return success;
 }
 
-int validate_predicate_definition(struct node *temp, struct payload *payload, struct stack **type_stack)
+int validate_predicate_definition(struct node *temp, struct payload *payload,
+                                  struct stack **type_stack)
 {
     enum types *op1;
     int success = 1;
     op1 = type_stack_pop(type_stack);
     if (*op1 != T_BOOL) {
-        printf("Expression of predicate \"%s\" is not boolean!\n", payload->predicate_definition.identifier);
+        printf("Expression of predicate \"%s\" is not boolean!\n",
+               payload->predicate_definition.identifier);
         success = 0;
     }
     free(op1);
@@ -383,7 +388,8 @@ int validate_predicate_definition(struct node *temp, struct payload *payload, st
     return success;
 }
 
-int validate_function_definition(struct node *temp, struct payload *payload, struct stack **type_stack)
+int validate_function_definition(struct node *temp, struct payload *payload,
+                                 struct stack **type_stack)
 {
     char *typename1;
     enum types *op1;
@@ -536,7 +542,8 @@ int validate_component_sequence(struct node *temp, struct stack **type_stack)
     return success;
 }
 
-int validate_comparison_expression(struct node *temp, struct payload *payload, struct stack **type_stack)
+int validate_comparison_expression(struct node *temp, struct payload *payload,
+                                   struct stack **type_stack)
 {
     puts("N_COMPARISON_EXPRESSION");
     enum types *op1, *op2;
