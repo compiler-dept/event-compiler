@@ -361,7 +361,5 @@ LLVMModuleRef generate_module(struct node *ast, const char *name)
         free(foo);
     }
 
-    LLVMDumpModule(module);
-
     return module;
 }

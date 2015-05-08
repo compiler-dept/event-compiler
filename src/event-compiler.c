@@ -35,7 +35,7 @@ int main(int argc, char *const *argv)
 {
     struct flags flags;
     flags.input = 0;
-    strcpy(flags.output_path, "out.o");
+    flags.output = 0;
     flags.validation = 1;
     flags.code_generation = 1;
 
@@ -123,6 +123,11 @@ int main(int argc, char *const *argv)
 
     if (flags.code_generation) {
         LLVMModuleRef module = generate_module(root, flags.input_path);
+        if (flags.output){
+            LLVMWriteBitcodeToFile(module, flags.output_path);
+        } else {
+            LLVMDumpModule(module);
+        }
         LLVMDisposeModule(module);
     }
 
