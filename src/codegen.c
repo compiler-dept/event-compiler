@@ -175,6 +175,13 @@ void generate_vector(LLVMModuleRef module, LLVMBuilderRef builder,
     LLVMBuildStore(builder, arry_ptr, vector);
 }
 
+void generate_number(LLVMModuleRef module, LLVMBuilderRef builder,
+                     LLVMValueRef target_value, struct node *node){
+     struct payload *payload = node->payload;
+     LLVMValueRef value = LLVMConstReal(LLVMDoubleType(), payload->atomic.number);
+     LLVMBuildStore(builder, value, target_value);
+}
+
 void generate_atomic(LLVMModuleRef module, LLVMBuilderRef builder,
                      LLVMValueRef target_value, struct node *node)
 {
@@ -185,6 +192,9 @@ void generate_atomic(LLVMModuleRef module, LLVMBuilderRef builder,
             break;
         case ALT_VECTOR:
             generate_vector(module, builder, target_value, node->childv[0]);
+            break;
+        case ALT_NUMBER:
+            generate_number(module, builder, target_value, node);
             break;
         default:
             puts("ERROR NOT IMPLEMENTED YET");
@@ -307,16 +317,18 @@ void generate_function_definition(LLVMModuleRef module, struct node *node)
         generate_expression(module, builder, return_ptr, node->childv[0]);
     }
 
-    hashmap_free(&function_arguments, NULL);
+    if (function_arguments){
+        hashmap_free(&function_arguments, NULL);
+    }
 
     LLVMValueRef return_val = LLVMBuildLoad(builder, return_ptr, "");
     LLVMBuildRet(builder, return_val);
+    LLVMDisposeBuilder(builder);
 }
 
 
 LLVMModuleRef generate_module(struct node *ast, const char *name)
 {
-    LLVMInitializeNativeTarget();
     LLVMModuleRef module = LLVMModuleCreateWithName(name);
 
     struct tree_iterator *it = tree_iterator_init(&ast, PREORDER);

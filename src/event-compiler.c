@@ -122,7 +122,8 @@ int main(int argc, char *const *argv)
     }
 
     if (flags.code_generation) {
-        generate_module(root, flags.input_path);
+        LLVMModuleRef module = generate_module(root, flags.input_path);
+        LLVMDisposeModule(module);
     }
 
     tree_free(&root, payload_free);
