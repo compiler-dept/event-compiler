@@ -142,7 +142,7 @@ void generate_component_sequence(LLVMModuleRef module, LLVMBuilderRef builder,
     struct node *expression_sequence = node->childv[0];
     LLVMValueRef indices[2];
     indices[0] = LLVMConstInt(LLVMInt16Type(), 0, 0);
-    for (int i = 0; i < expression_sequence->childc; i++){
+    for (int i = 0; i < expression_sequence->childc; i++) {
         indices[1] = LLVMConstInt(LLVMInt16Type(), i, 0);
         LLVMValueRef element_ptr = LLVMBuildGEP(builder, target_value, indices, 2, "");
         generate_expression(module, builder, element_ptr, expression_sequence->childv[i]);
@@ -176,10 +176,11 @@ void generate_vector(LLVMModuleRef module, LLVMBuilderRef builder,
 }
 
 void generate_number(LLVMModuleRef module, LLVMBuilderRef builder,
-                     LLVMValueRef target_value, struct node *node){
-     struct payload *payload = node->payload;
-     LLVMValueRef value = LLVMConstReal(LLVMDoubleType(), payload->atomic.number);
-     LLVMBuildStore(builder, value, target_value);
+                     LLVMValueRef target_value, struct node *node)
+{
+    struct payload *payload = node->payload;
+    LLVMValueRef value = LLVMConstReal(LLVMDoubleType(), payload->atomic.number);
+    LLVMBuildStore(builder, value, target_value);
 }
 
 void generate_atomic(LLVMModuleRef module, LLVMBuilderRef builder,
@@ -317,7 +318,7 @@ void generate_function_definition(LLVMModuleRef module, struct node *node)
         generate_expression(module, builder, return_ptr, node->childv[0]);
     }
 
-    if (function_arguments){
+    if (function_arguments) {
         hashmap_free(&function_arguments, NULL);
     }
 

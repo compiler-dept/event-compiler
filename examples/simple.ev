@@ -19,9 +19,11 @@ InheritanceEvent example(SampleEvent sampleEventA, SampleEvent sampleEventB) :=
 
 SampleEvent constfun() :=
 {
-    pos = [1, 2, 3],
+    pos = 3 * [1, 2, 3],
     time = [12.5]
 };
+
+InheritanceEvent foo(SampleEvent sed) := example(sed, sed);
 
 OtherEvent calc(SampleEvent sampleEvent) :=
 {

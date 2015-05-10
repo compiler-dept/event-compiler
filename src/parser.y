@@ -16,7 +16,7 @@
     struct stack *global_scope = NULL;
     struct stack *events = NULL;
 
-    void remove_topmost_node_of_type(struct stack **target_stack, enum type target_type){
+    void remove_topmost_node_of_type(struct stack **target_stack, enum type target_type) {
         struct stack *temp_stack = NULL;
         struct node *temp_node = NULL;
         struct payload *temp_payload = NULL;
@@ -420,7 +420,7 @@ function_definition(NODE) ::= TYPE(T) IDENTIFIER(I) LPAREN parameter_list(PL) RP
     stack_push(&allocated_nodes, NODE);
 
     struct hashmap_entry *temp;
-    while ((temp = stack_pop(&current_scope)) != NULL){
+    while ((temp = stack_pop(&current_scope)) != NULL) {
         hashmap_put(&(payload->function_definition.scope), temp->key, temp->value);
         free(temp->key);
         free(temp);
@@ -482,6 +482,19 @@ function_call(NODE) ::= IDENTIFIER(I) LPAREN argument_sequence(AS) RPAREN.
     payload->function_call.ref = NULL;
 
     NODE = tree_create_node(payload, 1, AS);
+    stack_push(&allocated_nodes, NODE);
+
+    free((char *)I);
+}
+function_call(NODE) ::= IDENTIFIER(I) LPAREN RPAREN.
+{
+    struct payload *payload = malloc(sizeof(struct payload));
+    payload->type = N_FUNCTION_CALL;
+    payload->alternative = ALT_ARGUMENT_SEQUENCE;
+    payload->function_call.identifier = strdup(I);
+    payload->function_call.ref = NULL;
+
+    NODE = tree_create_node(payload, 0);
     stack_push(&allocated_nodes, NODE);
 
     free((char *)I);

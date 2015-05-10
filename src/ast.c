@@ -10,7 +10,7 @@ void payload_free(void *payload)
     if (temp_payload) {
         switch (temp_payload->type) {
             case N_TRANSLATION_UNIT:
-                if (temp_payload->translation_unit.scope){
+                if (temp_payload->translation_unit.scope) {
                     hashmap_free(&temp_payload->translation_unit.scope, NULL);
                 }
                 break;
@@ -20,7 +20,7 @@ void payload_free(void *payload)
                     if (temp_payload->event_declaration.type[1]) {
                         free(temp_payload->event_declaration.type[1]);
                     }
-                    if (temp_payload->event_declaration.scope){
+                    if (temp_payload->event_declaration.scope) {
                         hashmap_free(&temp_payload->event_declaration.scope, free);
                     }
                 }
@@ -41,7 +41,7 @@ void payload_free(void *payload)
                 if (temp_payload->alternative == ALT_EXPRESSION ||
                         temp_payload->alternative == ALT_PARAMETER_LIST) {
                     free(temp_payload->predicate_definition.identifier);
-                    if (temp_payload->predicate_definition.scope){
+                    if (temp_payload->predicate_definition.scope) {
                         hashmap_free(&temp_payload->predicate_definition.scope, NULL);
                     }
                 }
@@ -51,7 +51,7 @@ void payload_free(void *payload)
                         temp_payload->alternative == ALT_PARAMETER_LIST) {
                     free(temp_payload->function_definition.type);
                     free(temp_payload->function_definition.identifier);
-                    if (temp_payload->function_definition.scope){
+                    if (temp_payload->function_definition.scope) {
                         hashmap_free(&temp_payload->function_definition.scope, NULL);
                     }
                 }

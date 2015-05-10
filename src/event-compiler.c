@@ -123,7 +123,7 @@ int main(int argc, char *const *argv)
 
     if (flags.code_generation) {
         LLVMModuleRef module = generate_module(root, flags.input_path);
-        if (flags.output){
+        if (flags.output) {
             LLVMWriteBitcodeToFile(module, flags.output_path);
         } else {
             LLVMDumpModule(module);
