@@ -6,7 +6,17 @@
 #include <hashmap.h>
 #include "codegen.h"
 
+
 struct hashmap *function_arguments = NULL;
+
+void generate_expression(LLVMModuleRef module, LLVMBuilderRef builder,
+                         LLVMValueRef target_value, struct node *node);
+
+void generate_additive_expression(LLVMModuleRef module, LLVMBuilderRef builder,
+                                  LLVMValueRef target_value, struct node *node);
+
+void generate_multiplicative_expression(LLVMModuleRef module, LLVMBuilderRef builder,
+                                        LLVMValueRef target_value, struct node *node);
 
 int generate_event_fields(struct stack **members, struct node *node)
 {
@@ -107,8 +117,7 @@ int generate_parameter_list(LLVMModuleRef module, struct node *node, LLVMTypeRef
     return parameter_count;
 }
 
-void generate_expression(LLVMModuleRef module, LLVMBuilderRef builder,
-                         LLVMValueRef target_value, struct node *node);
+
 
 void generate_initializer(LLVMModuleRef module, LLVMBuilderRef builder,
                           LLVMValueRef target_value, struct node *node)
@@ -183,6 +192,26 @@ void generate_number(LLVMModuleRef module, LLVMBuilderRef builder,
     LLVMBuildStore(builder, value, target_value);
 }
 
+void generate_identifier(LLVMModuleRef module, LLVMBuilderRef builder,
+                         LLVMValueRef target_value, struct node *node)
+{
+    struct payload *payload = node->payload;
+    if (payload->atomic.identifier[1] == NULL) {
+        if (payload->atomic.ref) {
+            struct node *parameter_node = payload->atomic.ref;
+            struct payload *parameter_payload = parameter_node->payload;
+            char *key = parameter_payload->parameter.identifier;
+            LLVMValueRef parameter = hashmap_get(function_arguments, key);
+            if (parameter) {
+                LLVMBuildStore(builder, parameter, target_value);
+            }
+        }
+
+    } else {
+        puts("ERROR NOT IMPLEMENTED YET");
+    }
+}
+
 void generate_atomic(LLVMModuleRef module, LLVMBuilderRef builder,
                      LLVMValueRef target_value, struct node *node)
 {
@@ -197,6 +226,9 @@ void generate_atomic(LLVMModuleRef module, LLVMBuilderRef builder,
         case ALT_NUMBER:
             generate_number(module, builder, target_value, node);
             break;
+        case ALT_IDENTIFIER:
+            generate_identifier(module, builder, target_value, node);
+            break;
         default:
             puts("ERROR NOT IMPLEMENTED YET");
     }
@@ -207,6 +239,9 @@ void generate_primary_expression(LLVMModuleRef module, LLVMBuilderRef builder,
 {
     struct payload *payload = node->payload;
     switch (payload->alternative) {
+        case ALT_EXPRESSION:
+            generate_expression(module, builder, target_value, node->childv[0]);
+            break;
         case ALT_ATOMIC:
             generate_atomic(module, builder, target_value, node->childv[0]);
             break;
@@ -219,13 +254,40 @@ void generate_negation(LLVMModuleRef module, LLVMBuilderRef builder,
                        LLVMValueRef target_value, struct node *node)
 {
     struct payload *payload = node->payload;
-    switch (payload->alternative) {
-        case ALT_PRIMARY_EXPRESSION:
-            generate_primary_expression(module, builder, target_value, node->childv[0]);
-            break;
-        default:
-            puts("ERROR NOT IMPLEMENTED YET");
+    if (payload->alternative  == ALT_PRIMARY_EXPRESSION) {
+        generate_primary_expression(module, builder, target_value, node->childv[0]);
+    } else if (payload->alternative  == ALT_NEGATION) {
+        LLVMValueRef value_ptr = LLVMBuildAlloca(builder, LLVMDoubleType(), "");
+        generate_negation(module, builder, value_ptr, node->childv[0]);
+        LLVMValueRef value = LLVMBuildLoad(builder, value_ptr, "");
+        LLVMValueRef neg_one = LLVMConstReal(LLVMDoubleType(), -1);
+        LLVMValueRef result = LLVMBuildFMul(builder, neg_one, value, "");
+        LLVMBuildStore(builder, result, target_value);
     }
+}
+
+void generate_multiplication(LLVMModuleRef module, LLVMBuilderRef builder,
+                             LLVMValueRef target_value, struct node *node)
+{
+    struct payload *payload = node->payload;
+    if (LLVMGetElementType(LLVMTypeOf(target_value)) == LLVMDoubleType()) {
+        LLVMValueRef left_value_ptr = LLVMBuildAlloca(builder, LLVMDoubleType(), "");
+        generate_multiplicative_expression(module, builder, left_value_ptr, node->childv[0] );
+        LLVMValueRef left_value = LLVMBuildLoad(builder, left_value_ptr, "");
+
+        LLVMValueRef right_value_ptr = LLVMBuildAlloca(builder, LLVMDoubleType(), "");
+        generate_negation(module, builder, right_value_ptr, node->childv[1] );
+        LLVMValueRef right_value = LLVMBuildLoad(builder, right_value_ptr, "");
+
+        LLVMValueRef result;
+        if (payload->alternative == ALT_MULT) {
+            result = LLVMBuildFMul(builder, left_value, right_value, "");
+        } else {
+            result = LLVMBuildFDiv(builder, left_value, right_value, "");
+        }
+        LLVMBuildStore(builder, result, target_value);
+    }
+
 }
 
 void generate_multiplicative_expression(LLVMModuleRef module, LLVMBuilderRef builder,
@@ -236,9 +298,38 @@ void generate_multiplicative_expression(LLVMModuleRef module, LLVMBuilderRef bui
         case ALT_NEGATION:
             generate_negation(module, builder, target_value, node->childv[0]);
             break;
+        case ALT_MULTIPLICATION:
+            generate_multiplication(module, builder, target_value, node->childv[0]);
+            break;
         default:
             puts("ERROR NOT IMPLEMENTED YET");
     }
+}
+
+
+
+void generate_addition(LLVMModuleRef module, LLVMBuilderRef builder,
+                       LLVMValueRef target_value, struct node *node)
+{
+    struct payload *payload = node->payload;
+    if (LLVMGetElementType(LLVMTypeOf(target_value)) == LLVMDoubleType()) {
+        LLVMValueRef left_value_ptr = LLVMBuildAlloca(builder, LLVMDoubleType(), "");
+        generate_additive_expression(module, builder, left_value_ptr, node->childv[0] );
+        LLVMValueRef left_value = LLVMBuildLoad(builder, left_value_ptr, "");
+
+        LLVMValueRef right_value_ptr = LLVMBuildAlloca(builder, LLVMDoubleType(), "");
+        generate_multiplicative_expression(module, builder, right_value_ptr, node->childv[1] );
+        LLVMValueRef right_value = LLVMBuildLoad(builder, right_value_ptr, "");
+
+        LLVMValueRef result;
+        if (payload->alternative == ALT_ADD) {
+            result = LLVMBuildFAdd(builder, left_value, right_value, "");
+        } else {
+            result = LLVMBuildFSub(builder, left_value, right_value, "");
+        }
+        LLVMBuildStore(builder, result, target_value);
+    }
+
 }
 
 void generate_additive_expression(LLVMModuleRef module, LLVMBuilderRef builder,
@@ -248,6 +339,9 @@ void generate_additive_expression(LLVMModuleRef module, LLVMBuilderRef builder,
     switch (payload->alternative) {
         case ALT_MULTIPLICATIVE_EXPRESSION:
             generate_multiplicative_expression(module, builder, target_value, node->childv[0]);
+            break;
+        case ALT_ADDITION:
+            generate_addition(module, builder, target_value, node->childv[0]);
             break;
         default:
             puts("ERROR NOT IMPLEMENTED YET");

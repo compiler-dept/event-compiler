@@ -17,7 +17,7 @@ InheritanceEvent example(SampleEvent sampleEventA, SampleEvent sampleEventB) :=
     angle = [90.0]
 };
 
-SampleEvent constfun() :=
+SampleEvent static() :=
 {
     pos = 3 * [1, 2, 3],
     time = [12.5]
@@ -33,5 +33,5 @@ OtherEvent calc(SampleEvent sampleEvent) :=
 /* rule declaration */
 PosEqual: [SampleEvent, SampleEvent : sample_predicate] -> example;
 PosSample: [SampleEvent, SampleEvent] -> example;
-Static: [] -> constfun;
+Static: [] -> static;
 Calc: [SampleEvent] -> calc;

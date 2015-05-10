@@ -3,7 +3,7 @@
 
 #include <stdint.h>
 
-struct vector {
+struct __attribute__((__packed__)) vector {
     uint16_t size;
     double components[];
 };
