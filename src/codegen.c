@@ -18,6 +18,14 @@ void generate_additive_expression(LLVMModuleRef module, LLVMBuilderRef builder,
 void generate_multiplicative_expression(LLVMModuleRef module, LLVMBuilderRef builder,
                                         LLVMValueRef target_value, struct node *node);
 
+LLVMTypeRef VectorType(){
+    LLVMTypeRef element_types[2];
+    element_types[0] = LLVMInt16Type();
+    element_types[1] = LLVMPointerType(LLVMDoubleType(), 0);
+    return LLVMStructType(element_types, 2, 1);
+}
+
+
 int generate_event_fields(struct stack **members, struct node *node)
 {
     int member_count = node->childv[0]->childc;
@@ -314,24 +322,46 @@ void generate_addition(LLVMModuleRef module, LLVMBuilderRef builder,
                        LLVMValueRef target_value, struct node *node)
 {
     struct payload *payload = node->payload;
+    LLVMTypeRef expected_type;
+    LLVMValueRef result;
+
     if (LLVMGetElementType(LLVMTypeOf(target_value)) == LLVMDoubleType()) {
-        LLVMValueRef left_value_ptr = LLVMBuildAlloca(builder, LLVMDoubleType(), "");
-        generate_additive_expression(module, builder, left_value_ptr, node->childv[0] );
-        LLVMValueRef left_value = LLVMBuildLoad(builder, left_value_ptr, "");
+        expected_type = LLVMDoubleType();
+    } else {
+        expected_type = VectorType();
 
-        LLVMValueRef right_value_ptr = LLVMBuildAlloca(builder, LLVMDoubleType(), "");
-        generate_multiplicative_expression(module, builder, right_value_ptr, node->childv[1] );
-        LLVMValueRef right_value = LLVMBuildLoad(builder, right_value_ptr, "");
+        // TODO
+    }
 
-        LLVMValueRef result;
+    LLVMValueRef left_value_ptr = LLVMBuildAlloca(builder, expected_type, "");
+    generate_additive_expression(module, builder, left_value_ptr, node->childv[0] );
+    LLVMValueRef left_value = LLVMBuildLoad(builder, left_value_ptr, "");
+
+    LLVMValueRef right_value_ptr = LLVMBuildAlloca(builder, LLVMDoubleType(), "");
+    generate_multiplicative_expression(module, builder, right_value_ptr, node->childv[1] );
+    LLVMValueRef right_value = LLVMBuildLoad(builder, right_value_ptr, "");
+
+
+    if (LLVMGetElementType(LLVMTypeOf(target_value)) == LLVMDoubleType()) {
         if (payload->alternative == ALT_ADD) {
             result = LLVMBuildFAdd(builder, left_value, right_value, "");
         } else {
             result = LLVMBuildFSub(builder, left_value, right_value, "");
         }
-        LLVMBuildStore(builder, result, target_value);
+    } else {
+        LLVMValueRef left_value_ptr_casted = LLVMBuildBitCast(builder, left_value_ptr, LLVMPointerType(LLVMVoidType(), 0), "");
+        LLVMValueRef right_value_ptr_casted = LLVMBuildBitCast(builder, right_value_ptr, LLVMPointerType(LLVMVoidType(), 0), "");
+        LLVMValueRef args[] = {left_value_ptr_casted, right_value_ptr_casted};
+        LLVMValueRef function;
+        if (payload->alternative == ALT_ADD) {
+            function = LLVMGetNamedFunction(module, "op_v_add_v");
+        } else {
+            function = LLVMGetNamedFunction(module, "op_v_sub_v");
+        }
+        result = LLVMBuildCall(builder, function, args, 2, "");
     }
 
+    LLVMBuildStore(builder, result, target_value);
 }
 
 void generate_additive_expression(LLVMModuleRef module, LLVMBuilderRef builder,
@@ -423,10 +453,21 @@ void generate_function_definition(LLVMModuleRef module, struct node *node)
     LLVMDisposeBuilder(builder);
 }
 
+void declare_operators(LLVMModuleRef module)
+{
+    LLVMTypeRef void_pointer_type = LLVMPointerType(LLVMVoidType(), 0);
+    LLVMTypeRef parameter_types[] = { void_pointer_type, void_pointer_type };
+
+    LLVMTypeRef function_type = LLVMFunctionType(void_pointer_type, parameter_types, 2, 0);
+    LLVMAddFunction(module, "op_v_add_v", function_type);
+}
+
 
 LLVMModuleRef generate_module(struct node *ast, const char *name)
 {
     LLVMModuleRef module = LLVMModuleCreateWithName(name);
+
+    declare_operators(module);
 
     struct tree_iterator *it = tree_iterator_init(&ast, PREORDER);
     struct node *temp = NULL;

@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <getopt.h>
 #include <unistd.h>
+#include <llvm-c/BitWriter.h>
 #include "string.h"
 #include "codegen.h"
 #include "compiler.h"
