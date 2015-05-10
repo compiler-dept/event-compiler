@@ -257,12 +257,14 @@ void generate_negation(LLVMModuleRef module, LLVMBuilderRef builder,
     if (payload->alternative  == ALT_PRIMARY_EXPRESSION) {
         generate_primary_expression(module, builder, target_value, node->childv[0]);
     } else if (payload->alternative  == ALT_NEGATION) {
-        LLVMValueRef value_ptr = LLVMBuildAlloca(builder, LLVMDoubleType(), "");
-        generate_negation(module, builder, value_ptr, node->childv[0]);
-        LLVMValueRef value = LLVMBuildLoad(builder, value_ptr, "");
-        LLVMValueRef neg_one = LLVMConstReal(LLVMDoubleType(), -1);
-        LLVMValueRef result = LLVMBuildFMul(builder, neg_one, value, "");
-        LLVMBuildStore(builder, result, target_value);
+        if (LLVMGetElementType(LLVMTypeOf(target_value)) == LLVMDoubleType()) {
+            LLVMValueRef value_ptr = LLVMBuildAlloca(builder, LLVMDoubleType(), "");
+            generate_negation(module, builder, value_ptr, node->childv[0]);
+            LLVMValueRef value = LLVMBuildLoad(builder, value_ptr, "");
+            LLVMValueRef neg_one = LLVMConstReal(LLVMDoubleType(), -1);
+            LLVMValueRef result = LLVMBuildFMul(builder, neg_one, value, "");
+            LLVMBuildStore(builder, result, target_value);
+        }
     }
 }
 
