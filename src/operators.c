@@ -176,22 +176,29 @@ uint8_t op_v_lt_v(struct vector *vector_left, struct vector *vector_right)
     }
 
     uint16_t min = minimum(vector_left->size, vector_right->size);
-    uint16_t max = maximum(vector_left->size, vector_right->size);
-
-    struct vector *vector = malloc(sizeof(struct vector) + max * sizeof(double));
-    vector->size = max;
 
     for (int i = 0; i < min; i++) {
-        vector->components[i] = vector_left->components[i] - vector_right->components[i];
+        if (vector_left->components[i] >= vector_right->components[i]) {
+            return 0;
+        }
     }
 
-    for (int i = min; i < max; i++) {
-        vector->components[i] =
-            vector_left->size < vector_right->size ?
-            vector_right->components[i] : vector_left->components[i];
-    }
-
-    return vector;
+    return 1;
 }
 
-uint8_t op_v_gt_v(struct vector *vector_left, struct vector *vector_right);
+uint8_t op_v_gt_v(struct vector *vector_left, struct vector *vector_right)
+{
+    if (vector_left == NULL || vector_right == NULL) {
+        return 0;
+    }
+
+    uint16_t min = minimum(vector_left->size, vector_right->size);
+
+    for (int i = 0; i < min; i++) {
+        if (vector_left->components[i] <= vector_right->components[i]) {
+            return 0;
+        }
+    }
+
+    return 1;
+}
