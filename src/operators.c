@@ -168,3 +168,30 @@ struct vector *op_s_div_v(double scalar, struct vector *vector)
 
     return ret_vector;
 }
+
+uint8_t op_v_lt_v(struct vector *vector_left, struct vector *vector_right)
+{
+    if (vector_left == NULL || vector_right == NULL) {
+        return 0;
+    }
+
+    uint16_t min = minimum(vector_left->size, vector_right->size);
+    uint16_t max = maximum(vector_left->size, vector_right->size);
+
+    struct vector *vector = malloc(sizeof(struct vector) + max * sizeof(double));
+    vector->size = max;
+
+    for (int i = 0; i < min; i++) {
+        vector->components[i] = vector_left->components[i] - vector_right->components[i];
+    }
+
+    for (int i = min; i < max; i++) {
+        vector->components[i] =
+            vector_left->size < vector_right->size ?
+            vector_right->components[i] : vector_left->components[i];
+    }
+
+    return vector;
+}
+
+uint8_t op_v_gt_v(struct vector *vector_left, struct vector *vector_right);
