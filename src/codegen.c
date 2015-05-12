@@ -596,7 +596,7 @@ void generate_function_definition(LLVMModuleRef module, struct node *node)
             hashmap_put(&function_arguments, key, arg_values[i]);
         }
 
-        if (function_arguments){
+        if (function_arguments) {
             stack_push(&function_arguments_stack, function_arguments);
         }
 

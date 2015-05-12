@@ -16,8 +16,9 @@ uint16_t minimum(uint16_t vector_left, uint16_t vector_right)
 
 struct vector *new_vector(int size, ...)
 {
-    struct vector *vector = malloc(sizeof(struct vector) + size * sizeof(double));
+    struct vector *vector = malloc(sizeof(struct vector));
     vector->size = size;
+    vector->components =  malloc( size * sizeof(double));
 
     va_list ap;
 
