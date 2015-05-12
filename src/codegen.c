@@ -246,6 +246,20 @@ void generate_identifier(LLVMModuleRef module, LLVMBuilderRef builder,
     }
 }
 
+void generate_function_call(LLVMModuleRef module, LLVMBuilderRef builder,
+                            LLVMValueRef target_value, struct node *node)
+{
+    struct payload *payload = node->payload;
+    struct node *function_definition = payload->function_call.ref;
+    generate_function_definition(module, function_definition);
+
+    LLVMTypeRef function = LLVMGetNamedFunction(module, payload->function_call.identifier);
+    int argument_count = node->childv[0]->childc;
+    LLVMValueRef args[argument_count];
+
+    // TODO
+}
+
 void generate_atomic(LLVMModuleRef module, LLVMBuilderRef builder,
                      LLVMValueRef target_value, struct node *node)
 {
@@ -262,6 +276,9 @@ void generate_atomic(LLVMModuleRef module, LLVMBuilderRef builder,
             break;
         case ALT_IDENTIFIER:
             generate_identifier(module, builder, target_value, node);
+            break;
+        case ALT_FUNCTION_CALL:
+            generate_function_call(module, builder, target_valuem, node);
             break;
         default:
             puts("ERROR NOT IMPLEMENTED YET");
@@ -520,54 +537,55 @@ void generate_function_definition(LLVMModuleRef module, struct node *node)
 {
     struct payload *payload = node->payload;
 
-    LLVMTypeRef return_event_type = generateEventTypeIfNecessary(module,
-                                    payload->function_definition.event_ref);
-    LLVMTypeRef return_type = LLVMPointerType(return_event_type, 0);
+    if (!LLVMGetNamedFunction(module, payload->function_definition.identifier)) {
+        LLVMTypeRef return_event_type = generateEventTypeIfNecessary(module,
+                                        payload->function_definition.event_ref);
+        LLVMTypeRef return_type = LLVMPointerType(return_event_type, 0);
+        LLVMTypeRef function_type;
+        int parameter_count = 0;
 
-    LLVMTypeRef function_type;
-    int parameter_count = 0;
 
+        if (payload->alternative == ALT_PARAMETER_LIST) {
+            LLVMTypeRef *parameters = NULL;
+            parameter_count = generate_parameter_list(module, node->childv[0], &parameters);
+            function_type = LLVMFunctionType(return_type, parameters, parameter_count, 0);
+            free(parameters);
+        } else {
+            function_type = LLVMFunctionType(return_type, NULL, 0, 0);
+        }
 
-    if (payload->alternative == ALT_PARAMETER_LIST) {
-        LLVMTypeRef *parameters = NULL;
-        parameter_count = generate_parameter_list(module, node->childv[0], &parameters);
-        function_type = LLVMFunctionType(return_type, parameters, parameter_count, 0);
-        free(parameters);
-    } else {
-        function_type = LLVMFunctionType(return_type, NULL, 0, 0);
+        LLVMValueRef function = LLVMAddFunction(module, payload->function_definition.identifier,
+                                                function_type);
+
+        LLVMValueRef arg_values[parameter_count];
+        LLVMGetParams(function, arg_values);
+
+        for (int i = 0; i < parameter_count; i++) {
+            struct payload *parameter_payload = node->childv[0]->childv[i]->payload;
+            char *key = parameter_payload->parameter.identifier;
+            hashmap_put(&function_arguments, key, arg_values[i]);
+        }
+
+        LLVMBuilderRef builder = LLVMCreateBuilder();
+        LLVMBasicBlockRef basic_block = LLVMAppendBasicBlock(function, "");
+        LLVMPositionBuilderAtEnd(builder, basic_block);
+
+        LLVMValueRef return_ptr = LLVMBuildAlloca(builder, return_type, "");
+
+        if (payload->alternative == ALT_PARAMETER_LIST) {
+            generate_expression(module, builder, return_ptr, node->childv[1]);
+        } else {
+            generate_expression(module, builder, return_ptr, node->childv[0]);
+        }
+
+        if (function_arguments) {
+            hashmap_free(&function_arguments, NULL);
+        }
+
+        LLVMValueRef return_val = LLVMBuildLoad(builder, return_ptr, "");
+        LLVMBuildRet(builder, return_val);
+        LLVMDisposeBuilder(builder);
     }
-
-    LLVMValueRef function = LLVMAddFunction(module, payload->function_definition.identifier,
-                                            function_type);
-
-    LLVMValueRef arg_values[parameter_count];
-    LLVMGetParams(function, arg_values);
-
-    for (int i = 0; i < parameter_count; i++) {
-        struct payload *parameter_payload = node->childv[0]->childv[i]->payload;
-        char *key = parameter_payload->parameter.identifier;
-        hashmap_put(&function_arguments, key, arg_values[i]);
-    }
-
-    LLVMBuilderRef builder = LLVMCreateBuilder();
-    LLVMBasicBlockRef basic_block = LLVMAppendBasicBlock(function, "");
-    LLVMPositionBuilderAtEnd(builder, basic_block);
-
-    LLVMValueRef return_ptr = LLVMBuildAlloca(builder, return_type, "");
-
-    if (payload->alternative == ALT_PARAMETER_LIST) {
-        generate_expression(module, builder, return_ptr, node->childv[1]);
-    } else {
-        generate_expression(module, builder, return_ptr, node->childv[0]);
-    }
-
-    if (function_arguments) {
-        hashmap_free(&function_arguments, NULL);
-    }
-
-    LLVMValueRef return_val = LLVMBuildLoad(builder, return_ptr, "");
-    LLVMBuildRet(builder, return_val);
-    LLVMDisposeBuilder(builder);
 }
 
 void declare_operators(LLVMModuleRef module)

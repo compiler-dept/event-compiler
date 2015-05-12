@@ -81,8 +81,8 @@ void link_references(struct node *node)
             if (payload->alternative == ALT_IDENTIFIER) {
                 id = payload->atomic.identifier[0];
                 payload->atomic.ref = resolve_reference(temp, id);
-                if (payload->atomic.identifier[1]){
-                    char *type = ((struct payload*)payload->atomic.ref->payload)->event_declaration.type[0];
+                if (payload->atomic.identifier[1]) {
+                    char *type = ((struct payload *)payload->atomic.ref->payload)->event_declaration.type[0];
                     char *id2 = payload->atomic.identifier[1];
                     payload->atomic.ref_index = index_of_id(temp, type, id2);
                 }
