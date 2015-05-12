@@ -17,6 +17,9 @@ int main(){
     e.pos = malloc(2 * sizeof(double));
     e.pos[0] = 1;
     e.pos[1] = 1;
+    e.time_len = 1;
+    e.time = malloc(sizeof(double));
+    e.time[0] = 39;
 
     struct SampleEvent *ev = constfun(&e);
 

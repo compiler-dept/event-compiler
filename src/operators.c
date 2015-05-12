@@ -153,22 +153,3 @@ struct vector *op_s_mult_v(double scalar, struct vector *vector)
 
     return ret_vector;
 }
-
-struct vector *op_s_div_v(double scalar, struct vector *vector)
-{
-    if (vector == NULL) {
-        return NULL;
-    }
-
-    uint16_t max = vector->size;
-
-    struct vector *ret_vector = malloc(sizeof(struct vector));
-    ret_vector->size = max;
-    ret_vector->components = malloc(max * sizeof(double));
-
-    for (int i = 0; i < max; i++) {
-        ret_vector->components[i] = vector->components[i] / scalar;
-    }
-
-    return ret_vector;
-}
