@@ -284,28 +284,85 @@ void generate_negation(LLVMModuleRef module, LLVMBuilderRef builder,
     }
 }
 
+void handle_number_multiplication(LLVMBuilderRef builder,
+                            LLVMValueRef left_value_ptr, LLVMValueRef right_value_ptr,
+                            LLVMValueRef target_value, struct payload *payload)
+{
+    LLVMValueRef left_value = LLVMBuildLoad(builder, left_value_ptr, "");
+    LLVMValueRef right_value = LLVMBuildLoad(builder, right_value_ptr, "");
+
+    LLVMValueRef result;
+    if (payload->alternative == ALT_MULT) {
+        result = LLVMBuildFMul(builder, left_value, right_value, "");
+    } else {
+        result = LLVMBuildFDiv(builder, left_value, right_value, "");
+    }
+    LLVMBuildStore(builder, result, target_value);
+}
+
+void handle_vector_multiplication(LLVMModuleRef module, LLVMBuilderRef builder,
+                            LLVMValueRef left_value_ptr, LLVMValueRef right_value_ptr,
+                            LLVMValueRef target_value,
+                            struct payload *payload)
+{
+
+    LLVMValueRef left_value = LLVMBuildLoad(builder, left_value_ptr, "");
+    LLVMValueRef right_value_ptr_casted = LLVMBuildBitCast(builder, right_value_ptr, LLVMPointerType(LLVMVoidType(), 0), "");
+    LLVMValueRef args[] = { left_value, right_value_ptr_casted };
+    LLVMValueRef function;
+
+    if (payload->alternative == ALT_MULT) {
+        function = LLVMGetNamedFunction(module, "op_s_mult_v");
+        LLVMValueRef result = LLVMBuildCall(builder, function, args, 2, "");
+
+        result = LLVMBuildBitCast(builder, result, LLVMPointerType(LLVMInt16Type(), 0), "");
+        LLVMValueRef count = LLVMBuildLoad(builder, result, "");
+        LLVMBuildStore(builder, count, target_value);
+
+        LLVMValueRef indices[] = { LLVMConstInt(LLVMInt16Type(), 1, 0) };
+        result = LLVMBuildGEP(builder, result, indices, 1, "");
+        LLVMTypeRef double_ptr_ptr = LLVMPointerType(LLVMPointerType(LLVMDoubleType(), 0), 0);
+        result = LLVMBuildBitCast(builder, result, double_ptr_ptr, "");
+        result = LLVMBuildLoad(builder, result, "");
+
+        target_value = LLVMBuildGEP(builder, target_value, indices, 1, "");
+        target_value = LLVMBuildBitCast(builder, target_value, double_ptr_ptr, "");
+        LLVMBuildStore(builder, result, target_value);
+    } else {
+        debug(module, builder, "ERROR: Scalar / Vector and Vector / Scalar are undefined. Validation should have detected this.");
+        debug(module, builder, "Will most likely segfault... now!");
+    }
+}
+
+
 void generate_multiplication(LLVMModuleRef module, LLVMBuilderRef builder,
                              LLVMValueRef target_value, struct node *node)
 {
     struct payload *payload = node->payload;
-    if (LLVMGetElementType(LLVMTypeOf(target_value)) == LLVMDoubleType()) {
-        LLVMValueRef left_value_ptr = LLVMBuildAlloca(builder, LLVMDoubleType(), "");
-        generate_multiplicative_expression(module, builder, left_value_ptr, node->childv[0] );
-        LLVMValueRef left_value = LLVMBuildLoad(builder, left_value_ptr, "");
+    LLVMValueRef left_value_ptr, right_value_ptr;
 
-        LLVMValueRef right_value_ptr = LLVMBuildAlloca(builder, LLVMDoubleType(), "");
-        generate_negation(module, builder, right_value_ptr, node->childv[1] );
-        LLVMValueRef right_value = LLVMBuildLoad(builder, right_value_ptr, "");
+    int is_vector = LLVMGetElementType(LLVMTypeOf(target_value)) != LLVMDoubleType();
 
-        LLVMValueRef result;
-        if (payload->alternative == ALT_MULT) {
-            result = LLVMBuildFMul(builder, left_value, right_value, "");
-        } else {
-            result = LLVMBuildFDiv(builder, left_value, right_value, "");
-        }
-        LLVMBuildStore(builder, result, target_value);
+    if (is_vector) {
+        left_value_ptr = LLVMBuildAlloca(builder, LLVMDoubleType(), "");
+        right_value_ptr = LLVMBuildAlloca(builder, VectorType(), "");
+        right_value_ptr = LLVMBuildStructGEP(builder, right_value_ptr, 0, "");
+    } else {
+        left_value_ptr = LLVMBuildAlloca(builder, LLVMDoubleType(), "");
+        right_value_ptr = LLVMBuildAlloca(builder, LLVMDoubleType(), "");
     }
 
+
+
+    generate_multiplicative_expression(module, builder, left_value_ptr, node->childv[0] );
+    generate_negation(module, builder, right_value_ptr, node->childv[1] );
+
+
+    if (!is_vector) {
+        handle_number_multiplication(builder, left_value_ptr, right_value_ptr, target_value, payload);
+    } else {
+        handle_vector_multiplication(module, builder, left_value_ptr, right_value_ptr, target_value, payload);
+    }
 }
 
 void generate_multiplicative_expression(LLVMModuleRef module, LLVMBuilderRef builder,
@@ -404,7 +461,6 @@ void generate_addition(LLVMModuleRef module, LLVMBuilderRef builder,
     } else {
         handle_vector_addition(module, builder, left_value_ptr, right_value_ptr, target_value, payload);
     }
-
 }
 
 void generate_additive_expression(LLVMModuleRef module, LLVMBuilderRef builder,
@@ -504,6 +560,10 @@ void declare_operators(LLVMModuleRef module)
     LLVMTypeRef function_type = LLVMFunctionType(void_pointer_type, parameter_types, 2, 0);
     LLVMAddFunction(module, "op_v_add_v", function_type);
     LLVMAddFunction(module, "op_v_sub_v", function_type);
+
+    parameter_types[0] = LLVMDoubleType();
+    function_type = LLVMFunctionType(void_pointer_type, parameter_types, 2, 0);
+    LLVMAddFunction(module, "op_s_mult_v", function_type);
 }
 
 
