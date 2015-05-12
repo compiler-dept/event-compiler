@@ -768,6 +768,7 @@ atomic(NODE) ::= IDENTIFIER(IL) DOT IDENTIFIER(IR).
     payload->atomic.identifier[0] = strdup(IL);
     payload->atomic.identifier[1] = strdup(IR);
     payload->atomic.ref = NULL;
+    payload->atomic.ref_index = -1;
 
     NODE = tree_create_node(payload, 0);
     stack_push(&allocated_nodes, NODE);
@@ -783,6 +784,7 @@ atomic(NODE) ::= IDENTIFIER(I).
     payload->atomic.identifier[0] = strdup(I);
     payload->atomic.identifier[1] = NULL;
     payload->atomic.ref = NULL;
+    payload->atomic.ref_index = -1;
 
     NODE = tree_create_node(payload, 0);
     stack_push(&allocated_nodes, NODE);

@@ -119,6 +119,7 @@ struct payload {
                 struct {
                     char *identifier[2];
                     struct node *ref;
+                    int ref_index;
                 };
             };
         } atomic;
