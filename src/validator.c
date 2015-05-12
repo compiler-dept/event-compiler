@@ -63,7 +63,7 @@ int validate_comparison_expression(struct node *temp, struct payload *payload,
 
 int validate_addition(struct node *temp, struct stack **type_stack);
 
-int validate_multiplication(struct node *temp, struct stack **type_stack);
+int validate_multiplication(struct node *temp, struct payload *payload, struct stack **type_stack);
 
 int validate_atomic(struct node *temp, struct payload *payload, struct stack **type_stack);
 
@@ -148,7 +148,7 @@ int validate(struct node *root)
                 success = validate_addition(temp, &type_stack);
                 break;
             case N_MULTIPLICATION:
-                success = validate_multiplication(temp, &type_stack);
+                success = validate_multiplication(temp, payload, &type_stack);
                 break;
             case N_ATOMIC:
                 success = validate_atomic(temp, payload, &type_stack);
@@ -592,7 +592,7 @@ int validate_addition(struct node *temp, struct stack **type_stack)
     return success;
 }
 
-int validate_multiplication(struct node *temp, struct stack **type_stack)
+int validate_multiplication(struct node *temp, struct payload *payload, struct stack **type_stack)
 {
     puts("multiplication");
     int success = 1;
@@ -600,7 +600,10 @@ int validate_multiplication(struct node *temp, struct stack **type_stack)
     enum types *neg = type_stack_pop(type_stack);
     enum types *mult_exp = type_stack_pop(type_stack);
 
-    if (*mult_exp == T_NUMBER) {
+    if (*mult_exp != T_NUMBER) {
+        /* first operand is not a number */
+        success = 0;
+    } else {
         /* first operand is a number */
         if (*neg != T_NUMBER && *neg != T_VECTOR) {
             /* second operand is not a number or not a vector */
@@ -610,16 +613,12 @@ int validate_multiplication(struct node *temp, struct stack **type_stack)
             type_stack_push(type_stack, new_type(T_NUMBER));
         } else {
             /* second operator is a vector */
-            type_stack_push(type_stack, new_type(T_VECTOR));
-        }
-    } else if (*mult_exp == T_VECTOR) {
-        /* first operand is a vector */
-        if (*neg != T_NUMBER) {
-            /* second operand is not a number */
-            success = 0;
-        } else {
-            /* second operand is a number */
-            type_stack_push(type_stack, new_type(T_VECTOR));
+            if (payload->alternative == ALT_DIV) {
+                /* times vector is not defined */
+                success = 0;
+            } else {
+                type_stack_push(type_stack, new_type(T_VECTOR));
+            }
         }
     }
 
