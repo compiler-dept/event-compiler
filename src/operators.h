@@ -22,4 +22,8 @@ struct vector *op_v_sub_v(struct vector *vector_left, struct vector *vector_righ
 
 struct vector *op_s_mult_v(double scalar, struct vector *vector);
 
+uint8_t op_v_lt_v(struct vector *vector_left, struct vector *vector_right);
+
+uint8_t op_v_gt_v(struct vector *vector_left, struct vector *vector_right);
+
 #endif

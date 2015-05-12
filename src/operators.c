@@ -153,3 +153,37 @@ struct vector *op_s_mult_v(double scalar, struct vector *vector)
 
     return ret_vector;
 }
+
+uint8_t op_v_lt_v(struct vector *vector_left, struct vector *vector_right)
+{
+    if (vector_left == NULL || vector_right == NULL) {
+        return 0;
+    }
+
+    uint16_t min = minimum(vector_left->size, vector_right->size);
+
+    for (int i = 0; i < min; i++) {
+        if (vector_left->components[i] >= vector_right->components[i]) {
+            return 0;
+        }
+    }
+
+    return 1;
+}
+
+uint8_t op_v_gt_v(struct vector *vector_left, struct vector *vector_right)
+{
+    if (vector_left == NULL || vector_right == NULL) {
+        return 0;
+    }
+
+    uint16_t min = minimum(vector_left->size, vector_right->size);
+
+    for (int i = 0; i < min; i++) {
+        if (vector_left->components[i] <= vector_right->components[i]) {
+            return 0;
+        }
+    }
+
+    return 1;
+}
