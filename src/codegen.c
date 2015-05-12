@@ -222,9 +222,27 @@ void generate_identifier(LLVMModuleRef module, LLVMBuilderRef builder,
                 LLVMBuildStore(builder, parameter, target_value);
             }
         }
-
     } else {
-        puts("ERROR NOT IMPLEMENTED YET");
+        if (payload->atomic.ref) {
+            struct node *parameter_node = payload->atomic.ref;
+            struct payload *parameter_payload = parameter_node->payload;
+            char *key = parameter_payload->parameter.identifier;
+            LLVMValueRef parameter = hashmap_get(function_arguments, key);
+
+            int index_in_struct = 2 * payload->atomic.ref_index;
+            LLVMValueRef vector_ptr = LLVMBuildStructGEP(builder, parameter, index_in_struct, "");
+            LLVMValueRef value = LLVMBuildLoad(builder, vector_ptr, "");
+            LLVMBuildStore(builder, value, target_value);
+
+            LLVMValueRef index = LLVMConstInt(LLVMInt16Type(), 1, 0);
+            vector_ptr = LLVMBuildGEP(builder, vector_ptr, &index, 1, "");
+            target_value = LLVMBuildGEP(builder, target_value, &index, 1, "");
+            LLVMTypeRef double_ptr_ptr = LLVMPointerType(LLVMPointerType(LLVMDoubleType(), 0), 0);
+            vector_ptr = LLVMBuildBitCast(builder, vector_ptr, double_ptr_ptr, "");
+            target_value = LLVMBuildBitCast(builder, target_value, double_ptr_ptr, "");
+            value = LLVMBuildLoad(builder, vector_ptr, "");
+            LLVMBuildStore(builder, value, target_value);
+        }
     }
 }
 
@@ -285,8 +303,8 @@ void generate_negation(LLVMModuleRef module, LLVMBuilderRef builder,
 }
 
 void handle_number_multiplication(LLVMBuilderRef builder,
-                            LLVMValueRef left_value_ptr, LLVMValueRef right_value_ptr,
-                            LLVMValueRef target_value, struct payload *payload)
+                                  LLVMValueRef left_value_ptr, LLVMValueRef right_value_ptr,
+                                  LLVMValueRef target_value, struct payload *payload)
 {
     LLVMValueRef left_value = LLVMBuildLoad(builder, left_value_ptr, "");
     LLVMValueRef right_value = LLVMBuildLoad(builder, right_value_ptr, "");
@@ -301,9 +319,9 @@ void handle_number_multiplication(LLVMBuilderRef builder,
 }
 
 void handle_vector_multiplication(LLVMModuleRef module, LLVMBuilderRef builder,
-                            LLVMValueRef left_value_ptr, LLVMValueRef right_value_ptr,
-                            LLVMValueRef target_value,
-                            struct payload *payload)
+                                  LLVMValueRef left_value_ptr, LLVMValueRef right_value_ptr,
+                                  LLVMValueRef target_value,
+                                  struct payload *payload)
 {
 
     LLVMValueRef left_value = LLVMBuildLoad(builder, left_value_ptr, "");

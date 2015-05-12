@@ -6,9 +6,9 @@ event InheritanceEvent extends SampleEvent { angle };
 event OtherEvent { foo };
 
 
-InheritanceEvent constfun() :=
+InheritanceEvent constfun(SampleEvent a) :=
 {
-	pos = [(1+1)*2, 3] + [1,-4],
+	pos = a.pos + [(1+1)*2, 3],
 	time = 4 * [2,3] + [1,1],
     angle = 4 * ([2,3] + [1,1])
 };
