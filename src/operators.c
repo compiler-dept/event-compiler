@@ -92,8 +92,9 @@ struct vector *op_v_add_v(struct vector *vector_left, struct vector *vector_righ
     uint16_t min = minimum(vector_left->size, vector_right->size);
     uint16_t max = maximum(vector_left->size, vector_right->size);
 
-    struct vector *vector = malloc(sizeof(struct vector) + max * sizeof(double));
+    struct vector *vector = malloc(sizeof(struct vector));
     vector->size = max;
+    vector->components = malloc(max * sizeof(double));
 
     for (int i = 0; i < min; i++) {
         vector->components[i] = vector_left->components[i] + vector_right->components[i];
@@ -117,8 +118,9 @@ struct vector *op_v_sub_v(struct vector *vector_left, struct vector *vector_righ
     uint16_t min = minimum(vector_left->size, vector_right->size);
     uint16_t max = maximum(vector_left->size, vector_right->size);
 
-    struct vector *vector = malloc(sizeof(struct vector) + max * sizeof(double));
+    struct vector *vector = malloc(sizeof(struct vector));
     vector->size = max;
+    vector->components = malloc(max * sizeof(double));
 
     for (int i = 0; i < min; i++) {
         vector->components[i] = vector_left->components[i] - vector_right->components[i];
@@ -127,7 +129,7 @@ struct vector *op_v_sub_v(struct vector *vector_left, struct vector *vector_righ
     for (int i = min; i < max; i++) {
         vector->components[i] =
             vector_left->size < vector_right->size ?
-            vector_right->components[i] : vector_left->components[i];
+            -1 * vector_right->components[i] : vector_left->components[i];
     }
 
     return vector;
@@ -141,8 +143,9 @@ struct vector *op_s_mult_v(double scalar, struct vector *vector)
 
     uint16_t max = vector->size;
 
-    struct vector *ret_vector = malloc(sizeof(struct vector) + max * sizeof(double));
+    struct vector *ret_vector = malloc(sizeof(struct vector));
     ret_vector->size = max;
+    ret_vector->components = malloc(max * sizeof(double));
 
     for (int i = 0; i < max; i++) {
         ret_vector->components[i] = vector->components[i] * scalar;
@@ -159,8 +162,9 @@ struct vector *op_s_div_v(double scalar, struct vector *vector)
 
     uint16_t max = vector->size;
 
-    struct vector *ret_vector = malloc(sizeof(struct vector) + max * sizeof(double));
+    struct vector *ret_vector = malloc(sizeof(struct vector));
     ret_vector->size = max;
+    ret_vector->components = malloc(max * sizeof(double));
 
     for (int i = 0; i < max; i++) {
         ret_vector->components[i] = vector->components[i] / scalar;

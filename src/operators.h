@@ -5,7 +5,7 @@
 
 struct __attribute__((__packed__)) vector {
     uint16_t size;
-    double components[];
+    double *components;
 };
 
 struct vector *new_vector(int size, ...);
