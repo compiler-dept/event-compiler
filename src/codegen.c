@@ -7,7 +7,9 @@
 #include "codegen.h"
 
 
-struct hashmap *function_arguments = NULL;
+struct stack *function_arguments_stack = NULL;
+
+void generate_function_definition(LLVMModuleRef module, struct node *node);
 
 void generate_expression(LLVMModuleRef module, LLVMBuilderRef builder,
                          LLVMValueRef target_value, struct node *node);
@@ -72,7 +74,7 @@ LLVMTypeRef generate_event_declaration(LLVMModuleRef module, struct node *node)
     return event_type;
 }
 
-LLVMTypeRef generateEventTypeIfNecessary(LLVMModuleRef module, struct node *event_decl)
+LLVMTypeRef generate_event_type_if_necessary(LLVMModuleRef module, struct node *event_decl)
 {
     struct payload *event_decl_payload = (struct payload *) event_decl->payload;
     char *event_name = event_decl_payload->event_declaration.type[0];
@@ -100,7 +102,7 @@ void generate_rule_declaration(LLVMModuleRef module, struct node *node)
         for (int i = 0; i < event_sequence->childc; i++) {
             struct node *event = event_sequence->childv[i];
             struct payload *event_payload = (struct payload *) event->payload;
-            parameters[i] = LLVMPointerType(generateEventTypeIfNecessary(module, event_payload->event.ref), 0);
+            parameters[i] = LLVMPointerType(generate_event_type_if_necessary(module, event_payload->event.ref), 0);
         }
         LLVMAddFunction(module, active_name,
                         LLVMFunctionType(LLVMInt8Type(), parameters, event_sequence->childc, 0));
@@ -108,7 +110,7 @@ void generate_rule_declaration(LLVMModuleRef module, struct node *node)
         struct payload *func_payload = ((struct payload *)payload->rule_declaration.ref->payload);
         struct node *event = func_payload->function_definition.event_ref;
 
-        LLVMTypeRef return_type = LLVMPointerType(generateEventTypeIfNecessary(module, event), 0);
+        LLVMTypeRef return_type = LLVMPointerType(generate_event_type_if_necessary(module, event), 0);
 
         LLVMAddFunction(module, function_name,
                         LLVMFunctionType(return_type, parameters, event_sequence->childc, 0));
@@ -125,7 +127,7 @@ int generate_parameter_list(LLVMModuleRef module, struct node *node, LLVMTypeRef
         struct node *parameter = node->childv[i];
         struct payload *parameter_payload = parameter->payload;
         struct node *event = parameter_payload->parameter.event_ref;
-        LLVMTypeRef event_type = generateEventTypeIfNecessary(module, event);
+        LLVMTypeRef event_type = generate_event_type_if_necessary(module, event);
         LLVMTypeRef parameter_type = LLVMPointerType(event_type, 0);
         (*parameters)[i] = parameter_type;
     }
@@ -212,6 +214,7 @@ void generate_identifier(LLVMModuleRef module, LLVMBuilderRef builder,
                          LLVMValueRef target_value, struct node *node)
 {
     struct payload *payload = node->payload;
+    struct hashmap *function_arguments = stack_peek(function_arguments_stack);
     if (payload->atomic.identifier[1] == NULL) {
         if (payload->atomic.ref) {
             struct node *parameter_node = payload->atomic.ref;
@@ -220,6 +223,8 @@ void generate_identifier(LLVMModuleRef module, LLVMBuilderRef builder,
             LLVMValueRef parameter = hashmap_get(function_arguments, key);
             if (parameter) {
                 LLVMBuildStore(builder, parameter, target_value);
+            } else {
+                debug(module, builder, "not found");
             }
         }
     } else {
@@ -251,13 +256,36 @@ void generate_function_call(LLVMModuleRef module, LLVMBuilderRef builder,
 {
     struct payload *payload = node->payload;
     struct node *function_definition = payload->function_call.ref;
+    struct payload *function_payload = function_definition->payload;
+    struct node *expression_sequence = node->childv[0]->childv[0];
+
     generate_function_definition(module, function_definition);
 
-    LLVMTypeRef function = LLVMGetNamedFunction(module, payload->function_call.identifier);
-    int argument_count = node->childv[0]->childc;
-    LLVMValueRef args[argument_count];
+    LLVMValueRef function = LLVMGetNamedFunction(module, payload->function_call.identifier);
+    int parameter_count = 0;
+    LLVMValueRef *args = NULL;
 
-    // TODO
+    if (function_payload->alternative == ALT_PARAMETER_LIST) {
+        parameter_count = function_definition->childv[0]->childc;
+        args = malloc(parameter_count * sizeof(LLVMValueRef));
+
+        for (int i = 0; i < parameter_count; i++) {
+            struct node *parameter = function_definition->childv[0]->childv[i];
+            struct payload *parameter_payload = parameter->payload;
+            struct node *event = parameter_payload->parameter.event_ref;
+            LLVMTypeRef parameter_type = generate_event_type_if_necessary(module, event);
+            parameter_type = LLVMPointerType(parameter_type, 0);
+            LLVMValueRef value = LLVMBuildAlloca(builder, parameter_type, "");
+            generate_expression(module, builder, value, expression_sequence->childv[i]);
+            args[i] = LLVMBuildLoad(builder, value, "");
+        }
+    }
+
+    LLVMValueRef result = LLVMBuildCall(builder, function, args, parameter_count, "");
+
+    LLVMBuildStore(builder, result, target_value);
+
+    free(args);
 }
 
 void generate_atomic(LLVMModuleRef module, LLVMBuilderRef builder,
@@ -278,7 +306,7 @@ void generate_atomic(LLVMModuleRef module, LLVMBuilderRef builder,
             generate_identifier(module, builder, target_value, node);
             break;
         case ALT_FUNCTION_CALL:
-            generate_function_call(module, builder, target_valuem, node);
+            generate_function_call(module, builder, target_value, node->childv[0]);
             break;
         default:
             puts("ERROR NOT IMPLEMENTED YET");
@@ -538,7 +566,7 @@ void generate_function_definition(LLVMModuleRef module, struct node *node)
     struct payload *payload = node->payload;
 
     if (!LLVMGetNamedFunction(module, payload->function_definition.identifier)) {
-        LLVMTypeRef return_event_type = generateEventTypeIfNecessary(module,
+        LLVMTypeRef return_event_type = generate_event_type_if_necessary(module,
                                         payload->function_definition.event_ref);
         LLVMTypeRef return_type = LLVMPointerType(return_event_type, 0);
         LLVMTypeRef function_type;
@@ -560,10 +588,16 @@ void generate_function_definition(LLVMModuleRef module, struct node *node)
         LLVMValueRef arg_values[parameter_count];
         LLVMGetParams(function, arg_values);
 
+        struct hashmap *function_arguments = NULL;
+
         for (int i = 0; i < parameter_count; i++) {
             struct payload *parameter_payload = node->childv[0]->childv[i]->payload;
             char *key = parameter_payload->parameter.identifier;
             hashmap_put(&function_arguments, key, arg_values[i]);
+        }
+
+        if (function_arguments){
+            stack_push(&function_arguments_stack, function_arguments);
         }
 
         LLVMBuilderRef builder = LLVMCreateBuilder();
@@ -580,6 +614,7 @@ void generate_function_definition(LLVMModuleRef module, struct node *node)
 
         if (function_arguments) {
             hashmap_free(&function_arguments, NULL);
+            stack_pop(&function_arguments_stack);
         }
 
         LLVMValueRef return_val = LLVMBuildLoad(builder, return_ptr, "");
