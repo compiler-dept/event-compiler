@@ -3,9 +3,9 @@
 
 #include <stdint.h>
 
-struct vector {
+struct __attribute__((__packed__)) vector {
     uint16_t size;
-    double components[];
+    double *components;
 };
 
 struct vector *new_vector(int size, ...);
@@ -21,8 +21,6 @@ struct vector *op_v_add_v(struct vector *vector_left, struct vector *vector_righ
 struct vector *op_v_sub_v(struct vector *vector_left, struct vector *vector_right);
 
 struct vector *op_s_mult_v(double scalar, struct vector *vector);
-
-struct vector *op_s_div_v(double scalar, struct vector *vector);
 
 uint8_t op_v_lt_v(struct vector *vector_left, struct vector *vector_right);
 

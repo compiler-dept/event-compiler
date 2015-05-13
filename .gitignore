@@ -3,6 +3,8 @@
 *.ko
 *.obj
 *.elf
+*.s
+*.bc
 
 # Precompiled Headers
 *.gch
@@ -47,3 +49,6 @@ src/parser.h
 # Docs
 docs/html
 site
+
+# Example binaries
+examples/example

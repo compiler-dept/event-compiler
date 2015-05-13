@@ -41,18 +41,31 @@ struct node *resolve_reference(struct node *node, const char *id)
 
 int index_of_id(struct node *parent, char *type, char *id)
 {
+    int index  = -1;
     struct node *ref_node = resolve_reference(parent, type);
     if (ref_node) {
         struct payload *ref_payload = ref_node->payload;
         int *idx = hashmap_get(ref_payload->event_declaration.scope, id);
+
         if (idx) {
-            return *idx;
+            index = *idx;
+            while (ref_payload->event_declaration.type[1] != NULL) {
+                // resolve parent reference if not set
+                if (!ref_payload->event_declaration.parent_ref) {
+                    char *id = ref_payload->event_declaration.type[1];
+                    ref_payload->event_declaration.parent_ref = resolve_reference(ref_node, id);
+                }
+                ref_node = ref_payload->event_declaration.parent_ref;
+                ref_payload = ref_node->payload;
+                index += ref_node->childv[0]->childc;
+            }
         } else if (ref_payload->event_declaration.type[1] != NULL) {
-            return index_of_id(parent, ref_payload->event_declaration.type[1], id);
+            // search parent types recursively
+            index = index_of_id(parent, ref_payload->event_declaration.type[1], id);
         }
     }
 
-    return -1;
+    return index;
 }
 
 void link_references(struct node *node)
@@ -68,6 +81,11 @@ void link_references(struct node *node)
             if (payload->alternative == ALT_IDENTIFIER) {
                 id = payload->atomic.identifier[0];
                 payload->atomic.ref = resolve_reference(temp, id);
+                if (payload->atomic.identifier[1]) {
+                    char *type = ((struct payload *)payload->atomic.ref->payload)->event_declaration.type[0];
+                    char *id2 = payload->atomic.identifier[1];
+                    payload->atomic.ref_index = index_of_id(temp, type, id2);
+                }
             }
         } else if (payload->type == N_FUNCTION_CALL) {
             id = payload->function_call.identifier;
@@ -77,7 +95,7 @@ void link_references(struct node *node)
             payload->predicate.ref = resolve_reference(temp, id);
         } else if (payload->type == N_EVENT) {
             id = payload->event.type;
-            payload->predicate.ref = resolve_reference(temp, id);
+            payload->event.ref = resolve_reference(temp, id);
         } else if (payload->type == N_RULE_DECLARATION) {
             id = payload->rule_declaration.identifier;
             payload->rule_declaration.ref = resolve_reference(temp, id);
@@ -100,6 +118,9 @@ void link_references(struct node *node)
         } else if (payload->type == N_FUNCTION_DEFINITION) {
             id = payload->function_definition.type;
             payload->function_definition.event_ref = resolve_reference(temp, id);
+        } else if (payload->type == N_PARAMETER) {
+            id = payload->parameter.type;
+            payload->parameter.event_ref = resolve_reference(temp, id);
         }
     }
 

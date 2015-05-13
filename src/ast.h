@@ -119,6 +119,7 @@ struct payload {
                 struct {
                     char *identifier[2];
                     struct node *ref;
+                    int ref_index;
                 };
             };
         } atomic;
@@ -148,6 +149,7 @@ struct payload {
         struct {
             char *type;
             char *identifier;
+            struct node *event_ref;
         } parameter;
         /** rule_declaration payload */
         struct {

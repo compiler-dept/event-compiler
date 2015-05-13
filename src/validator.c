@@ -23,7 +23,8 @@ const char *type_names[] = {
     "EVENT_DEFINITION"
 };
 
-static enum types *new_type(enum types type) {
+static enum types *new_type(enum types type)
+{
     enum types *t = malloc(sizeof(enum types));
     *t = type;
     return t;
@@ -39,9 +40,11 @@ int validate_rule_signature(struct node *temp, struct payload *payload);
 
 int validate_event(struct node *temp, struct payload *payload);
 
-int validate_predicate_definition(struct node *temp, struct payload *payload, struct stack **type_stack);
+int validate_predicate_definition(struct node *temp, struct payload *payload,
+                                  struct stack **type_stack);
 
-int validate_function_definition(struct node *temp, struct payload *payload, struct stack **type_stack);
+int validate_function_definition(struct node *temp, struct payload *payload,
+                                 struct stack **type_stack);
 
 int validate_parameter_list(struct node *temp);
 
@@ -55,22 +58,25 @@ int validate_vector(struct node *temp, struct stack **type_stack);
 
 int validate_component_sequence(struct node *temp, struct stack **type_stack);
 
-int validate_comparison_expression(struct node *temp, struct payload *payload, struct stack **type_stack);
+int validate_comparison_expression(struct node *temp, struct payload *payload,
+                                   struct stack **type_stack);
 
 int validate_addition(struct node *temp, struct stack **type_stack);
 
-int validate_multiplication(struct node *temp, struct stack **type_stack);
+int validate_multiplication(struct node *temp, struct payload *payload, struct stack **type_stack);
 
 int validate_atomic(struct node *temp, struct payload *payload, struct stack **type_stack);
 
-static enum types *type_stack_pop(struct stack **stack) {
+static enum types *type_stack_pop(struct stack **stack)
+{
     stack_size--;
     enum types *type = stack_pop(stack);
     printf("Pop: %s (Stack Size: %i)\n", type_names[*type - 1], stack_size);
     return type;
 }
 
-static void type_stack_push(struct stack **stack, enum types *type) {
+static void type_stack_push(struct stack **stack, enum types *type)
+{
     stack_size++;
     printf("Push: %s (Stack Size: %i)\n", type_names[*type - 1], stack_size);
     stack_push(stack, type);
@@ -142,7 +148,7 @@ int validate(struct node *root)
                 success = validate_addition(temp, &type_stack);
                 break;
             case N_MULTIPLICATION:
-                success = validate_multiplication(temp, &type_stack);
+                success = validate_multiplication(temp, payload, &type_stack);
                 break;
             case N_ATOMIC:
                 success = validate_atomic(temp, payload, &type_stack);
@@ -315,7 +321,8 @@ int validate_event_declaration(struct node *temp, struct payload *payload)
     return success;
 }
 
-int validate_predicate_definition(struct node *temp, struct payload *payload, struct stack **type_stack)
+int validate_predicate_definition(struct node *temp, struct payload *payload,
+                                  struct stack **type_stack)
 {
     puts("predicate_definition");
     int success = 1;
@@ -337,7 +344,8 @@ int validate_predicate_definition(struct node *temp, struct payload *payload, st
     return success;
 }
 
-int validate_function_definition(struct node *temp, struct payload *payload, struct stack **type_stack)
+int validate_function_definition(struct node *temp, struct payload *payload,
+                                 struct stack **type_stack)
 {
     puts("function_definition");
     int success = 1;
@@ -428,30 +436,30 @@ int validate_function_call(struct node *temp, struct payload *payload, struct st
     /*tempnode1 = ((struct payload *)payload)->function_call.ref;
     if (tempnode1) {
         if(temp->childc > 0) {
-            tempnode2 = temp->childv[0]->childv[0];
+    tempnode2 = temp->childv[0]->childv[0];
 
-            if (tempnode1->childv[0]->childc == tempnode2->childc) {
-                for (int i = 0; i < tempnode2->childc; i++) {
-                    enum types *type = type_stack_pop(type_stack);
+    if (tempnode1->childv[0]->childc == tempnode2->childc) {
+        for (int i = 0; i < tempnode2->childc; i++) {
+            enum types *type = type_stack_pop(type_stack);
 
-                    if (*type == T_EVENT) {
-                        typename1 = stack_pop(type_stack);
+            if (*type == T_EVENT) {
+                typename1 = stack_pop(type_stack);
                         typename2 = ((struct payload *)tempnode1->childv[0]->childv[i]->payload)->parameter.type;
-                        if (strcmp(typename1, typename2) != 0) {
+                if (strcmp(typename1, typename2) != 0) {
                             printf("Parameter has wrong type!\n");
-                            success = 0;
-                            free(type);
-                            break;
-                        }
-                    } else {
-                        printf("Parameter is not an event!\n");
-                        success = 0;
-                        free(type);
-                        break;
-                    }
-
+                    success = 0;
                     free(type);
+                    break;
                 }
+            } else {
+                        printf("Parameter is not an event!\n");
+                success = 0;
+                free(type);
+                break;
+            }
+
+            free(type);
+        }
             } else if (tempnode1->childv[0]->childc < tempnode2->childc) {
                 printf("Called function has to many parameters!\n");
                 success = 0;
@@ -540,7 +548,8 @@ int validate_component_sequence(struct node *temp, struct stack **type_stack)
     return success;
 }
 
-int validate_comparison_expression(struct node *temp, struct payload *payload, struct stack **type_stack)
+int validate_comparison_expression(struct node *temp, struct payload *payload,
+                                   struct stack **type_stack)
 {
     puts("comparison_expression");
     int success = 1;
@@ -583,7 +592,7 @@ int validate_addition(struct node *temp, struct stack **type_stack)
     return success;
 }
 
-int validate_multiplication(struct node *temp, struct stack **type_stack)
+int validate_multiplication(struct node *temp, struct payload *payload, struct stack **type_stack)
 {
     puts("multiplication");
     int success = 1;
@@ -591,7 +600,10 @@ int validate_multiplication(struct node *temp, struct stack **type_stack)
     enum types *neg = type_stack_pop(type_stack);
     enum types *mult_exp = type_stack_pop(type_stack);
 
-    if (*mult_exp == T_NUMBER) {
+    if (*mult_exp != T_NUMBER) {
+        /* first operand is not a number */
+        success = 0;
+    } else {
         /* first operand is a number */
         if (*neg != T_NUMBER && *neg != T_VECTOR) {
             /* second operand is not a number or not a vector */
@@ -601,16 +613,12 @@ int validate_multiplication(struct node *temp, struct stack **type_stack)
             type_stack_push(type_stack, new_type(T_NUMBER));
         } else {
             /* second operator is a vector */
-            type_stack_push(type_stack, new_type(T_VECTOR));
-        }
-    } else if (*mult_exp == T_VECTOR) {
-        /* first operand is a vector */
-        if (*neg != T_NUMBER) {
-            /* second operand is not a number */
-            success = 0;
-        } else {
-            /* second operand is a number */
-            type_stack_push(type_stack, new_type(T_VECTOR));
+            if (payload->alternative == ALT_DIV) {
+                /* times vector is not defined */
+                success = 0;
+            } else {
+                type_stack_push(type_stack, new_type(T_VECTOR));
+            }
         }
     }
 
@@ -624,7 +632,6 @@ int validate_atomic(struct node *temp, struct payload *payload, struct stack **t
 {
     puts("atomic");
     int success = 1;
-
     if (payload->alternative == ALT_IDENTIFIER) {
         /* atomic is a vector or an event */
 
