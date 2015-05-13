@@ -13,7 +13,7 @@ COBJECTS=$(patsubst %.c, %.o, $(SOURCES))
 LOBJECTS=$(patsubst %.l, %.o, $(COBJECTS))
 OBJECTS=$(patsubst %.y, %.o, $(LOBJECTS))
 
-.PHONY: all clean lemon libcollect getexternals test valgrind doxygen doxygen\:deploy docs docs\:preview style
+.PHONY: all clean lemon libcollect getexternals test valgrind docs docs\:preview docs\:deploy style
 
 all: $(BIN)
 
@@ -49,16 +49,8 @@ docs:
 docs\:preview: docs
 	mkdocs serve
 
-doxygen:
-	doxygen doxygen/Doxyfile
-
-doxygen\:deploy: doxygen
-	cd doxygen/html && \
-	git init . && \
-	git add . && \
-	git commit -m "`date`" && \
-	git push -f git@github.com:compiler-dept/event-compiler master:gh-pages && \
-	rm -rf .git
+docs\:deploy: docs
+	mkdocs gh-deploy
 
 clean:
 	rm -f $(BIN) $(OBJECTS) src/lexer.c src/lexer.h src/parser.c src/parser.h src/parser.out
