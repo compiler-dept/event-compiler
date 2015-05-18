@@ -88,6 +88,8 @@ void payload_free(void *payload)
                     free(temp_payload->atomic.identifier[1]);
                 }
                 break;
+            default:
+                break;
         }
 
         free(temp_payload);

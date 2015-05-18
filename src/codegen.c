@@ -20,7 +20,7 @@ void generate_additive_expression(LLVMModuleRef module, LLVMBuilderRef builder,
 void generate_multiplicative_expression(LLVMModuleRef module, LLVMBuilderRef builder,
                                         LLVMValueRef target_value, struct node *node);
 
-void debug(LLVMModuleRef module, LLVMBuilderRef builder, char *str)
+void debug(LLVMModuleRef module, LLVMBuilderRef builder, const char *str)
 {
     LLVMValueRef puts_fun = LLVMGetNamedFunction(module, "puts");
     LLVMValueRef arg = LLVMBuildGlobalStringPtr(builder, str, "");
@@ -134,8 +134,6 @@ int generate_parameter_list(LLVMModuleRef module, struct node *node, LLVMTypeRef
 
     return parameter_count;
 }
-
-
 
 void generate_initializer(LLVMModuleRef module, LLVMBuilderRef builder,
                           LLVMValueRef target_value, struct node *node)
@@ -636,7 +634,6 @@ void declare_operators(LLVMModuleRef module)
     function_type = LLVMFunctionType(void_pointer_type, parameter_types, 2, 0);
     LLVMAddFunction(module, "op_s_mult_v", function_type);
 }
-
 
 LLVMModuleRef generate_module(struct node *ast, const char *name)
 {
