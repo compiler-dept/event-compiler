@@ -6,7 +6,6 @@
 #include <hashmap.h>
 #include "codegen.h"
 
-
 struct stack *function_arguments_stack = NULL;
 
 void generate_function_definition(LLVMModuleRef module, struct node *node);
@@ -173,7 +172,6 @@ void generate_component_sequence(LLVMModuleRef module, LLVMBuilderRef builder,
         generate_expression(module, builder, element_ptr, expression_sequence->childv[i]);
     }
 }
-
 
 void generate_vector(LLVMModuleRef module, LLVMBuilderRef builder,
                      LLVMValueRef target_value, struct node *node)
@@ -368,7 +366,7 @@ void handle_vector_multiplication(LLVMModuleRef module, LLVMBuilderRef builder,
 {
 
     LLVMValueRef left_value = LLVMBuildLoad(builder, left_value_ptr, "");
-    LLVMValueRef right_value_ptr_casted = LLVMBuildBitCast(builder, right_value_ptr, LLVMPointerType(LLVMVoidType(), 0), "");
+    LLVMValueRef right_value_ptr_casted = LLVMBuildBitCast(builder, right_value_ptr, LLVMPointerType(LLVMInt8Type(), 0), "");
     LLVMValueRef args[] = { left_value, right_value_ptr_casted };
     LLVMValueRef function;
 
@@ -464,8 +462,8 @@ void handle_vector_addition(LLVMModuleRef module, LLVMBuilderRef builder,
                             struct payload *payload)
 {
 
-    LLVMValueRef left_value_ptr_casted = LLVMBuildBitCast(builder, left_value_ptr, LLVMPointerType(LLVMVoidType(), 0), "");
-    LLVMValueRef right_value_ptr_casted = LLVMBuildBitCast(builder, right_value_ptr, LLVMPointerType(LLVMVoidType(), 0), "");
+    LLVMValueRef left_value_ptr_casted = LLVMBuildBitCast(builder, left_value_ptr, LLVMPointerType(LLVMInt8Type(), 0), "");
+    LLVMValueRef right_value_ptr_casted = LLVMBuildBitCast(builder, right_value_ptr, LLVMPointerType(LLVMInt8Type(), 0), "");
     LLVMValueRef args[] = {left_value_ptr_casted, right_value_ptr_casted};
     LLVMValueRef function;
     if (payload->alternative == ALT_ADD) {
@@ -623,15 +621,15 @@ void generate_function_definition(LLVMModuleRef module, struct node *node)
 
 void declare_operators(LLVMModuleRef module)
 {
-    LLVMTypeRef void_pointer_type = LLVMPointerType(LLVMVoidType(), 0);
-    LLVMTypeRef parameter_types[] = { void_pointer_type, void_pointer_type };
+    LLVMTypeRef i8_pointer_type = LLVMPointerType(LLVMInt8Type(), 0);
+    LLVMTypeRef parameter_types[] = { i8_pointer_type, i8_pointer_type };
 
-    LLVMTypeRef function_type = LLVMFunctionType(void_pointer_type, parameter_types, 2, 0);
+    LLVMTypeRef function_type = LLVMFunctionType(i8_pointer_type, parameter_types, 2, 0);
     LLVMAddFunction(module, "op_v_add_v", function_type);
     LLVMAddFunction(module, "op_v_sub_v", function_type);
 
     parameter_types[0] = LLVMDoubleType();
-    function_type = LLVMFunctionType(void_pointer_type, parameter_types, 2, 0);
+    function_type = LLVMFunctionType(i8_pointer_type, parameter_types, 2, 0);
     LLVMAddFunction(module, "op_s_mult_v", function_type);
 }
 
@@ -640,7 +638,7 @@ LLVMModuleRef generate_module(struct node *ast, const char *name)
     LLVMModuleRef module = LLVMModuleCreateWithName(name);
 
     LLVMTypeRef args[] = {LLVMPointerType(LLVMInt8Type(), 0)};
-    LLVMAddFunction(module, "puts", LLVMFunctionType(LLVMVoidType(), args, 1, 0));
+    LLVMAddFunction(module, "puts", LLVMFunctionType(LLVMInt8Type(), args, 1, 0));
 
     declare_operators(module);
 
