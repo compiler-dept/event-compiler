@@ -28,4 +28,6 @@ uint8_t op_v_lt_v(struct vector *vector_left, struct vector *vector_right);
 
 uint8_t op_v_gt_v(struct vector *vector_left, struct vector *vector_right);
 
+uint8_t op_i_eq_i(uint8_t left, uint8_t right);
+
 #endif

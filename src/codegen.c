@@ -10,6 +10,8 @@ struct stack *function_arguments_stack = NULL;
 
 void generate_function_definition(LLVMModuleRef module, struct node *node);
 
+void generate_predicate_definition(LLVMModuleRef module, struct node *node);
+
 void generate_expression(LLVMModuleRef module, LLVMBuilderRef builder,
                          LLVMValueRef target_value, struct node *node);
 
@@ -113,22 +115,52 @@ void generate_rule_declaration(LLVMModuleRef module, struct node *node)
     LLVMValueRef active_function = LLVMAddFunction(module, active_name, function_type);
 
     /* get arguments for active function */
-    LLVMValueRef action_arg_values[event_sequence->childc];
-    LLVMGetParams(active_function, action_arg_values);
+    LLVMValueRef active_arg_values[event_sequence->childc];
+    LLVMGetParams(active_function, active_arg_values);
 
     /* active body builder */
     LLVMBuilderRef active_builder = LLVMCreateBuilder();
     LLVMBasicBlockRef active_basic_block = LLVMAppendBasicBlock(active_function, "");
     LLVMPositionBuilderAtEnd(active_builder, active_basic_block);
 
+    LLVMValueRef active_result;
+
     if (((struct payload *)node->childv[0]->payload)->alternative == ALT_PREDICATE_SEQUENCE) {
         /* predicate list is present */
+
+        struct payload *predicate_payload = NULL;
+
+        LLVMValueRef count = LLVMConstInt(LLVMInt8Type(), node->childv[0]->childv[1]->childc, 0);
+        LLVMValueRef sum = LLVMConstInt(LLVMInt8Type(), 0, 0);
+
+        for (int i = 0; i < node->childv[0]->childv[1]->childc; i++) {
+            predicate_payload = node->childv[0]->childv[1]->childv[i]->payload;
+
+            /* generate predicate if necassery */
+            generate_predicate_definition(module, predicate_payload->predicate.ref);
+
+            /* get predicate function */
+            LLVMValueRef predicate_function = LLVMGetNamedFunction(module, predicate_payload->predicate.identifier);
+
+            /* call predicate function */
+            LLVMValueRef predicate_result = LLVMBuildCall(active_builder, predicate_function, active_arg_values, event_sequence->childc, "");
+
+            sum = LLVMBuildAdd(active_builder, sum, predicate_result, "");
+        }
+
+        LLVMValueRef eq = LLVMGetNamedFunction(module, "op_i_eq_i");
+
+        LLVMValueRef eq_args[] = { count, sum };
+
+        active_result = LLVMBuildCall(active_builder, eq, eq_args, 2, "");
     } else {
         /* no predicate list ist present */
-        LLVMValueRef active_result = LLVMConstInt(LLVMInt8Type(), 1, 0);
-        LLVMBuildRet(active_builder, active_result);
+
+        /* return 1 */
+        active_result = LLVMConstInt(LLVMInt8Type(), 1, 0);
     }
 
+    LLVMBuildRet(active_builder, active_result);
     LLVMDisposeBuilder(active_builder);
 
     /*
@@ -765,6 +797,11 @@ void declare_operators(LLVMModuleRef module)
     parameter_types[0] = LLVMDoubleType();
     function_type = LLVMFunctionType(i8_pointer_type, parameter_types, 2, 0);
     LLVMAddFunction(module, "op_s_mult_v", function_type);
+
+    parameter_types[0] = LLVMInt8Type();
+    parameter_types[1] = LLVMInt8Type();
+    function_type = LLVMFunctionType(LLVMInt8Type(), parameter_types, 2, 0);
+    LLVMAddFunction(module, "op_i_eq_i", function_type);
 }
 
 LLVMModuleRef generate_module(struct node *ast, const char *name)
@@ -787,11 +824,6 @@ LLVMModuleRef generate_module(struct node *ast, const char *name)
             case N_RULE_DECLARATION:
                 generate_rule_declaration(module, temp);
                 break;
-            case N_FUNCTION_DEFINITION:
-                generate_function_definition(module, temp);
-                break;
-            case N_PREDICATE_DEFINITION:
-                generate_predicate_definition(module, temp);
             default:
                 break;
         }

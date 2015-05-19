@@ -193,3 +193,8 @@ uint8_t op_v_gt_v(struct vector *vector_left, struct vector *vector_right)
 
     return 1;
 }
+
+uint8_t op_i_eq_i(uint8_t left, uint8_t right)
+{
+    return left == right ? 1 : 0;
+}
