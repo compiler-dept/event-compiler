@@ -88,32 +88,85 @@ LLVMTypeRef generate_event_type_if_necessary(LLVMModuleRef module, struct node *
 void generate_rule_declaration(LLVMModuleRef module, struct node *node)
 {
     struct payload *payload = node->payload;
+
+    /* generate function names */
     char active_name[1 + 7 + strlen(payload->rule_declaration.name)];
     char function_name[1 + 9 + strlen(payload->rule_declaration.name)];
-
     sprintf(active_name, "%s_active", payload->rule_declaration.name);
     sprintf(function_name, "%s_function", payload->rule_declaration.name);
 
-    //if (((struct payload *)node->childv[0]->payload)->alternative == ALT_PREDICATE_SEQUENCE) {
-        struct node *event_sequence = node->childv[0]->childv[0];
-        LLVMTypeRef parameters[event_sequence->childc];
-        for (int i = 0; i < event_sequence->childc; i++) {
-            struct node *event = event_sequence->childv[i];
-            struct payload *event_payload = (struct payload *) event->payload;
-            parameters[i] = LLVMPointerType(generate_event_type_if_necessary(module, event_payload->event.ref), 0);
-        }
+    /* generate parameter list and create necessary event types */
+    struct node *event_sequence = node->childv[0]->childv[0];
+    LLVMTypeRef parameters[event_sequence->childc];
+    for (int i = 0; i < event_sequence->childc; i++) {
+        struct node *event = event_sequence->childv[i];
+        struct payload *event_payload = event->payload;
+        parameters[i] = LLVMPointerType(generate_event_type_if_necessary(module, event_payload->event.ref), 0);
+    }
 
-        LLVMAddFunction(module, active_name,
-                        LLVMFunctionType(LLVMInt8Type(), parameters, event_sequence->childc, 0));
+    /*
+     * ACTIVE FUNCTION
+     */
 
-        struct payload *func_payload = ((struct payload *)payload->rule_declaration.ref->payload);
-        struct node *event = func_payload->function_definition.event_ref;
+    /* create header for active function */
+    LLVMTypeRef function_type = LLVMFunctionType(LLVMInt8Type(), parameters, event_sequence->childc, 0);
+    LLVMValueRef active_function = LLVMAddFunction(module, active_name, function_type);
 
-        LLVMTypeRef return_type = LLVMPointerType(generate_event_type_if_necessary(module, event), 0);
+    /* get arguments for active function */
+    LLVMValueRef action_arg_values[event_sequence->childc];
+    LLVMGetParams(active_function, action_arg_values);
 
-        LLVMAddFunction(module, function_name,
-                        LLVMFunctionType(return_type, parameters, event_sequence->childc, 0));
-    //}
+    /* active body builder */
+    LLVMBuilderRef active_builder = LLVMCreateBuilder();
+    LLVMBasicBlockRef active_basic_block = LLVMAppendBasicBlock(active_function, "");
+    LLVMPositionBuilderAtEnd(active_builder, active_basic_block);
+
+    if (((struct payload *)node->childv[0]->payload)->alternative == ALT_PREDICATE_SEQUENCE) {
+        /* predicate list is present */
+    } else {
+        /* no predicate list ist present */
+        LLVMValueRef active_result = LLVMConstInt(LLVMInt8Type(), 1, 0);
+        LLVMBuildRet(active_builder, active_result);
+    }
+
+    LLVMDisposeBuilder(active_builder);
+
+    /*
+     * RULE FUNCTION
+     */
+
+    /* get return event type for rule function */
+    struct payload *func_payload = ((struct payload *)payload->rule_declaration.ref->payload);
+    struct node *event = func_payload->function_definition.event_ref;
+
+    /* create return type for rule function and create it if necessary */
+    LLVMTypeRef return_type = LLVMPointerType(generate_event_type_if_necessary(module, event), 0);
+
+    /* create header for rule function */
+    function_type = LLVMFunctionType(return_type, parameters, event_sequence->childc, 0);
+    LLVMValueRef rule_function = LLVMAddFunction(module, function_name, function_type);
+
+    /* get arguments for rule function */
+    LLVMValueRef rule_arg_values[event_sequence->childc];
+    LLVMGetParams(rule_function, rule_arg_values);
+
+    /* rule body builder */
+    LLVMBuilderRef rule_builder = LLVMCreateBuilder();
+    LLVMBasicBlockRef rule_basic_block = LLVMAppendBasicBlock(rule_function, "");
+    LLVMPositionBuilderAtEnd(rule_builder, rule_basic_block);
+
+    /* create assigned function if necessary */
+    generate_function_definition(module, payload->rule_declaration.ref);
+    /* get pinter to rule function */
+    LLVMValueRef called_function = LLVMGetNamedFunction(module, payload->rule_declaration.identifier);
+
+    /* call rule function */
+    LLVMValueRef rule_result = LLVMBuildCall(rule_builder, called_function, rule_arg_values, event_sequence->childc, "");
+
+    /* build return value */
+    LLVMBuildRet(rule_builder, rule_result);
+
+    LLVMDisposeBuilder(rule_builder);
 }
 
 int generate_parameter_list(LLVMModuleRef module, struct node *node, LLVMTypeRef **parameters)
