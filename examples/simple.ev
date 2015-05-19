@@ -5,11 +5,14 @@ event SampleEvent { pos, time };
 event InheritanceEvent extends SampleEvent { angle };
 event OtherEvent { foo };
 
+predicate pred(SampleEvent a) := a.pos == [1, 2, 3];
+
 SampleEvent foo(SampleEvent a, SampleEvent b) :=
 {
 	pos = a.pos + b.pos,
 	time = a.time + b.time
 };
 
-
 SampleEvent constfun(SampleEvent a) := foo(foo(a, a), foo(a, a));
+
+Rule: [SampleEvent : pred] -> constfun;

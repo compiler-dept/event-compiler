@@ -85,7 +85,6 @@ LLVMTypeRef generate_event_type_if_necessary(LLVMModuleRef module, struct node *
     }
 }
 
-
 void generate_rule_declaration(LLVMModuleRef module, struct node *node)
 {
     struct payload *payload = node->payload;
@@ -95,7 +94,7 @@ void generate_rule_declaration(LLVMModuleRef module, struct node *node)
     sprintf(active_name, "%s_active", payload->rule_declaration.name);
     sprintf(function_name, "%s_function", payload->rule_declaration.name);
 
-    if (((struct payload *)node->childv[0]->payload)->alternative == ALT_PREDICATE_SEQUENCE) {
+    //if (((struct payload *)node->childv[0]->payload)->alternative == ALT_PREDICATE_SEQUENCE) {
         struct node *event_sequence = node->childv[0]->childv[0];
         LLVMTypeRef parameters[event_sequence->childc];
         for (int i = 0; i < event_sequence->childc; i++) {
@@ -103,6 +102,7 @@ void generate_rule_declaration(LLVMModuleRef module, struct node *node)
             struct payload *event_payload = (struct payload *) event->payload;
             parameters[i] = LLVMPointerType(generate_event_type_if_necessary(module, event_payload->event.ref), 0);
         }
+
         LLVMAddFunction(module, active_name,
                         LLVMFunctionType(LLVMInt8Type(), parameters, event_sequence->childc, 0));
 
@@ -113,8 +113,7 @@ void generate_rule_declaration(LLVMModuleRef module, struct node *node)
 
         LLVMAddFunction(module, function_name,
                         LLVMFunctionType(return_type, parameters, event_sequence->childc, 0));
-    }
-
+    //}
 }
 
 int generate_parameter_list(LLVMModuleRef module, struct node *node, LLVMTypeRef **parameters)
@@ -514,7 +513,6 @@ void generate_addition(LLVMModuleRef module, LLVMBuilderRef builder,
     generate_additive_expression(module, builder, left_value_ptr, node->childv[0] );
     generate_multiplicative_expression(module, builder, right_value_ptr, node->childv[1] );
 
-
     if (!is_vector) {
         handle_number_addition(builder, left_value_ptr, right_value_ptr, target_value, payload);
     } else {
@@ -546,6 +544,22 @@ void generate_comparison_expression(LLVMModuleRef module, LLVMBuilderRef builder
         case ALT_ADDITIVE_EXPRESSION:
             generate_additive_expression(module, builder, target_value, node->childv[0]);
             break;
+        case ALT_EQ:
+            generate_additive_expression(module, builder, target_value, node->childv[0]);
+            generate_additive_expression(module, builder, target_value, node->childv[1]);
+            break;
+        case ALT_NEQ:
+            generate_additive_expression(module, builder, target_value, node->childv[0]);
+            generate_additive_expression(module, builder, target_value, node->childv[1]);
+            break;
+        case ALT_GT:
+            generate_additive_expression(module, builder, target_value, node->childv[0]);
+            generate_additive_expression(module, builder, target_value, node->childv[1]);
+            break;
+        case ALT_LT:
+            generate_additive_expression(module, builder, target_value, node->childv[0]);
+            generate_additive_expression(module, builder, target_value, node->childv[1]);
+            break;
         default:
             puts("ERROR NOT IMPLEMENTED YET");
     }
@@ -567,7 +581,6 @@ void generate_function_definition(LLVMModuleRef module, struct node *node)
         LLVMTypeRef return_type = LLVMPointerType(return_event_type, 0);
         LLVMTypeRef function_type;
         int parameter_count = 0;
-
 
         if (payload->alternative == ALT_PARAMETER_LIST) {
             LLVMTypeRef *parameters = NULL;
@@ -619,12 +632,22 @@ void generate_function_definition(LLVMModuleRef module, struct node *node)
     }
 }
 
+void generate_predicate_definition()
+{
+    
+}
+
 void declare_operators(LLVMModuleRef module)
 {
     LLVMTypeRef i8_pointer_type = LLVMPointerType(LLVMInt8Type(), 0);
     LLVMTypeRef parameter_types[] = { i8_pointer_type, i8_pointer_type };
 
-    LLVMTypeRef function_type = LLVMFunctionType(i8_pointer_type, parameter_types, 2, 0);
+    LLVMTypeRef function_type = LLVMFunctionType(LLVMInt8Type(), parameter_types, 2, 0);
+    LLVMAddFunction(module, "op_v_eq_v", function_type);
+    LLVMAddFunction(module, "op_v_lt_v", function_type);
+    LLVMAddFunction(module, "op_v_gt_v", function_type);
+
+    function_type = LLVMFunctionType(i8_pointer_type, parameter_types, 2, 0);
     LLVMAddFunction(module, "op_v_add_v", function_type);
     LLVMAddFunction(module, "op_v_sub_v", function_type);
 

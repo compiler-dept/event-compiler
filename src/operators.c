@@ -18,7 +18,7 @@ struct vector *new_vector(int size, ...)
 {
     struct vector *vector = malloc(sizeof(struct vector));
     vector->size = size;
-    vector->components =  malloc( size * sizeof(double));
+    vector->components = malloc(size * sizeof(double));
 
     va_list ap;
 
