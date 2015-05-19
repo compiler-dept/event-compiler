@@ -84,6 +84,11 @@ uint8_t op_v_eq_v(struct vector *vector_left, struct vector *vector_right)
     }
 }
 
+uint8_t op_v_neq_v(struct vector *vector_left, struct vector *vector_right)
+{
+    return op_v_eq_v(vector_left, vector_right) == 1 ? 0 : 1;
+}
+
 struct vector *op_v_add_v(struct vector *vector_left, struct vector *vector_right)
 {
     if (vector_left == NULL || vector_right == NULL) {

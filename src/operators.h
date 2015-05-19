@@ -16,6 +16,8 @@ void print_vector(struct vector *vector);
 
 uint8_t op_v_eq_v(struct vector *vector_left, struct vector *vector_right);
 
+uint8_t op_v_neq_v(struct vector *vector_left, struct vector *vector_right);
+
 struct vector *op_v_add_v(struct vector *vector_left, struct vector *vector_right);
 
 struct vector *op_v_sub_v(struct vector *vector_left, struct vector *vector_right);

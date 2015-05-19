@@ -410,11 +410,8 @@ void generate_multiplication(LLVMModuleRef module, LLVMBuilderRef builder,
         right_value_ptr = LLVMBuildAlloca(builder, LLVMDoubleType(), "");
     }
 
-
-
     generate_multiplicative_expression(module, builder, left_value_ptr, node->childv[0] );
     generate_negation(module, builder, right_value_ptr, node->childv[1] );
-
 
     if (!is_vector) {
         handle_number_multiplication(builder, left_value_ptr, right_value_ptr, target_value, payload);
@@ -540,28 +537,44 @@ void generate_comparison_expression(LLVMModuleRef module, LLVMBuilderRef builder
                                     LLVMValueRef target_value, struct node *node)
 {
     struct payload *payload = node->payload;
-    switch (payload->alternative) {
-        case ALT_ADDITIVE_EXPRESSION:
-            generate_additive_expression(module, builder, target_value, node->childv[0]);
-            break;
-        case ALT_EQ:
-            generate_additive_expression(module, builder, target_value, node->childv[0]);
-            generate_additive_expression(module, builder, target_value, node->childv[1]);
-            break;
-        case ALT_NEQ:
-            generate_additive_expression(module, builder, target_value, node->childv[0]);
-            generate_additive_expression(module, builder, target_value, node->childv[1]);
-            break;
-        case ALT_GT:
-            generate_additive_expression(module, builder, target_value, node->childv[0]);
-            generate_additive_expression(module, builder, target_value, node->childv[1]);
-            break;
-        case ALT_LT:
-            generate_additive_expression(module, builder, target_value, node->childv[0]);
-            generate_additive_expression(module, builder, target_value, node->childv[1]);
-            break;
-        default:
-            puts("ERROR NOT IMPLEMENTED YET");
+    if (payload->alternative == ALT_ADDITIVE_EXPRESSION) {
+        generate_additive_expression(module, builder, target_value, node->childv[0]);
+    } else {
+        LLVMTypeRef op_type = VectorType();
+        LLVMValueRef left_op = LLVMBuildAlloca(builder, op_type, "");
+        left_op = LLVMBuildStructGEP(builder, left_op, 0, "");
+        LLVMValueRef right_op = LLVMBuildAlloca(builder, op_type, "");
+        right_op = LLVMBuildStructGEP(builder, right_op, 0, "");
+
+        generate_additive_expression(module, builder, left_op, node->childv[0]);
+        generate_additive_expression(module, builder, right_op, node->childv[1]);
+
+        LLVMValueRef function = NULL;
+
+        switch (payload->alternative) {
+            case ALT_EQ:
+                function = LLVMGetNamedFunction(module, "op_v_eq_v");
+                break;
+            case ALT_NEQ:
+                function = LLVMGetNamedFunction(module, "op_v_neq_v");
+                break;
+            case ALT_GT:
+                function = LLVMGetNamedFunction(module, "op_v_gt_v");
+                break;
+            case ALT_LT:
+                function = LLVMGetNamedFunction(module, "op_v_lt_v");
+                break;
+            default:
+                puts("ERROR NOT IMPLEMENTED YET");
+                return;
+        }
+
+        left_op = LLVMBuildBitCast(builder, left_op, LLVMPointerType(LLVMInt8Type(), 0), "");
+        right_op = LLVMBuildBitCast(builder, right_op, LLVMPointerType(LLVMInt8Type(), 0), "");
+        LLVMValueRef args[] = { left_op, right_op };
+        LLVMValueRef result = LLVMBuildCall(builder, function, args, 2, "");
+
+        LLVMBuildStore(builder, result, target_value);
     }
 }
 
@@ -632,9 +645,53 @@ void generate_function_definition(LLVMModuleRef module, struct node *node)
     }
 }
 
-void generate_predicate_definition()
+void generate_predicate_definition(LLVMModuleRef module, struct node *node)
 {
-    
+    struct payload *payload = node->payload;
+
+    if (!LLVMGetNamedFunction(module, payload->predicate_definition.identifier)) {
+        LLVMTypeRef return_type = LLVMInt8Type();
+        LLVMTypeRef function_type;
+        LLVMTypeRef *parameters = NULL;
+        int parameter_count = generate_parameter_list(module, node->childv[0], &parameters);
+        function_type = LLVMFunctionType(return_type, parameters, parameter_count, 0);
+        free(parameters);
+
+        LLVMValueRef function = LLVMAddFunction(module, payload->predicate_definition.identifier,
+                                                function_type);
+
+        LLVMValueRef arg_values[parameter_count];
+        LLVMGetParams(function, arg_values);
+
+        struct hashmap *function_arguments = NULL;
+
+        for (int i = 0; i < parameter_count; i++) {
+            struct payload *parameter_payload = node->childv[0]->childv[i]->payload;
+            char *key = parameter_payload->parameter.identifier;
+            hashmap_put(&function_arguments, key, arg_values[i]);
+        }
+
+        if (function_arguments) {
+            stack_push(&function_arguments_stack, function_arguments);
+        }
+
+        LLVMBuilderRef builder = LLVMCreateBuilder();
+        LLVMBasicBlockRef basic_block = LLVMAppendBasicBlock(function, "");
+        LLVMPositionBuilderAtEnd(builder, basic_block);
+
+        LLVMValueRef return_int = LLVMBuildAlloca(builder, return_type, "");
+
+        generate_expression(module, builder, return_int, node->childv[1]);
+
+        if (function_arguments) {
+            hashmap_free(&function_arguments, NULL);
+            stack_pop(&function_arguments_stack);
+        }
+
+        LLVMValueRef return_val = LLVMBuildLoad(builder, return_int, "");
+        LLVMBuildRet(builder, return_val);
+        LLVMDisposeBuilder(builder);
+    }
 }
 
 void declare_operators(LLVMModuleRef module)
@@ -644,6 +701,7 @@ void declare_operators(LLVMModuleRef module)
 
     LLVMTypeRef function_type = LLVMFunctionType(LLVMInt8Type(), parameter_types, 2, 0);
     LLVMAddFunction(module, "op_v_eq_v", function_type);
+    LLVMAddFunction(module, "op_v_neq_v", function_type);
     LLVMAddFunction(module, "op_v_lt_v", function_type);
     LLVMAddFunction(module, "op_v_gt_v", function_type);
 
@@ -679,6 +737,8 @@ LLVMModuleRef generate_module(struct node *ast, const char *name)
             case N_FUNCTION_DEFINITION:
                 generate_function_definition(module, temp);
                 break;
+            case N_PREDICATE_DEFINITION:
+                generate_predicate_definition(module, temp);
             default:
                 break;
         }
