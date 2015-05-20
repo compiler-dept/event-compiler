@@ -18,7 +18,7 @@ struct vector *new_vector(int size, ...)
 {
     struct vector *vector = malloc(sizeof(struct vector));
     vector->size = size;
-    vector->components =  malloc( size * sizeof(double));
+    vector->components = malloc(size * sizeof(double));
 
     va_list ap;
 
@@ -82,6 +82,11 @@ uint8_t op_v_eq_v(struct vector *vector_left, struct vector *vector_right)
 
         return 1;
     }
+}
+
+uint8_t op_v_neq_v(struct vector *vector_left, struct vector *vector_right)
+{
+    return op_v_eq_v(vector_left, vector_right) == 1 ? 0 : 1;
 }
 
 struct vector *op_v_add_v(struct vector *vector_left, struct vector *vector_right)
@@ -187,4 +192,9 @@ uint8_t op_v_gt_v(struct vector *vector_left, struct vector *vector_right)
     }
 
     return 1;
+}
+
+uint8_t op_i_eq_i(uint8_t left, uint8_t right)
+{
+    return left == right ? 1 : 0;
 }
