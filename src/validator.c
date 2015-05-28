@@ -69,13 +69,13 @@ int validate_atomic(struct node *temp, struct payload *payload, struct stack **t
 static enum types *type_stack_pop(struct stack **stack) {
     stack_size--;
     enum types *type = stack_pop(stack);
-    printf("Pop: %s (Stack Size: %i)\n", type_names[*type - 1], stack_size);
+    //printf("Pop: %s (Stack Size: %i)\n", type_names[*type - 1], stack_size);
     return type;
 }
 
 static void type_stack_push(struct stack **stack, enum types *type) {
     stack_size++;
-    printf("Push: %s (Stack Size: %i)\n", type_names[*type - 1], stack_size);
+    //printf("Push: %s (Stack Size: %i)\n", type_names[*type - 1], stack_size);
     stack_push(stack, type);
 }
 
@@ -168,7 +168,6 @@ int validate(struct node *root)
 
 int validate_event(struct node *temp, struct payload *payload)
 {
-    puts("event");
     int success = 1;
 
     if (payload->event.ref == NULL) {
@@ -181,7 +180,6 @@ int validate_event(struct node *temp, struct payload *payload)
 
 int validate_rule_signature(struct node *temp, struct payload *payload)
 {
-    puts("rule_signature");
     int success = 1;
 
     if (payload->alternative == ALT_PREDICATE_SEQUENCE) {
@@ -227,19 +225,16 @@ int validate_rule_signature(struct node *temp, struct payload *payload)
 
 int validate_rule_declaration(struct node *temp, struct payload *payload)
 {
-    puts("rule_declaration");
     int success = 1;
 
     if (NULL) {
         /* rule does already exist */
         success = 0;
-        puts("fail1");
     } else {
         /* rule does not exist */
         if (payload->rule_declaration.ref == NULL) {
             /* referenced function does not exist */
             success = 0;
-            puts("fail2");
         } else {
             /* referenced function exists */
             struct node *function_definition = payload->rule_declaration.ref;
@@ -250,7 +245,6 @@ int validate_rule_declaration(struct node *temp, struct payload *payload)
                     if (payload->rule_declaration.eventc != function_definition->childv[0]->childc) {
                         /* count of function parameters does not match the event sequence size */
                         success = 0;
-                        puts("fail3");
                     } else {
                         /* same number of function parameters as events */
 
@@ -264,7 +258,6 @@ int validate_rule_declaration(struct node *temp, struct payload *payload)
                             if (strcmp(event_type, parameter_type) != 0) {
                                 /* at least one parameter does not match in type or order */
                                 success = 0;
-                                puts("fail4");
                                 break;
                             }
                         }
@@ -272,13 +265,11 @@ int validate_rule_declaration(struct node *temp, struct payload *payload)
                 } else {
                     /* needed parameter_list is missing */
                     success = 0;
-                    puts("fail5");
                 }
             } else {
                 /* event sequence is empty */
                 if (((struct payload *)(function_definition->payload))->alternative == ALT_PARAMETER_LIST) {
                     success = 0;
-                    puts("fail6");
                 }
             }
         }
@@ -289,7 +280,6 @@ int validate_rule_declaration(struct node *temp, struct payload *payload)
 
 int validate_event_declaration(struct node *temp, struct payload *payload)
 {
-    puts("event_declaration");
     int success = 1;
 
     if (NULL) {
@@ -321,7 +311,6 @@ int validate_event_declaration(struct node *temp, struct payload *payload)
 int validate_predicate_definition(struct node *temp, struct payload *payload,
                                   struct stack **type_stack)
 {
-    puts("predicate_definition");
     int success = 1;
 
     if (NULL) {
@@ -344,7 +333,6 @@ int validate_predicate_definition(struct node *temp, struct payload *payload,
 int validate_function_definition(struct node *temp, struct payload *payload,
                                  struct stack **type_stack)
 {
-    puts("function_definition");
     int success = 1;
 
     if (NULL) {
@@ -385,7 +373,6 @@ int validate_function_definition(struct node *temp, struct payload *payload,
 
 int validate_parameter_list(struct node *temp)
 {
-    puts("parameter_list");
     int success = 1;
 
     /* loop over parameters */
@@ -411,7 +398,6 @@ int validate_parameter_list(struct node *temp)
 
 int validate_function_call(struct node *temp, struct payload *payload, struct stack **type_stack)
 {
-    puts("function_call");
     int success = 1;
 
     struct node *function_definition = payload->function_call.ref;
@@ -425,62 +411,10 @@ int validate_function_call(struct node *temp, struct payload *payload, struct st
     }
 
     return success;
-    /*int success = 1;
-    struct node *tempnode1, *tempnode2;
-    char *typename1, *typename2;
-    puts("FUNCTION_CALL");*/
-    /* get corresponding function definition from scope */
-    /*tempnode1 = ((struct payload *)payload)->function_call.ref;
-    if (tempnode1) {
-        if(temp->childc > 0) {
-    tempnode2 = temp->childv[0]->childv[0];
-
-    if (tempnode1->childv[0]->childc == tempnode2->childc) {
-        for (int i = 0; i < tempnode2->childc; i++) {
-            enum types *type = type_stack_pop(type_stack);
-
-            if (*type == T_EVENT) {
-                typename1 = stack_pop(type_stack);
-                        typename2 = ((struct payload *)tempnode1->childv[0]->childv[i]->payload)->parameter.type;
-                if (strcmp(typename1, typename2) != 0) {
-                            printf("Parameter has wrong type!\n");
-                    success = 0;
-                    free(type);
-                    break;
-                }
-            } else {
-                        printf("Parameter is not an event!\n");
-                success = 0;
-                free(type);
-                break;
-            }
-
-            free(type);
-        }
-            } else if (tempnode1->childv[0]->childc < tempnode2->childc) {
-                printf("Called function has to many parameters!\n");
-                success = 0;
-            } else {
-                printf("Called function has to few parameters!\n");
-                success = 0;
-            }
-        }
-    } else {
-        success = 0;
-        printf("No function \"%s\" found!\n", payload->function_call.identifier);
-    }
-
-    if (success) {
-        typename1 = ((struct payload *)tempnode1->payload)->function_definition.type;
-        stack_push(type_stack, typename1);
-        type_stack_push(type_stack, new_type(T_EVENT));
-    }
-    return success;*/
 }
 
 int validate_event_definition(struct node *temp, struct stack **type_stack)
 {
-    puts("event_definition");
     int success = 1;
 
     /* TODO: check that no initializer is doubled */
@@ -492,7 +426,6 @@ int validate_event_definition(struct node *temp, struct stack **type_stack)
 
 int validate_initializer(struct node *temp, struct payload *payload, struct stack **type_stack)
 {
-    puts("initializer");
     int success = 1;
 
     if (payload->initializer.ref_index == -1) {
@@ -514,7 +447,6 @@ int validate_initializer(struct node *temp, struct payload *payload, struct stac
 
 int validate_vector(struct node *temp, struct stack **type_stack)
 {
-    puts("vector");
     int success = 1;
 
     type_stack_push(type_stack, new_type(T_VECTOR));
@@ -524,7 +456,6 @@ int validate_vector(struct node *temp, struct stack **type_stack)
 
 int validate_component_sequence(struct node *temp, struct stack **type_stack)
 {
-    puts("component_sequence");
     int success = 1;
 
     /* loop over all expressions in the expression sequence and check that
@@ -548,7 +479,6 @@ int validate_component_sequence(struct node *temp, struct stack **type_stack)
 int validate_comparison_expression(struct node *temp, struct payload *payload,
                                    struct stack **type_stack)
 {
-    puts("comparison_expression");
     int success = 1;
 
     if (payload->alternative != ALT_ADDITIVE_EXPRESSION) {
@@ -570,7 +500,6 @@ int validate_comparison_expression(struct node *temp, struct payload *payload,
 
 int validate_addition(struct node *temp, struct stack **type_stack)
 {
-    puts("validate_expression");
     int success = 1;
 
     enum types *mult_exp = type_stack_pop(type_stack);
@@ -591,7 +520,6 @@ int validate_addition(struct node *temp, struct stack **type_stack)
 
 int validate_multiplication(struct node *temp, struct payload *payload, struct stack **type_stack)
 {
-    puts("multiplication");
     int success = 1;
 
     enum types *neg = type_stack_pop(type_stack);
@@ -627,7 +555,6 @@ int validate_multiplication(struct node *temp, struct payload *payload, struct s
 
 int validate_atomic(struct node *temp, struct payload *payload, struct stack **type_stack)
 {
-    puts("atomic");
     int success = 1;
     if (payload->alternative == ALT_IDENTIFIER) {
         /* atomic is a vector or an event */

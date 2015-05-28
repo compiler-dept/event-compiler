@@ -112,9 +112,7 @@ int main(int argc, char *const *argv)
     link_references(root);
 
     if (flags.validation) {
-        if (validate(root)) {
-            printf("YAY \\o/\n");
-        } else {
+        if (!validate(root)) {
             puts("Validation failed.");
             tree_free(&root, payload_free);
             free(input);
