@@ -45,6 +45,17 @@ struct vector *new_vector_from_array(int size, double *array)
     return vector;
 }
 
+void vector_free(struct vector *vector)
+{
+    if (vector) {
+        if (vector->size > 0) {
+            free(vector->components);
+        }
+
+        free(vector);
+    }
+}
+
 void print_vector(struct vector *vector)
 {
     printf("[");

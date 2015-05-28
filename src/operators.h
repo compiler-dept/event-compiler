@@ -12,6 +12,8 @@ struct vector *new_vector(int size, ...);
 
 struct vector *new_vector_from_array(int size, double *array);
 
+void vector_free(struct vector *vector);
+
 void print_vector(struct vector *vector);
 
 uint8_t op_v_eq_v(struct vector *vector_left, struct vector *vector_right);
