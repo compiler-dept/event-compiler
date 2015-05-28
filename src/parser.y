@@ -52,10 +52,7 @@
         free(temp);
     }
 
-    while ((temp = stack_pop(&events)) != NULL) {
-        payload_free(temp->payload);
-        free(temp);
-    }
+    while (stack_pop(&events) != NULL);
 
     struct hashmap_entry *temp2 = NULL;
     while ((temp2 = stack_pop(&current_scope)) != NULL) {
