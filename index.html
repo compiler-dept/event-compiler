@@ -143,6 +143,24 @@
                 <div class="col-md-9" role="main">
 
 <h1 id="event">Event</h1>
+<p>From (<strong>Event</strong>):</p>
+<pre><code>event SampleEvent { position, time };
+
+predicate p_position(SampleEvent a, SampleEvent b) := a.position &gt; b.position;
+
+SampleEvent transform(SampleEvent a, SampleEvent b) :=
+{
+    position = a.position + b.position,
+    time = a.time + b.time
+};
+
+Transform: [SampleEvent, SampleEvent : p_position] -&gt; transform;
+</code></pre>
+<p>To (<strong>C</strong>):</p>
+<pre><code>int Transform_active(SampleEvent *, SampleEvent *);
+
+SampleEvent *Transform_function(SampleEvent *, SampleEvent *);
+</code></pre>
 </div>
             
         </div>
