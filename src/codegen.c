@@ -665,35 +665,69 @@ void generate_predicate_definition(LLVMModuleRef module, struct node *node)
     }
 }
 
-void generate_rule_declaration(LLVMModuleRef module, struct node *node)
+/*
+* Create the function for a rule. This function takes a sequence of events as inputs
+* and returns an event.
+*/
+void generate_rule_function(LLVMModuleRef module, struct node *node, int parameter_count, LLVMTypeRef *parameters)
 {
     struct payload *payload = node->payload;
 
-    /* generate function names */
-    char active_name[1 + 7 + strlen(payload->rule_declaration.name)];
     char function_name[1 + 9 + strlen(payload->rule_declaration.name)];
-    sprintf(active_name, "%s_active", payload->rule_declaration.name);
     sprintf(function_name, "%s_function", payload->rule_declaration.name);
 
-    /* generate parameter list and create necessary event types */
-    struct node *event_sequence = node->childv[0]->childv[0];
-    LLVMTypeRef parameters[event_sequence->childc];
-    for (int i = 0; i < event_sequence->childc; i++) {
-        struct node *event = event_sequence->childv[i];
-        struct payload *event_payload = event->payload;
-        parameters[i] = LLVMPointerType(generate_event_type_if_necessary(module, event_payload->event.ref), 0);
-    }
+    /* get return event type for rule function */
+    struct payload *func_payload = ((struct payload *)payload->rule_declaration.ref->payload);
+    struct node *event = func_payload->function_definition.event_ref;
 
-    /*
-     * ACTIVE FUNCTION
-     */
+    /* create return type for rule function and create it if necessary */
+    LLVMTypeRef return_type = LLVMPointerType(generate_event_type_if_necessary(module, event), 0);
+
+    /* create header for rule function */
+    LLVMTypeRef function_type = LLVMFunctionType(return_type, parameters, parameter_count, 0);
+    LLVMValueRef rule_function = LLVMAddFunction(module, function_name, function_type);
+
+    /* get arguments for rule function */
+    LLVMValueRef rule_arg_values[parameter_count];
+    LLVMGetParams(rule_function, rule_arg_values);
+
+    /* rule body builder */
+    LLVMBuilderRef rule_builder = LLVMCreateBuilder();
+    LLVMBasicBlockRef rule_basic_block = LLVMAppendBasicBlock(rule_function, "");
+    LLVMPositionBuilderAtEnd(rule_builder, rule_basic_block);
+
+    /* create assigned function if necessary */
+    generate_function_definition(module, payload->rule_declaration.ref);
+    /* get pinter to rule function */
+    LLVMValueRef called_function = LLVMGetNamedFunction(module, payload->rule_declaration.identifier);
+
+    /* call rule function */
+    LLVMValueRef rule_result = LLVMBuildCall(rule_builder, called_function, rule_arg_values, parameter_count, "");
+
+    /* build return value */
+    LLVMBuildRet(rule_builder, rule_result);
+
+    LLVMDisposeBuilder(rule_builder);
+}
+
+/*
+* Create the active function for a rule. This function takes a sequence of events
+* as input and returns 0, if one or more of the rule's predicates is false.
+*/
+void generate_rule_active_function(LLVMModuleRef module, struct node *node, int parameter_count, LLVMTypeRef *parameters)
+{
+    struct payload *payload = node->payload;
+
+    /* create name for active function */
+    char active_name[1 + 7 + strlen(payload->rule_declaration.name)];
+    sprintf(active_name, "%s_active", payload->rule_declaration.name);
 
     /* create header for active function */
-    LLVMTypeRef function_type = LLVMFunctionType(LLVMInt8Type(), parameters, event_sequence->childc, 0);
+    LLVMTypeRef function_type = LLVMFunctionType(LLVMInt8Type(), parameters, parameter_count, 0);
     LLVMValueRef active_function = LLVMAddFunction(module, active_name, function_type);
 
     /* get arguments for active function */
-    LLVMValueRef active_arg_values[event_sequence->childc];
+    LLVMValueRef active_arg_values[parameter_count];
     LLVMGetParams(active_function, active_arg_values);
 
     /* active body builder */
@@ -721,7 +755,7 @@ void generate_rule_declaration(LLVMModuleRef module, struct node *node)
             LLVMValueRef predicate_function = LLVMGetNamedFunction(module, predicate_payload->predicate.identifier);
 
             /* call predicate function */
-            LLVMValueRef predicate_result = LLVMBuildCall(active_builder, predicate_function, active_arg_values, event_sequence->childc, "");
+            LLVMValueRef predicate_result = LLVMBuildCall(active_builder, predicate_function, active_arg_values, parameter_count, "");
 
             sum = LLVMBuildAdd(active_builder, sum, predicate_result, "");
         }
@@ -733,74 +767,50 @@ void generate_rule_declaration(LLVMModuleRef module, struct node *node)
         active_result = LLVMBuildCall(active_builder, eq, eq_args, 2, "");
     } else {
         /* no predicate list ist present */
-
-        /* return 1 */
         active_result = LLVMConstInt(LLVMInt8Type(), 1, 0);
     }
 
     LLVMBuildRet(active_builder, active_result);
     LLVMDisposeBuilder(active_builder);
+}
 
-    /*
-     * RULE FUNCTION
-     */
+void generate_rule_declaration(LLVMModuleRef module, struct node *node)
+{
+    /* generate parameter list and create necessary event types */
+    struct node *event_sequence = node->childv[0]->childv[0];
+    LLVMTypeRef parameters[event_sequence->childc];
+    for (int i = 0; i < event_sequence->childc; i++) {
+        struct node *event = event_sequence->childv[i];
+        struct payload *event_payload = event->payload;
+        parameters[i] = LLVMPointerType(generate_event_type_if_necessary(module, event_payload->event.ref), 0);
+    }
 
-    /* get return event type for rule function */
-    struct payload *func_payload = ((struct payload *)payload->rule_declaration.ref->payload);
-    struct node *event = func_payload->function_definition.event_ref;
-
-    /* create return type for rule function and create it if necessary */
-    LLVMTypeRef return_type = LLVMPointerType(generate_event_type_if_necessary(module, event), 0);
-
-    /* create header for rule function */
-    function_type = LLVMFunctionType(return_type, parameters, event_sequence->childc, 0);
-    LLVMValueRef rule_function = LLVMAddFunction(module, function_name, function_type);
-
-    /* get arguments for rule function */
-    LLVMValueRef rule_arg_values[event_sequence->childc];
-    LLVMGetParams(rule_function, rule_arg_values);
-
-    /* rule body builder */
-    LLVMBuilderRef rule_builder = LLVMCreateBuilder();
-    LLVMBasicBlockRef rule_basic_block = LLVMAppendBasicBlock(rule_function, "");
-    LLVMPositionBuilderAtEnd(rule_builder, rule_basic_block);
-
-    /* create assigned function if necessary */
-    generate_function_definition(module, payload->rule_declaration.ref);
-    /* get pinter to rule function */
-    LLVMValueRef called_function = LLVMGetNamedFunction(module, payload->rule_declaration.identifier);
-
-    /* call rule function */
-    LLVMValueRef rule_result = LLVMBuildCall(rule_builder, called_function, rule_arg_values, event_sequence->childc, "");
-
-    /* build return value */
-    LLVMBuildRet(rule_builder, rule_result);
-
-    LLVMDisposeBuilder(rule_builder);
+    generate_rule_active_function(module, node, event_sequence->childc, parameters);
+    generate_rule_function(module, node, event_sequence->childc, parameters);
 }
 
 
 /*
-Declares LLVM signatures of methods defined in c-code.
-See operators.(c|h)
+* Declares LLVM signatures of methods defined in c-code.
+* See operators.(c|h)
 */
 void declare_external_methods(LLVMModuleRef module)
 {
-    // Puts for debugging
+    /* Puts for debugging */
     LLVMTypeRef args[] = {LLVMPointerType(LLVMInt8Type(), 0)};
     LLVMAddFunction(module, "puts", LLVMFunctionType(LLVMInt8Type(), args, 1, 0));
 
     LLVMTypeRef i8_pointer_type = LLVMPointerType(LLVMInt8Type(), 0);
     LLVMTypeRef parameter_types[] = { i8_pointer_type, i8_pointer_type };
 
-    // Vector comparison operators
+    /* Vector comparison operators */
     LLVMTypeRef function_type = LLVMFunctionType(LLVMInt8Type(), parameter_types, 2, 0);
     LLVMAddFunction(module, "op_v_eq_v", function_type);
     LLVMAddFunction(module, "op_v_neq_v", function_type);
     LLVMAddFunction(module, "op_v_lt_v", function_type);
     LLVMAddFunction(module, "op_v_gt_v", function_type);
 
-    // Vector Arithmetics operators
+    /* Vector Arithmetics operators */
     function_type = LLVMFunctionType(i8_pointer_type, parameter_types, 2, 0);
     LLVMAddFunction(module, "op_v_add_v", function_type);
     LLVMAddFunction(module, "op_v_sub_v", function_type);
@@ -809,7 +819,7 @@ void declare_external_methods(LLVMModuleRef module)
     function_type = LLVMFunctionType(i8_pointer_type, parameter_types, 2, 0);
     LLVMAddFunction(module, "op_s_mult_v", function_type);
 
-    // Integer comparison operator
+    /* Integer comparison operator */
     parameter_types[0] = LLVMInt8Type();
     parameter_types[1] = LLVMInt8Type();
     function_type = LLVMFunctionType(LLVMInt8Type(), parameter_types, 2, 0);
@@ -823,10 +833,10 @@ LLVMModuleRef generate_module(struct node *ast, const char *name)
     declare_external_methods(module);
 
     struct node *decl_seq = ast->childv[0];
-    for (int i = 0; i < decl_seq->childc; i++){
+    for (int i = 0; i < decl_seq->childc; i++) {
         struct node *decl = decl_seq->childv[i]->childv[0];
         struct payload *decl_payload = (struct payload *) decl->payload;
-        if (decl_payload->type == N_RULE_DECLARATION){
+        if (decl_payload->type == N_RULE_DECLARATION) {
             generate_rule_declaration(module, decl);
         }
     }
