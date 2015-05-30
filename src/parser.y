@@ -15,21 +15,6 @@
     struct stack *current_scope = NULL;
     struct stack *global_scope = NULL;
     struct stack *events = NULL;
-
-    void stack_remove(struct stack **target_stack, void *elem) {
-        struct stack *temp_stack = NULL;
-        struct node *temp_node = NULL;
-        do {
-            temp_node = stack_pop(target_stack);
-            if (temp_node != elem) {
-                stack_push(&temp_stack, temp_node);
-            }
-        } while (temp_node != elem);
-
-        while ((temp_node = stack_pop(&temp_stack)) != NULL) {
-            stack_push(target_stack, temp_node);
-        }
-    }
 }
 
 %token_type { const char * }
