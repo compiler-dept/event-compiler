@@ -32,10 +32,3 @@ struct node *parse_ast(const char *str)
         return parser_state.root;
     }
 }
-
-void *get_field_address(void *base, struct node *field)
-{
-    // TODO
-
-    return NULL;
-}
