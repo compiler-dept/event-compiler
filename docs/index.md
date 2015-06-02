@@ -3,12 +3,11 @@
 ## Introduction
 
 The Event Language was designed to build a bridge between the C level interface
-of an event generating system like a sensor or an actuators and the need for a
+of event generating systems like sensors or actuators and the need for a
 high level representation for event based systems. It provides the ability to
-describe the transformation of event informations on a higher level than
-fiddling with C or C++ code.
+describe the processing of events on a higher level than fiddling with C or C++ code.
 
-The Event Language is a compiled language. That means that machine code is
+The Event Language is a compiled language. Therefore machine code is
 generated during the process of compilation. This is achieved by using the LLVM
 compiler collection, which provides us with a high level interface for
 generating machine code for nearly all platforms supported by LLVM. LLVM is the
