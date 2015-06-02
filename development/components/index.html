@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        
+        <meta name="author" content="Andreas Pfohl and Robert Heumüller">
+        
+        <link rel="shortcut icon" href="../../img/favicon.ico">
+
+        <title>Components - Event</title>
+
+        <link href="../../css/bootstrap-custom.min.css" rel="stylesheet">
+        <link href="../../css/font-awesome-4.0.3.css" rel="stylesheet">
+        <link href="../../css/base.css" rel="stylesheet">
+        <link rel="stylesheet" href="../../css/highlight.css">
+
+        <!-- HTML5 shim and Respond.js IE8 support of HTML5 elements and media queries -->
+        <!--[if lt IE 9]>
+            <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+            <script src="https://oss.maxcdn.com/libs/respond.js/1.3.0/respond.min.js"></script>
+        <![endif]-->
+
+        
+    </head>
+
+    <body>
+
+        <div class="navbar navbar-default navbar-fixed-top" role="navigation">
+    <div class="container">
+
+        <!-- Collapsed navigation -->
+        <div class="navbar-header">
+            
+            <!-- Expander button -->
+            <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+            
+
+            <!-- Main title -->
+            <a class="navbar-brand" href="../..">Event</a>
+        </div>
+
+        <!-- Expanded navigation -->
+        <div class="navbar-collapse collapse">
+            
+                <!-- Main navigation -->
+                <ul class="nav navbar-nav">
+                
+                
+                    <li class="dropdown">
+                        <a href="#" class="dropdown-toggle" data-toggle="dropdown">About <b class="caret"></b></a>
+                        <ul class="dropdown-menu">
+                        
+                            <li >
+                                <a href="../../about/license">License</a>
+                            </li>
+                        
+                        </ul>
+                    </li>
+                
+                
+                
+                    <li class="dropdown active">
+                        <a href="#" class="dropdown-toggle" data-toggle="dropdown">Development <b class="caret"></b></a>
+                        <ul class="dropdown-menu">
+                        
+                            <li class="active">
+                                <a href=".">Components</a>
+                            </li>
+                        
+                            <li >
+                                <a href="../scopes">Scopes</a>
+                            </li>
+                        
+                        </ul>
+                    </li>
+                
+                
+                
+                    <li class="dropdown">
+                        <a href="#" class="dropdown-toggle" data-toggle="dropdown">Guides <b class="caret"></b></a>
+                        <ul class="dropdown-menu">
+                        
+                            <li >
+                                <a href="../../guides/compiler">Compiler</a>
+                            </li>
+                        
+                            <li >
+                                <a href="../../guides/concept">Concept</a>
+                            </li>
+                        
+                            <li >
+                                <a href="../../guides/reference">Reference</a>
+                            </li>
+                        
+                        </ul>
+                    </li>
+                
+                
+                </ul>
+            
+
+            
+            <!-- Search, Navigation and Repo links -->
+            <ul class="nav navbar-nav navbar-right">
+                
+                
+                <li >
+                    <a rel="next" href="../../about/license">
+                        <i class="fa fa-arrow-left"></i> Previous
+                    </a>
+                </li>
+                <li >
+                    <a rel="prev" href="../scopes">
+                        Next <i class="fa fa-arrow-right"></i>
+                    </a>
+                </li>
+                
+                
+                <li>
+                    <a href="https://github.com/compiler-dept/event-compiler">
+                        
+                            <i class="fa fa-github"></i>
+                        
+                        GitHub
+                    </a>
+                </li>
+                
+            </ul>
+            
+        </div>
+    </div>
+</div>
+
+        <div class="container">
+            
+                <div class="col-md-3"><div class="bs-sidebar hidden-print affix well" role="complementary">
+    <ul class="nav bs-sidenav">
+    
+        <li class="main active"><a href="#components">Components</a></li>
+        
+            <li><a href="#evcc">evc.c</a></li>
+        
+            <li><a href="#compilerch">compiler.(c|h)</a></li>
+        
+            <li><a href="#lexerl">lexer.l</a></li>
+        
+            <li><a href="#parsery">parser.y</a></li>
+        
+            <li><a href="#parser_signaturesh">parser_signatures.h</a></li>
+        
+            <li><a href="#parser_stateh">parser_state.h</a></li>
+        
+            <li><a href="#astch">ast.(c|h)</a></li>
+        
+            <li><a href="#scopech">scope.(c|h)</a></li>
+        
+            <li><a href="#validatorch">validator.(c|h)</a></li>
+        
+            <li><a href="#codegench">codegen.(c|h)</a></li>
+        
+            <li><a href="#operatorsch">operators.(c|h)</a></li>
+        
+    
+    </ul>
+</div></div>
+                <div class="col-md-9" role="main">
+
+<h1 id="components">Components</h1>
+<h2 id="evcc">evc.c</h2>
+<p><code>evc.c</code> is the main source file for the compiler. It handles the command
+line parsing and executes the lower level functions of the compiler accordingly.</p>
+<p>These lower level functions are:</p>
+<ul>
+<li>Opening and reading from file input</li>
+<li>Parsing the input and build an abstract syntax tree (AST)</li>
+<li>Link references to build the scopes</li>
+<li>Validate the AST for correctness</li>
+<li>Generate LLVM-IR or LLVM bytecode (if output file is given)</li>
+</ul>
+<h2 id="compilerch">compiler.(c|h)</h2>
+<p>The files <code>compiler.(c|h)</code> handles the parsing of the input and creation of
+the AST. This is done by initializing the lexer with the input string and
+passing every token that is generated by the lexer to the parser. The parser
+then generates the AST based on it's grammar.</p>
+<p>The return is an AST.</p>
+<h2 id="lexerl">lexer.l</h2>
+<p><code>lexer.l</code> is the specification for the lexer generator
+<a href="http://flex.sourceforge.net/">Flex</a>, which is invoked to create C source code
+for a lexer that generates all necessary token for the parser from the input.</p>
+<p>The specification consists of some configuration for the lexer generator and all
+strings that should be matched as single tokens. Whitespace is ignored and code
+comments are skipped.</p>
+<h2 id="parsery">parser.y</h2>
+<p><code>parser.y</code> is the specification for
+<a href="http://www.hwaci.com/sw/lemon/">The LEMON Parser Generator</a> which is used to
+generate a parser from the grammar of the <strong>Event</strong> language.</p>
+<p>Each grammar rule consists of left and a right side. The left side represents
+the name of the generated node in the AST. the right side is a composition of
+components needed to generate that node. Based on the given components the body
+of the rule executes code. Mostly a new node is created by
+<code>tree_create_node()</code> from the
+<a href="https://github.com/compiler-dept/libcollect">LibCollect</a>. The components are
+integrated into the new node to build the whole AST. Some rules create scopes
+for the validation and code generation. Take a look at
+<a href="../scopes">Scopes</a> for more information.</p>
+<h2 id="parser_signaturesh">parser_signatures.h</h2>
+<p><code>parser_signatures.h</code> contains the prototypes of the generated parser
+functions. LEMON does not generate them itself because it doesn't know which
+data types the tokens will have.</p>
+<h2 id="parser_stateh">parser_state.h</h2>
+<p><code>parser_state.h</code> contains the state of the parser at any time. It also holds
+a reference to the generated AST for easier handling inside the compiler.</p>
+<h2 id="astch">ast.(c|h)</h2>
+<p>The files <code>ast.(c|h)</code> define which information the AST is holding. For that,
+a <code>struct payload</code> is defined which is inserted into a new tree node. The
+payload contains following information:</p>
+<ul>
+<li>The type of the node (e.g. N_RULE_DECLARATION)</li>
+<li>The alternative to represent the type of the nodes children (e.g. ALT_IDENTIFIER)</li>
+<li>Custom data depending on the nodes type</li>
+</ul>
+<p>The custom data can hold:</p>
+<ul>
+<li>Simple data (e.g. string, int, ...)</li>
+<li>Scopes</li>
+<li>References to other nodes</li>
+</ul>
+<h2 id="scopech">scope.(c|h)</h2>
+<p>The files <code>scope.(c|h)</code> provide functions to create the scopes and references
+from the information in the AST. The most important function is
+<code>link_references()</code>. It iterates over the tree and visits every node. For
+every node it resolves necessary references by search the tree in parent
+direction until it founds the valid node. That scoping is later used by the
+validator and the code generator.</p>
+<h2 id="validatorch">validator.(c|h)</h2>
+<p><code>validator.(c|h)</code> is used to check if the AST and it's scopes and references
+are created according to our language definition. For that it provides a single
+function <code>validate()</code> that iterates over the tree and perform the necessary
+checks for every node. The checks are more or less complicated. Take a look into
+the comments of the source code to learn more about the validation.</p>
+<h2 id="codegench">codegen.(c|h)</h2>
+<p><code>codegen.(c|h)</code> generates an LLVM module from the AST. The function
+<code>generate_module()</code> iterates over all declarations and recursively generates
+the necessary LLVM-IR for every sub-tree node.</p>
+<h2 id="operatorsch">operators.(c|h)</h2>
+<p>The files <code>operators.(c|h)</code> constitute the standard library for the
+<strong>Event</strong> language. It has to be shipped with a compiled <strong>Event</strong> program.
+The following operators are implemented:</p>
+<ul>
+<li><code>op_v_eq_v()</code> : vector equals vector</li>
+<li><code>op_v_neq_v()</code> : vector not equals vector</li>
+<li><code>op_v_add_v()</code> : add vector to vector</li>
+<li><code>op_v_sub_v()</code> : subtract vector from vector</li>
+<li><code>op_s_mult_v()</code> : multiply a scalar with a vector</li>
+<li><code>op_v_lt_v()</code> : vector less than vector for every component</li>
+<li><code>op_v_gt_v()</code> : vector greater than vector for every component</li>
+<li><code>op_i_eq_i()</code> : integer equals integer</li>
+</ul>
+</div>
+            
+        </div>
+
+        <footer class="col-md-12">
+            <hr>
+            
+            <p>Copyright &copy; 2015 by <a href="https://github.com/apfohl">Andreas Pfohl</a> and <a href="https://github.com/rheum">Robert Heumüller</a>.</p>
+            
+            <p>Documentation built with <a href="http://www.mkdocs.org/">MkDocs</a>.</p>
+        </footer>
+
+        
+
+        <script src="https://code.jquery.com/jquery-1.10.2.min.js"></script>
+        <script src="../../js/bootstrap-3.0.3.min.js"></script>
+        <script src="../../js/prettify-1.0.min.js"></script>
+        <script src="../../js/highlight.pack.js"></script>
+        <script src="../../js/base.js"></script>
+    </body>
+</html>
