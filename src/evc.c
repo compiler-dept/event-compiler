@@ -8,6 +8,7 @@
 #include "compiler.h"
 #include "validator.h"
 #include "scope.h"
+#include "astdump.h"
 
 struct flags {
     int input;
@@ -16,14 +17,17 @@ struct flags {
     char output_path[255];
     int validation;
     int code_generation;
+    int astdump;
+    char astdump_path[255];
 };
 
 const char *usage = "\
 The Event Compiler\n\n\
 Usage: evc [options] -i <file>\n\n\
 OPTIONS:\n\
-  -o <file>             Write output to <file>\n\
   -i <file>             Read input from <file>\n\
+  -o <file>             Write output to <file>\n\
+  -a <file>             Write ast to <file>\n\
   -h                    Show this help\n\
   -v                    Show Event Compiler version\n\
   -V                    No validation\n\
@@ -37,11 +41,12 @@ int main(int argc, char *const *argv)
     struct flags flags;
     flags.input = 0;
     flags.output = 0;
+    flags.astdump = 0;
     flags.validation = 1;
     flags.code_generation = 1;
 
     int ch;
-    while ((ch = getopt(argc, argv, "Chi:o:vV")) != -1) {
+    while ((ch = getopt(argc, argv, "Chi:o:a:vV")) != -1) {
         switch (ch) {
             case 'i':
                 flags.input = 1;
@@ -50,6 +55,10 @@ int main(int argc, char *const *argv)
             case 'o':
                 flags.output = 1;
                 strcpy(flags.output_path, optarg);
+                break;
+            case 'a':
+                flags.astdump = 1;
+                strcpy(flags.astdump_path, optarg);
                 break;
             case 'h':
                 fprintf(stdout, "%s\n", usage);
@@ -128,6 +137,10 @@ int main(int argc, char *const *argv)
             LLVMDumpModule(module);
         }
         LLVMDisposeModule(module);
+    }
+
+    if (flags.astdump){
+        dump_ast(root, flags.astdump_path);
     }
 
     tree_free(&root, payload_free);
