@@ -139,7 +139,7 @@ Run the example by executing:
 ./example
 ```
 
-If everything worked out correctly, you sould get the follwing output:
+If everything worked out correctly, you should get the following output:
 
 ```
 Vector 1 [3]:
