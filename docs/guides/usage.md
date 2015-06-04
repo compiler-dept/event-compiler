@@ -1,8 +1,8 @@
 # Using the Event Compiler
 
 ## Setup
-Before we can get started using the **Event Compiler**, we need to collect and
-compile its source code. The simplest way of accomplishing this is to clone
+Before we can get started using the **Event Compiler**, the source code needs to
+be acquired and compiled. The simplest way of accomplishing this is to clone
 directly from the [git repository](https://github.com/compiler-dept/event-compiler):
 
 	git clone git@github.com:compiler-dept/event-compiler.git
@@ -32,16 +32,19 @@ of your choice. Compilation is a two-step process:
 2. Compiling the llvm bytecode to a platform-specific assembler file with **llc**.
 
 ```bash
-./evc -i examples/simple.ev -o simple.bc # writes bytecode to simple.bc
+cd examples
+./evc -i simple.ev -o simple.bc # writes bytecode to simple.bc
 llc simple.bc # writes platform-specifc assembler to simple.s
 ```
 
 ### Commandline Parameters
 
-- ``` -i ``` Specify input file
-- ``` -o ``` Specify output file; When missing dump llvm intermediate code to stdout
+- ``` -i <file> ``` Specify input file
+- ``` -o <file>``` Specify output file; When missing dump llvm intermediate code to stdout
+- ``` -a <file>``` Dump lisp-like representation of the ast to file
 - ``` -V ``` Disable source validation; Use with caution: Compiling invalid code will probably lead to unexpected behavior
 - ``` -C ``` Disable code generation
+- ``` -h ``` Show help
 
 ### Cross Compiling
 
@@ -57,13 +60,92 @@ The previous sections explained how to use the **Event Compiler** process *Event
 source files into platform-specific assembler files. This section explains how
 to actually call the contained code from within a simple c application.
 
-As explained in [Concept](concept), the compiler generates native code containing
-two methods for each **rule** defined in the **Event** source code.
 
-1. An activation function which returns an integer greater than zero if and only if predicates indicate rule should be applied.
+### Inferring Prototypes
+
+As explained in [Concept](concept), the compiler generates native code containing
+methods and struct definitions for each **rule** defined in the **Event** source code.
+
+The following methods are created for each rule:
+
+1. An activation function which returns an integer greater than zero if and only if predicates indicate the rule should be applied.
 2. A processing function which uses the rule's parameters to generate a new event.
 
 ```C
 int <<rule_name>>_active(struct MyEventType1 *event1, ..., struct MyEventTypeN *eventn)
-void <<rule_name>>_function(struct MyEventType1 *event1, ..., struct MyEventTypeN *eventn)
+struct MyReturnEvent *<<rule_name>>_function(struct MyEventType1 *event1, ..., struct MyEventTypeN *eventn)
+```
+
+For every event definition a struct is created. Since the members of our events are
+vectors, each member is represented by an integer indicating its length and a pointer
+to an accordingly sized array of double values.
+
+```C
+struct __attribute__((__packed__)) MyEventType1 {
+    int16_t pos_len;
+    double *pos;
+    int16_t time_len;
+    double *time;
+};
+```
+
+Event inheritance is handled simply by prepending inherited fields to the struct.
+Therefore:
+
+```
+event Parent { pos };
+event Child extends Parent { time };
+```
+
+Results in:
+
+```
+struct __attribute__((__packed__)) Parent {
+    int16_t pos_len;
+    double *pos;
+};
+
+struct __attribute__((__packed__)) Child {
+    int16_t pos_len;
+    double *pos;
+	int16_t time_len;
+    double *time;
+};
+```
+
+Both method prototypes and event struct definitions must be declared in the
+calling program, in order to be linked against later.
+
+
+### Compiling and Linking
+
+Examples/simple.c contains a small program which uses the events and rules declared
+in examples/simple.ev. The inferred prototypes are located in examples/simple.h.
+In order to compile and link the program, ensure that you have followed the previous
+steps to compile the **Event** source. Execute the following commands to compile
+and link the example:
+
+```bash
+cd examples
+gcc -o example example.c simple.s ../src/operators.c # clang works just as well
+```
+
+The additional source file **../src/operators.c** contains **Event**'s standard
+library for vector arithmetics and is therefore required for the program to compile.
+
+Run the example by executing:
+
+```bash
+./example
+```
+
+If everything worked out correctly, you sould get the follwing output:
+
+```
+Vector 1 [3]:
+Value 4.000000
+Value 8.000000
+Value 12.000000
+Vector 2 [1]:
+Value 0.493800
 ```
