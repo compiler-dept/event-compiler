@@ -1,7 +1,7 @@
 # Overview
 
 ## Motivation
-![Missing Overview Image](../img/missing.png)
+![Overview](/img/flow.png)
 
 ## Core Concepts
 The **Event** language is comprised of four toplevel constructs. Together these
