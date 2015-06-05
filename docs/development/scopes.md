@@ -1,4 +1,6 @@
 # Scopes
+Scopes are nested namespaces which are used to link references within the ast to
+their corresponding declarations. Therefore within each scope names must be unique.
 
 ## Global scope
 
