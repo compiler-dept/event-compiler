@@ -1,4 +1,4 @@
-# Event Reference
+# Language Reference
 
 ## Introduction
 
