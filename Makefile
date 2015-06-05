@@ -7,7 +7,7 @@ LDLIBS=-lcollect `llvm-config --libs` -lcurses -lpthread -ldl
 YACC=lemon/lemon
 LEX=flex
 
-SOURCES=src/evc.c src/compiler.c src/lexer.l src/parser.y src/ast.c src/scope.c src/validator.c src/codegen.c src/operators.c
+SOURCES=src/evc.c src/compiler.c src/lexer.l src/parser.y src/ast.c src/scope.c src/validator.c src/codegen.c src/operators.c src/astdump.c
 COBJECTS=$(patsubst %.c, %.o, $(SOURCES))
 LOBJECTS=$(patsubst %.l, %.o, $(COBJECTS))
 OBJECTS=$(patsubst %.y, %.o, $(LOBJECTS))
