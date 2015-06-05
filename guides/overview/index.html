@@ -9,7 +9,7 @@
         
         <link rel="shortcut icon" href="../../img/favicon.ico">
 
-	<title>Concept - Event</title>
+	<title>Overview - Event</title>
 
         <link href="../../css/bootstrap-custom.min.css" rel="stylesheet">
         <link href="../../css/font-awesome-4.0.3.css" rel="stylesheet">
@@ -60,48 +60,6 @@
                 
                 
                     <li class="dropdown">
-                        <a href="#" class="dropdown-toggle" data-toggle="dropdown">About <b class="caret"></b></a>
-                        <ul class="dropdown-menu">
-                        
-                            
-<li >
-    <a href="../../about/license/">License</a>
-</li>
-
-                        
-                        </ul>
-                    </li>
-                
-                
-                
-                    <li class="dropdown active">
-                        <a href="#" class="dropdown-toggle" data-toggle="dropdown">Guides <b class="caret"></b></a>
-                        <ul class="dropdown-menu">
-                        
-                            
-<li class="active">
-    <a href="./">Concept</a>
-</li>
-
-                        
-                            
-<li >
-    <a href="../reference/">Reference</a>
-</li>
-
-                        
-                            
-<li >
-    <a href="../usage/">Usage</a>
-</li>
-
-                        
-                        </ul>
-                    </li>
-                
-                
-                
-                    <li class="dropdown">
                         <a href="#" class="dropdown-toggle" data-toggle="dropdown">Development <b class="caret"></b></a>
                         <ul class="dropdown-menu">
                         
@@ -121,6 +79,48 @@
                     </li>
                 
                 
+                
+                    <li class="dropdown">
+                        <a href="#" class="dropdown-toggle" data-toggle="dropdown">About <b class="caret"></b></a>
+                        <ul class="dropdown-menu">
+                        
+                            
+<li >
+    <a href="../../about/license/">License</a>
+</li>
+
+                        
+                        </ul>
+                    </li>
+                
+                
+                
+                    <li class="dropdown active">
+                        <a href="#" class="dropdown-toggle" data-toggle="dropdown">Guides <b class="caret"></b></a>
+                        <ul class="dropdown-menu">
+                        
+                            
+<li >
+    <a href="../getting_started/">Getting started</a>
+</li>
+
+                        
+                            
+<li >
+    <a href="../language_reference/">Language reference</a>
+</li>
+
+                        
+                            
+<li class="active">
+    <a href="./">Overview</a>
+</li>
+
+                        
+                        </ul>
+                    </li>
+                
+                
                 </ul>
             
 
@@ -132,12 +132,12 @@
                 </li>
                 
                     <li >
-                        <a rel="next" href="../../about/license/">
+                        <a rel="next" href="../language_reference/">
                             <i class="fa fa-arrow-left"></i> Previous
                         </a>
                     </li>
-                    <li >
-                        <a rel="prev" href="../reference/">
+                    <li class="disabled">
+                        <a rel="prev" >
                             Next <i class="fa fa-arrow-right"></i>
                         </a>
                     </li>
@@ -162,14 +162,45 @@
                 <div class="col-md-3"><div class="bs-sidebar hidden-print affix well" role="complementary">
     <ul class="nav bs-sidenav">
     
-        <li class="main active"><a href="#concept">Concept</a></li>
+        <li class="main active"><a href="#overview">Overview</a></li>
+        
+            <li><a href="#motivation">Motivation</a></li>
+        
+            <li><a href="#core-concepts">Core Concepts</a></li>
         
     
     </ul>
 </div></div>
                 <div class="col-md-9" role="main">
 
-<h1 id="concept">Concept</h1></div>
+<h1 id="overview">Overview</h1>
+<h2 id="motivation">Motivation</h2>
+<p><img alt="Missing Overview Image" src="../../img/missing.png" /></p>
+<h2 id="core-concepts">Core Concepts</h2>
+<p>The <strong>Event</strong> language is comprised of four toplevel constructs. Together these
+form an intuitive way of describing how events should be processed:</p>
+<ol>
+<li><strong>Events</strong> (<a href="../language_reference/#events">Syntax</a>) are the currency of data.
+Processing and generating events, is the main task of this language. Events are
+defined as composite types featuring an arbitrary number of vector fields.
+Events can inherit other events, meaning that the parent-event's fields are
+prepended to the child-event's fields. An event of a child type may be used
+anywhere where an event of its parent type is valid.</li>
+<li><strong>Functions</strong> (<a href="../language_reference/#functions">Syntax</a>) receive a set of events
+as input and use them to construct a new event. The input events remain unmodified.</li>
+<li><strong>Predicates</strong> (<a href="../language_reference/#predicates">Syntax</a>) like functions receive
+a set of events as input and use them to generate a boolean decision based on
+the values of the input events' fields.</li>
+<li>
+<p><strong>Rules</strong> (<a href="../language_reference/#rules">Syntax</a>) combine the previous three
+elements to define in which way events are processed. They consist of:</p>
+<ul>
+<li><strong>Event types</strong> defining <strong>what</strong> may be processed</li>
+<li><strong>Predicates</strong> defining <strong>if</strong> it is to be processed</li>
+<li>A <strong>Function</strong> defining <strong>how</strong> it is to be processed.</li>
+</ul>
+</li>
+</ol></div>
             
         </div>
 

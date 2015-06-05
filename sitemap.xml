@@ -4,54 +4,54 @@
     
     <url>
      <loc>None/</loc>
-     <lastmod>2015-06-02</lastmod>
+     <lastmod>2015-06-05</lastmod>
      <changefreq>daily</changefreq>
     </url>
-    
-
-    
-        
-    <url>
-     <loc>None/about/license/</loc>
-     <lastmod>2015-06-02</lastmod>
-     <changefreq>daily</changefreq>
-    </url>
-        
-    
-
-    
-        
-    <url>
-     <loc>None/guides/concept/</loc>
-     <lastmod>2015-06-02</lastmod>
-     <changefreq>daily</changefreq>
-    </url>
-        
-    <url>
-     <loc>None/guides/reference/</loc>
-     <lastmod>2015-06-02</lastmod>
-     <changefreq>daily</changefreq>
-    </url>
-        
-    <url>
-     <loc>None/guides/usage/</loc>
-     <lastmod>2015-06-02</lastmod>
-     <changefreq>daily</changefreq>
-    </url>
-        
     
 
     
         
     <url>
      <loc>None/development/components/</loc>
-     <lastmod>2015-06-02</lastmod>
+     <lastmod>2015-06-05</lastmod>
      <changefreq>daily</changefreq>
     </url>
         
     <url>
      <loc>None/development/scopes/</loc>
-     <lastmod>2015-06-02</lastmod>
+     <lastmod>2015-06-05</lastmod>
+     <changefreq>daily</changefreq>
+    </url>
+        
+    
+
+    
+        
+    <url>
+     <loc>None/about/license/</loc>
+     <lastmod>2015-06-05</lastmod>
+     <changefreq>daily</changefreq>
+    </url>
+        
+    
+
+    
+        
+    <url>
+     <loc>None/guides/getting_started/</loc>
+     <lastmod>2015-06-05</lastmod>
+     <changefreq>daily</changefreq>
+    </url>
+        
+    <url>
+     <loc>None/guides/language_reference/</loc>
+     <lastmod>2015-06-05</lastmod>
+     <changefreq>daily</changefreq>
+    </url>
+        
+    <url>
+     <loc>None/guides/overview/</loc>
+     <lastmod>2015-06-05</lastmod>
      <changefreq>daily</changefreq>
     </url>
         
