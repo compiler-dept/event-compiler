@@ -1,6 +1,12 @@
-# Using the Event Compiler
+# Getting Started
 
-## Setup
+## Prerequisites
+The **Event Compiler** relies on a working installation of LLVM.  For Linux and OSX operating systems LLVM is easily installed using the package manager. For other
+environments check [llvm.org](http://llvm.org/)
+
+We currently use **version 3.6.1**
+
+## Compiling the Compiler
 Before we can get started using the **Event Compiler**, the source code needs to
 be acquired and compiled. The simplest way of accomplishing this is to clone
 directly from the [git repository](https://github.com/compiler-dept/event-compiler):
