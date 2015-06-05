@@ -1,17 +1,36 @@
-# Welcome to MkDocs
+# Event
 
-For full documentation visit [mkdocs.org](http://mkdocs.org).
+## Introduction
 
-## Commands
+The Event Language was designed to build a bridge between the C level interface
+of event generating systems like sensors or actuators and the need for a
+high level representation for event based systems. It provides the ability to
+describe the processing of events on a higher level than fiddling with C or C++ code.
 
-* `mkdocs new [dir-name]` - Create a new project.
-* `mkdocs serve` - Start the live-reloading docs server.
-* `mkdocs build` - Build the documentation site.
-* `mkdocs help` - Print this help message.
+The Event Language is a compiled language. Therefore machine code is
+generated during the process of compilation. This is achieved by using the LLVM
+compiler collection, which provides us with a high level interface for
+generating machine code for nearly all platforms supported by LLVM. LLVM is the
+code generation backend for our event language front end.
 
-## Project layout
+## Example
 
-    mkdocs.yml    # The configuration file.
-    docs/
-        index.md  # The documentation homepage.
-        ...       # Other markdown pages, images and other files.
+From (**Event**):
+
+    event SampleEvent { position, time };
+
+    predicate p_position(SampleEvent a, SampleEvent b) := a.position > b.position;
+
+    SampleEvent transform(SampleEvent a, SampleEvent b) :=
+    {
+        position = a.position + b.position,
+        time = a.time + b.time
+    };
+
+    Transform: [SampleEvent, SampleEvent : p_position] -> transform;
+
+To (**C**):
+
+    int Transform_active(SampleEvent *, SampleEvent *);
+
+    SampleEvent *Transform_function(SampleEvent *, SampleEvent *);
