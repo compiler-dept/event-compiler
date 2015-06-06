@@ -1,8 +1,8 @@
 # Event
 
 ## Introduction
-
-The Event Language was designed to build a bridge between the C level interface
+**Event** is a language for **rule based complex-event processing on distributed networks**.
+It was designed to build a bridge between the C level interface
 of event generating systems like sensors or actuators and the need for a
 high level representation for event based systems. It provides the ability to
 describe the processing of events on a higher level than fiddling with C or C++ code.
