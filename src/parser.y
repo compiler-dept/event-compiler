@@ -702,6 +702,25 @@ multiplication(NODE) ::= multiplicative_expression(ME) DIV negation(N).
     stack_push(&allocated_nodes, NODE);
 }
 
+negation(NODE) ::= SUB negation(N).
+{
+    struct payload *payload = malloc(sizeof(struct payload));
+    payload->type = N_NEGATION;
+    payload->alternative = ALT_NEGATION;
+
+    NODE = tree_create_node(payload, 1, N);
+    stack_push(&allocated_nodes, NODE);
+}
+negation(NODE) ::= power(P).
+{
+    struct payload *payload = malloc(sizeof(struct payload));
+    payload->type = N_NEGATION;
+    payload->alternative = ALT_POWER;
+
+    NODE = tree_create_node(payload, 1, P);
+    stack_push(&allocated_nodes, NODE);
+}
+
 power(NODE) ::= primary_expression(PEL) POW primary_expression(PER).
 {
     struct payload *payload = malloc(sizeof(struct payload));
@@ -718,25 +737,6 @@ power(NODE) ::= primary_expression(PE).
     payload->alternative = ALT_PRIMARY_EXPRESSION;
 
     NODE = tree_create_node(payload, 1, PE);
-    stack_push(&allocated_nodes, NODE);
-}
-
-negation(NODE) ::= SUB negation(N).
-{
-    struct payload *payload = malloc(sizeof(struct payload));
-    payload->type = N_NEGATION;
-    payload->alternative = ALT_NEGATION;
-
-    NODE = tree_create_node(payload, 1, N);
-    stack_push(&allocated_nodes, NODE);
-}
-nagation(NODE) ::= power(P).
-{
-    struct payload *payload = malloc(sizeof(struct payload));
-    payload->type = N_NEGATION;
-    payload->alternative = ALT_POWER;
-
-    NODE = tree_create_node(payload, 1, P);
     stack_push(&allocated_nodes, NODE);
 }
 
