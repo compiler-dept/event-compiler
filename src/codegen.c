@@ -344,7 +344,6 @@ void generate_negation(LLVMModuleRef module, LLVMBuilderRef builder,
 {
     struct payload *payload = node->payload;
     if (payload->alternative  == ALT_POWER) {
-      debug(module, builder, "OK");
       generate_pow(module, builder, target_value, node->childv[0]);
     } else if (payload->alternative  == ALT_NEGATION) {
         if (LLVMGetElementType(LLVMTypeOf(target_value)) == LLVMDoubleType()) {
