@@ -321,11 +321,11 @@ void generate_pow(LLVMModuleRef module, LLVMBuilderRef builder,
     base_ptr = LLVMBuildStructGEP(builder, base_ptr, 0, "");
     LLVMValueRef exp_ptr = LLVMBuildAlloca(builder, LLVMDoubleType(), "");
 
-    LLVMValueRef base = LLVMBuildBitCast(builder, base_ptr, LLVMPointerType(LLVMInt8Type(), 0), "");
-    LLVMValueRef exponent = LLVMBuildLoad(builder, exp_ptr, "");
-
     generate_primary_expression(module, builder, base_ptr, node->childv[0] );
     generate_primary_expression(module, builder, exp_ptr, node->childv[1] );
+
+    LLVMValueRef base = LLVMBuildBitCast(builder, base_ptr, LLVMPointerType(LLVMInt8Type(), 0), "");
+    LLVMValueRef exponent = LLVMBuildLoad(builder, exp_ptr, "");
 
     LLVMValueRef args[] = { base, exponent };
     LLVMValueRef function;
@@ -335,7 +335,7 @@ void generate_pow(LLVMModuleRef module, LLVMBuilderRef builder,
     LLVMBuildStore(builder, result, target_value);
 
   } else {
-      generate_primary_expression(module, builder, target_value, node->childv[0]);
+    generate_primary_expression(module, builder, target_value, node->childv[0]);
   }
 }
 
@@ -344,6 +344,7 @@ void generate_negation(LLVMModuleRef module, LLVMBuilderRef builder,
 {
     struct payload *payload = node->payload;
     if (payload->alternative  == ALT_POWER) {
+      debug(module, builder, "OK");
       generate_pow(module, builder, target_value, node->childv[0]);
     } else if (payload->alternative  == ALT_NEGATION) {
         if (LLVMGetElementType(LLVMTypeOf(target_value)) == LLVMDoubleType()) {
