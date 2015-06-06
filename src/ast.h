@@ -42,6 +42,7 @@ enum type {
     N_MULTIPLICATIVE_EXPRESSION,
     N_MULTIPLICATION,
     N_NEGATION,
+    N_POWER,
     N_PRIMARY_EXPRESSION,
     N_ATOMIC
 };
@@ -74,6 +75,7 @@ enum alternative {
     ALT_SUB,
     ALT_EQ,
     ALT_NEQ,
+    ALT_POWER,
     ALT_GT,
     ALT_LT,
     ALT_ADDITION,

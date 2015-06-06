@@ -55,6 +55,23 @@ void dump_ast(struct node *root, const char *path)
 		const char *name = astdump_type_names[payload->type - 1];
 		fwrite(name, strlen(name), 1, fp);
 
+    switch (payload->type){
+      case N_ATOMIC:
+        if (payload->alternative == ALT_IDENTIFIER){
+          if (payload->atomic.identifier[1] == NULL){
+            fprintf(fp, ": %s", payload->atomic.identifier[0]);
+          } else {
+            fprintf(fp, ": %s.%s", payload->atomic.identifier[0],
+              payload->atomic.identifier[1]);
+          }
+        } else if (payload->alternative == ALT_NUMBER){
+          fprintf(fp, ": %f", payload->atomic.number);
+        }
+        break;
+      default:
+        break;
+    }
+
 		stack_push(&parents, current);
 	}
 
