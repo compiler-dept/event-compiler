@@ -1,0 +1,18 @@
+event TimedEvent {
+  time
+};
+
+event PositionEvent extends TimedEvent {
+  position
+};
+
+event VelocityEvent {
+  velocity
+};
+
+VelocityEvent calculateVelocity(PositionEvent posEv1, PositionEvent posEv2) := {
+  velocity = posEv2.time^(-1) * [1]
+};
+
+
+VelRule : [PositionEvent, PositionEvent] -> calculateVelocity;
