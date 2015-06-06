@@ -39,6 +39,7 @@
 "-"                  return SUB;
 "*"                  return MULT;
 "/"                  return DIV;
+"^"                  return POW;
 
 "/*"                 BEGIN(C_COMMENT);
 <C_COMMENT>"*/"      BEGIN(INITIAL);
