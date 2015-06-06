@@ -38,47 +38,47 @@ const char *astdump_type_names[] = {
 
 void dump_ast(struct node *root, const char *path)
 {
-	FILE *fp = fopen(path, "w");
+    FILE *fp = fopen(path, "w");
 
-	struct tree_iterator *it = tree_iterator_init(&root, PREORDER);
-	struct node *current = NULL;
-	struct stack *parents = NULL;
+    struct tree_iterator *it = tree_iterator_init(&root, PREORDER);
+    struct node *current = NULL;
+    struct stack *parents = NULL;
 
-	while ((current = tree_iterator_next(it)) != NULL){
-		while (current->parent != NULL && current->parent != stack_peek(parents)){
-			fwrite(")", 1, 1, fp);
-			stack_pop(&parents);
-		}
-
-		fwrite("(", 1, 1, fp);
-		struct payload *payload = current->payload;
-		const char *name = astdump_type_names[payload->type - 1];
-		fwrite(name, strlen(name), 1, fp);
-
-    switch (payload->type){
-      case N_ATOMIC:
-        if (payload->alternative == ALT_IDENTIFIER){
-          if (payload->atomic.identifier[1] == NULL){
-            fprintf(fp, ": %s", payload->atomic.identifier[0]);
-          } else {
-            fprintf(fp, ": %s.%s", payload->atomic.identifier[0],
-              payload->atomic.identifier[1]);
-          }
-        } else if (payload->alternative == ALT_NUMBER){
-          fprintf(fp, ": %f", payload->atomic.number);
+    while ((current = tree_iterator_next(it)) != NULL) {
+        while (current->parent != NULL && current->parent != stack_peek(parents)) {
+            fwrite(")", 1, 1, fp);
+            stack_pop(&parents);
         }
-        break;
-      default:
-        break;
+
+        fwrite("(", 1, 1, fp);
+        struct payload *payload = current->payload;
+        const char *name = astdump_type_names[payload->type - 1];
+        fwrite(name, strlen(name), 1, fp);
+
+        switch (payload->type) {
+            case N_ATOMIC:
+                if (payload->alternative == ALT_IDENTIFIER) {
+                    if (payload->atomic.identifier[1] == NULL) {
+                        fprintf(fp, ": %s", payload->atomic.identifier[0]);
+                    } else {
+                        fprintf(fp, ": %s.%s", payload->atomic.identifier[0],
+                                payload->atomic.identifier[1]);
+                    }
+                } else if (payload->alternative == ALT_NUMBER) {
+                    fprintf(fp, ": %f", payload->atomic.number);
+                }
+                break;
+            default:
+                break;
+        }
+
+        stack_push(&parents, current);
     }
 
-		stack_push(&parents, current);
-	}
+    while (stack_pop(&parents) != NULL) {
+        fwrite(")", 1, 1, fp);
+    }
 
-	while (stack_pop(&parents) != NULL){
-		fwrite(")", 1, 1, fp);
-	}
-
-	tree_iterator_free(it);
-	fclose(fp);
+    tree_iterator_free(it);
+    fclose(fp);
 }

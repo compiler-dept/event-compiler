@@ -528,62 +528,67 @@ int validate_addition(struct node *temp, struct stack **type_stack)
 
 int validate_multiplication(struct node *temp, struct payload *payload, struct stack **type_stack)
 {
-  int success = 1;
+    int success = 1;
 
-  enum types *neg = type_stack_pop(type_stack);
-  enum types *mult_exp = type_stack_pop(type_stack);
+    enum types *neg = type_stack_pop(type_stack);
+    enum types *mult_exp = type_stack_pop(type_stack);
 
-  if (*mult_exp != T_NUMBER) {
-      /* first operand is not a number */
-      success = 0;
-  } else {
-      /* first operand is a number */
-      if (*neg != T_NUMBER && *neg != T_VECTOR) {
-          /* second operand is not a number or not a vector */
-          success = 0;
-      } else if (*neg == T_NUMBER) {
-          /* second operand is a number */
-          type_stack_push(type_stack, new_type(T_NUMBER));
-      } else {
-          /* second operator is a vector */
-          if (payload->alternative == ALT_DIV) {
-              /* times vector is not defined */
-              success = 0;
-          } else {
-              type_stack_push(type_stack, new_type(T_VECTOR));
-          }
-      }
-  }
+    if (*mult_exp != T_NUMBER) {
+        /* first operand is not a number */
+        success = 0;
+    } else {
+        /* first operand is a number */
+        if (*neg != T_NUMBER && *neg != T_VECTOR) {
+            /* second operand is not a number or not a vector */
+            success = 0;
+        } else if (*neg == T_NUMBER) {
+            /* second operand is a number */
+            type_stack_push(type_stack, new_type(T_NUMBER));
+        } else {
+            /* second operator is a vector */
+            if (payload->alternative == ALT_DIV) {
+                /* times vector is not defined */
+                success = 0;
+            } else {
+                type_stack_push(type_stack, new_type(T_VECTOR));
+            }
+        }
+    }
 
-  free(neg);
-  free(mult_exp);
+    free(neg);
+    free(mult_exp);
 
-  return success;
+    return success;
 }
 
 int validate_power(struct node *temp, struct payload *payload, struct stack **type_stack)
 {
     int success = 1;
 
-    enum types *prim_exp1 = type_stack_pop(type_stack);
-    enum types *prim_exp2 = type_stack_pop(type_stack);
+    if (temp->childc > 1) {
+        /* Node is no proxy */
+        enum types *prim_exp2 = type_stack_pop(type_stack);
+        enum types *prim_exp1 = type_stack_pop(type_stack);
 
-    if (*prim_exp1 != T_VECTOR) {
-        /* first operand is not a vector */
-        success = 0;
-    } else {
-        /* first operand is a vector */
-        if (*prim_exp2 != T_NUMBER) {
-            /* second operand is not a number */
+        if (*prim_exp1 != T_VECTOR) {
+            /* first operand is not a vector */
             success = 0;
         } else {
-            /* second operand is a number */
-            type_stack_push(type_stack, new_type(T_VECTOR));
+            /* first operand is a vector */
+            if (*prim_exp2 != T_NUMBER) {
+                /* second operand is not a number */
+                success = 0;
+            } else {
+                /* second operand is a number */
+                type_stack_push(type_stack, new_type(T_NUMBER));
+            }
         }
-    }
 
-    free(prim_exp1);
-    free(prim_exp2);
+
+
+        free(prim_exp1);
+        free(prim_exp2);
+    }
 
     return success;
 }

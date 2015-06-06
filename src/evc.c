@@ -139,7 +139,7 @@ int main(int argc, char *const *argv)
         LLVMDisposeModule(module);
     }
 
-    if (flags.astdump){
+    if (flags.astdump) {
         dump_ast(root, flags.astdump_path);
     }
 
