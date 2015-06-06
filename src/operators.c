@@ -171,6 +171,21 @@ struct vector *op_s_mult_v(double scalar, struct vector *vector)
     return ret_vector;
 }
 
+struct vector *op_v_pow_s(struct vector *vector, double scalar)
+{
+  if (vector == NULL) {
+      return NULL;
+  }
+
+  struct vector *ret_vector = malloc(sizeof(struct vector));
+
+  for (int i = 0; i < vector->size; i++) {
+      ret_vector->components[i] = pow(vector->components[i], scalar);
+  }
+
+  return ret_vector;
+}
+
 uint8_t op_v_lt_v(struct vector *vector_left, struct vector *vector_right)
 {
     if (vector_left == NULL || vector_right == NULL) {

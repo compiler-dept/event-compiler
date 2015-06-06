@@ -859,6 +859,11 @@ void declare_external_methods(LLVMModuleRef module)
     function_type = LLVMFunctionType(i8_pointer_type, parameter_types, 2, 0);
     LLVMAddFunction(module, "op_s_mult_v", function_type);
 
+    parameter_types[0] = i8_pointer_type;
+    parameter_types[0] = LLVMDoubleType();
+    function_type = LLVMFunctionType(i8_pointer_type, parameter_types, 2, 0);
+    LLVMAddFunction(module, "op_v_pow_s", function_type);
+
     /* Integer comparison operator */
     parameter_types[0] = LLVMInt8Type();
     parameter_types[1] = LLVMInt8Type();
