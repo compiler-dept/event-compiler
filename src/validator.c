@@ -565,25 +565,25 @@ int validate_power(struct node *temp, struct payload *payload, struct stack **ty
 {
     int success = 1;
 
-    enum types *neg = type_stack_pop(type_stack);
-    enum types *mult_exp = type_stack_pop(type_stack);
+    enum types *prim_exp1 = type_stack_pop(type_stack);
+    enum types *prim_exp2 = type_stack_pop(type_stack);
 
-    if (*mult_exp != T_VECTOR) {
+    if (*prim_exp1 != T_VECTOR) {
         /* first operand is not a vector */
         success = 0;
     } else {
         /* first operand is a vector */
-        if (*neg != T_NUMBER) {
+        if (*prim_exp2 != T_NUMBER) {
             /* second operand is not a number */
             success = 0;
-        } else if (*neg == T_NUMBER) {
+        } else {
             /* second operand is a number */
             type_stack_push(type_stack, new_type(T_VECTOR));
         }
     }
 
-    free(neg);
-    free(mult_exp);
+    free(prim_exp1);
+    free(prim_exp2);
 
     return success;
 }
