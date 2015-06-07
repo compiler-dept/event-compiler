@@ -13,7 +13,7 @@ gen.s: gen.bc
 
 gen.bc:
 	@- make -C ..
-	../evc  -V -i simple.ev  -o gen.bc
+	../evc -i velocity.ev -o gen.bc
 
 clean:
 	rm -f *.o *.ll *.s *.bc example

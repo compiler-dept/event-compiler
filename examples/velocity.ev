@@ -1,18 +1,23 @@
 event TimedEvent {
-  time
+    time
 };
 
 event PositionEvent extends TimedEvent {
-  position
+    position
 };
 
 event VelocityEvent {
-  velocity
+    velocity
 };
 
 VelocityEvent calculateVelocity(PositionEvent posEv1, PositionEvent posEv2) := {
-  velocity = (posEv2.time -  posEv1.time)^(-1) * (posEv2.position - posEv2.position)
+    velocity = (posEv2.time - posEv1.time)^(-1) * (posEv2.position - posEv1.position)
 };
 
+predicate positionCheck(PositionEvent posEv1, PositionEvent posEv2) :=
+    posEv2.position > posEv1.position;
 
-VelocityRule : [PositionEvent, PositionEvent] -> calculateVelocity;
+predicate timeCheck(PositionEvent posEv1, PositionEvent posEv2) :=
+    posEv2.time > posEv1.time;
+
+VelocityRule : [PositionEvent, PositionEvent : positionCheck, timeCheck] -> calculateVelocity;

@@ -1,32 +1,37 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include <inttypes.h>
-#include "simple.h"
+#include "velocity.h"
 
 int main(void) {
-    struct SampleEvent e;
-    e.pos_len = 3;
-    e.pos = malloc(3 * sizeof(double));
-    e.pos[0] = 1;
-    e.pos[1] = 2;
-    e.pos[2] = 3;
-    e.time_len = 1;
-    e.time = malloc(sizeof(double));
-    e.time[0] = 0.12345;
+    struct PositionEvent posEv1;
+    posEv1.time_len = 1;
+    posEv1.time = malloc(posEv1.time_len * sizeof(double));
+    posEv1.time[0] = 0;
+    posEv1.position_len = 1;
+    posEv1.position = malloc(posEv1.position_len * sizeof(double));
+    posEv1.position[0] = 1;
 
-    if (Rule_active(&e)) {
-        struct SampleEvent *ev = Rule_function(&e);
+    struct PositionEvent posEv2;
+    posEv2.time_len = 1;
+    posEv2.time = malloc(posEv2.time_len * sizeof(double));
+    posEv2.time[0] = 2;
+    posEv2.position_len = 1;
+    posEv2.position = malloc(posEv2.position_len * sizeof(double));
+    posEv2.position[0] = 6;
 
-        printf("Vector 1 [%d]:\n", ev->pos_len);
-        for (int i = 0; i < ev->pos_len; i++){
-            printf("Value %f\n", (ev->pos)[i]);
-        }
+    if (VelocityRule_active(&posEv1, &posEv2)) {
+        struct VelocityEvent *veloEv = VelocityRule_function(&posEv1, &posEv2);
 
-        printf("Vector 2 [%d]:\n", ev->time_len);
-        for (int i = 0; i < ev->time_len; i++){
-            printf("Value %f\n", (ev->time)[i]);
-        }
+        printf("Velocity: %f\n", veloEv->velocity[0]);
+
+        free(veloEv->velocity);
+        free(veloEv);
     }
+
+    free(posEv1.time);
+    free(posEv1.position);
+    free(posEv2.time);
+    free(posEv2.position);
 
     return EXIT_SUCCESS;
 }
