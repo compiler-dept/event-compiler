@@ -20,4 +20,4 @@ predicate positionCheck(PositionEvent posEv1, PositionEvent posEv2) :=
 predicate timeCheck(PositionEvent posEv1, PositionEvent posEv2) :=
     posEv2.time > posEv1.time;
 
-VelocityRule : [PositionEvent, PositionEvent : positionCheck, timeCheck] -> calculateVelocity;
+VelocityRule: [PositionEvent, PositionEvent : positionCheck, timeCheck] -> calculateVelocity;
