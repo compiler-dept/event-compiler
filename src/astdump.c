@@ -32,6 +32,7 @@ const char *astdump_type_names[] = {
     "N_MULTIPLICATIVE_EXPRESSION",
     "N_MULTIPLICATION",
     "N_NEGATION",
+    "N_POWER",
     "N_PRIMARY_EXPRESSION",
     "N_ATOMIC"
 };
