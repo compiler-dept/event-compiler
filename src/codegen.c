@@ -314,29 +314,29 @@ void generate_primary_expression(LLVMModuleRef module, LLVMBuilderRef builder,
 }
 
 void generate_pow(LLVMModuleRef module, LLVMBuilderRef builder,
-                       LLVMValueRef target_value, struct node *node)
+                  LLVMValueRef target_value, struct node *node)
 {
-  if (node->childc > 1){
-    LLVMValueRef base_ptr = LLVMBuildAlloca(builder, VectorType(), "");
-    base_ptr = LLVMBuildStructGEP(builder, base_ptr, 0, "");
-    LLVMValueRef exp_ptr = LLVMBuildAlloca(builder, LLVMDoubleType(), "");
+    if (node->childc > 1) {
+        LLVMValueRef base_ptr = LLVMBuildAlloca(builder, VectorType(), "");
+        base_ptr = LLVMBuildStructGEP(builder, base_ptr, 0, "");
+        LLVMValueRef exp_ptr = LLVMBuildAlloca(builder, LLVMDoubleType(), "");
 
-    generate_primary_expression(module, builder, base_ptr, node->childv[0] );
-    generate_primary_expression(module, builder, exp_ptr, node->childv[1] );
+        generate_primary_expression(module, builder, base_ptr, node->childv[0] );
+        generate_primary_expression(module, builder, exp_ptr, node->childv[1] );
 
-    LLVMValueRef base = LLVMBuildBitCast(builder, base_ptr, LLVMPointerType(LLVMInt8Type(), 0), "");
-    LLVMValueRef exponent = LLVMBuildLoad(builder, exp_ptr, "");
+        LLVMValueRef base = LLVMBuildBitCast(builder, base_ptr, LLVMPointerType(LLVMInt8Type(), 0), "");
+        LLVMValueRef exponent = LLVMBuildLoad(builder, exp_ptr, "");
 
-    LLVMValueRef args[] = { base, exponent };
-    LLVMValueRef function;
+        LLVMValueRef args[] = { base, exponent };
+        LLVMValueRef function;
 
-    function = LLVMGetNamedFunction(module, "op_v_pow_s");
-    LLVMValueRef result = LLVMBuildCall(builder, function, args, 2, "");
-    LLVMBuildStore(builder, result, target_value);
+        function = LLVMGetNamedFunction(module, "op_v_pow_s");
+        LLVMValueRef result = LLVMBuildCall(builder, function, args, 2, "");
+        LLVMBuildStore(builder, result, target_value);
 
-  } else {
-    generate_primary_expression(module, builder, target_value, node->childv[0]);
-  }
+    } else {
+        generate_primary_expression(module, builder, target_value, node->childv[0]);
+    }
 }
 
 void generate_negation(LLVMModuleRef module, LLVMBuilderRef builder,
@@ -344,7 +344,7 @@ void generate_negation(LLVMModuleRef module, LLVMBuilderRef builder,
 {
     struct payload *payload = node->payload;
     if (payload->alternative  == ALT_POWER) {
-      generate_pow(module, builder, target_value, node->childv[0]);
+        generate_pow(module, builder, target_value, node->childv[0]);
     } else if (payload->alternative  == ALT_NEGATION) {
         if (LLVMGetElementType(LLVMTypeOf(target_value)) == LLVMDoubleType()) {
             /* allocate memory on stack for evaluated operand */

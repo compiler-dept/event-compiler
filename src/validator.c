@@ -23,8 +23,7 @@ const char *type_names[] = {
     "EVENT_DEFINITION"
 };
 
-static enum types *new_type(enum types type)
-{
+static enum types *new_type(enum types type) {
     enum types *t = malloc(sizeof(enum types));
     *t = type;
     return t;
@@ -69,16 +68,14 @@ int validate_power(struct node *temp, struct payload *payload, struct stack **ty
 
 int validate_atomic(struct node *temp, struct payload *payload, struct stack **type_stack);
 
-static enum types *type_stack_pop(struct stack **stack)
-{
+static enum types *type_stack_pop(struct stack **stack) {
     stack_size--;
     enum types *type = stack_pop(stack);
     //printf("Pop: %s (Stack Size: %i)\n", type_names[*type - 1], stack_size);
     return type;
 }
 
-static void type_stack_push(struct stack **stack, enum types *type)
-{
+static void type_stack_push(struct stack **stack, enum types *type) {
     stack_size++;
     //printf("Push: %s (Stack Size: %i)\n", type_names[*type - 1], stack_size);
     stack_push(stack, type);
