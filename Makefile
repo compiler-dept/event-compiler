@@ -54,7 +54,6 @@ docs\:deploy: docs
 clean:
 	rm -f $(BIN) $(OBJECTS) src/lexer.c src/lexer.h src/parser.c src/parser.h src/parser.out
 	rm -rf tests/testsuite tests/testsuite.dSYM tests/.clarcache tests/clar.suite
-	rm -rf doxygen/html
 	rm -rf site
 
 libcollect:
