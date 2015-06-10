@@ -34,3 +34,13 @@ To (**C**):
     int Transform_active(SampleEvent *, SampleEvent *);
 
     SampleEvent *Transform_function(SampleEvent *, SampleEvent *);
+
+## Video Example
+
+<iframe src="https://player.vimeo.com/video/130224735" width="500" height="296" frameborder="0" webkitallowfullscreen mozallowfullscreen allowfullscreen></iframe> <p><a href="https://vimeo.com/130224735">Building an Event-Processor with the Event-Language</a> from <a href="https://vimeo.com/apfohl">apfohl</a> on <a href="https://vimeo.com">Vimeo</a>.</p>
+
+<iframe src="https://player.vimeo.com/video/130224734" width="500" height="297" frameborder="0" webkitallowfullscreen mozallowfullscreen allowfullscreen></iframe> <p><a href="https://vimeo.com/130224734">Using an Event-Processor with the Event-Language</a> from <a href="https://vimeo.com/apfohl">apfohl</a> on <a href="https://vimeo.com">Vimeo</a>.</p>
+
+## Presentation Slides
+
+<script async class="speakerdeck-embed" data-id="bdb12de10bb944c1901187b466d11239" data-ratio="1.33333333333333" src="//speakerdeck.com/assets/embed.js"></script>
